@@ -183,12 +183,64 @@ export interface InitiativeStory {
   updated_at: string;
 }
 
+// Effort Tracking Types
+export type EffortSize = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL';
+
+export interface EffortSizeMapping {
+  size: EffortSize;
+  label: string;
+  hours: number;
+  color: string;
+}
+
+export const EFFORT_SIZES: EffortSizeMapping[] = [
+  { size: 'XS', label: 'Extra Small', hours: 1.5, color: '#10b981' },
+  { size: 'S', label: 'Small', hours: 4, color: '#3b82f6' },
+  { size: 'M', label: 'Medium', hours: 8, color: '#f59e0b' },
+  { size: 'L', label: 'Large', hours: 13, color: '#f97316' },
+  { size: 'XL', label: 'Extra Large', hours: 18, color: '#ef4444' },
+  { size: 'XXL', label: 'Double XL', hours: 25, color: '#dc2626' },
+];
+
+export interface EffortLog {
+  id: string;
+  initiative_id: string;
+  team_member_id: string;
+  week_start_date: string; // ISO date string for Monday of the week
+  hours_spent: number;
+  effort_size: EffortSize;
+  note?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EffortSummary {
+  week_start_date: string;
+  total_hours: number;
+  initiative_count: number;
+  effort_by_work_type: Record<string, number>;
+  capacity_status: 'under' | 'normal' | 'near' | 'over' | 'critical';
+}
+
+export interface InitiativeEffortTrend {
+  initiative_id: string;
+  initiative_name: string;
+  work_type: string;
+  recent_hours: number;
+  trend: 'increasing' | 'decreasing' | 'stable';
+  trend_percentage?: number;
+  weeks_logged: number;
+  total_hours: number;
+}
+
 export interface InitiativeWithDetails extends Initiative {
   metrics: InitiativeMetric[];
   financial_impact?: InitiativeFinancialImpact;
   performance_data?: InitiativePerformanceData;
   projections?: InitiativeProjection;
   story?: InitiativeStory;
+  effort_logs?: EffortLog[];
+  effort_trend?: InitiativeEffortTrend;
 }
 
 // Dashboard Metrics - Pre-calculated from Excel Dashboard tab (columns A-Y)

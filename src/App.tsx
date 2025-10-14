@@ -7,6 +7,7 @@ import { InitiativeCard } from './components/InitiativeCard';
 import { InitiativesView } from './components/InitiativesView';
 import { InitiativesTableView } from './components/InitiativesTableView';
 import { InsightsChat } from './components/InsightsChat';
+import PersonalWorkloadDashboard from './components/PersonalWorkloadDashboard';
 import { calculateWorkload, getCapacityStatus, getCapacityColor, getCapacityEmoji, getCapacityLabel, WORK_EFFORT_HOURS, parseWorkEffort } from './lib/workloadUtils';
 import StaffDetailModal from './components/StaffDetailModal';
 
@@ -21,19 +22,20 @@ interface TeamMemberWithDetails extends TeamMember {
 
 function App() {
   // Get initial view from URL hash or default to 'overview'
-  const getInitialView = (): 'overview' | 'team' | 'workload' | 'insights' | 'addData' => {
+  const getInitialView = (): 'overview' | 'team' | 'workload' | 'myEffort' | 'insights' | 'addData' => {
     const hash = window.location.hash.slice(1); // Remove the '#'
-    if (['overview', 'team', 'workload', 'insights', 'addData'].includes(hash)) {
-      return hash as 'overview' | 'team' | 'workload' | 'insights' | 'addData';
+    if (['overview', 'team', 'workload', 'myEffort', 'insights', 'addData'].includes(hash)) {
+      return hash as 'overview' | 'team' | 'workload' | 'myEffort' | 'insights' | 'addData';
     }
     return 'overview';
   };
 
-  const [activeView, setActiveView] = useState<'overview' | 'team' | 'workload' | 'insights' | 'addData'>(getInitialView());
+  const [activeView, setActiveView] = useState<'overview' | 'team' | 'workload' | 'myEffort' | 'insights' | 'addData'>(getInitialView());
   const [selectedMember, setSelectedMember] = useState<TeamMemberWithDetails | null>(null);
   const [teamMembers, setTeamMembers] = useState<TeamMemberWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingInitiative, setEditingInitiative] = useState<InitiativeWithDetails | null>(null);
+  const [currentUser, setCurrentUser] = useState<TeamMemberWithDetails | null>(null); // For effort tracking
 
   // Update URL hash when view changes
   useEffect(() => {
@@ -190,6 +192,12 @@ function App() {
       });
 
       setTeamMembers(membersWithDetails);
+
+      // Set Marty as default current user for demo (in production, use actual auth)
+      const marty = membersWithDetails.find(m => m.name === 'Marty');
+      if (marty) {
+        setCurrentUser(marty);
+      }
     } catch (error) {
       console.error('Error fetching team data:', error);
     } finally {
@@ -1878,6 +1886,19 @@ function App() {
                 Workload
               </button>
               <button
+                onClick={() => setActiveView('myEffort')}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1 ${
+                  activeView === 'myEffort'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                }`}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                My Effort
+              </button>
+              <button
                 onClick={() => setActiveView('insights')}
                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1 ${
                   activeView === 'insights'
@@ -1914,6 +1935,18 @@ function App() {
           <TeamView />
         ) : activeView === 'workload' ? (
           <WorkloadView />
+        ) : activeView === 'myEffort' ? (
+          currentUser ? (
+            <PersonalWorkloadDashboard
+              teamMember={currentUser}
+              initiatives={teamMembers.flatMap(m => m.initiatives || [])}
+            />
+          ) : (
+            <div className="bg-white rounded-lg p-12 text-center">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No User Selected</h3>
+              <p className="text-gray-600">Please select a user to view their effort tracking.</p>
+            </div>
+          )
         ) : activeView === 'insights' ? (
           <div className="h-[calc(100vh-12rem)] bg-white rounded-lg shadow-sm">
             <InsightsChat

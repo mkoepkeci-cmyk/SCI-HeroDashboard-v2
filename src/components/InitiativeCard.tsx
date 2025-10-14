@@ -1,9 +1,13 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, Users, DollarSign, TrendingUp, Award, Target, Activity } from 'lucide-react';
+import { ChevronDown, ChevronRight, Users, DollarSign, TrendingUp, Award, Target, Activity, Clock } from 'lucide-react';
 import { InitiativeWithDetails } from '../lib/supabase';
+import EffortSparkline from './EffortSparkline';
+import EffortLogModal from './EffortLogModal';
 
 interface InitiativeCardProps {
   initiative: InitiativeWithDetails;
+  currentUserId?: string; // For effort logging
+  onEffortUpdate?: () => void; // Callback to refresh data after effort log
 }
 
 const getStatusColor = (status: string): string => {
@@ -42,14 +46,22 @@ const formatPercentage = (value?: number): string => {
   return `${value.toFixed(1)}%`;
 };
 
-export const InitiativeCard = ({ initiative }: InitiativeCardProps) => {
+export const InitiativeCard = ({ initiative, currentUserId, onEffortUpdate }: InitiativeCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showEffortModal, setShowEffortModal] = useState(false);
 
   const hasMetrics = initiative.metrics && initiative.metrics.length > 0;
   const hasFinancial = !!initiative.financial_impact;
   const hasPerformance = !!initiative.performance_data;
   const hasProjections = !!initiative.projections;
   const hasStory = !!initiative.story;
+  const hasEffortLogs = initiative.effort_logs && initiative.effort_logs.length > 0;
+
+  const handleEffortSave = () => {
+    if (onEffortUpdate) {
+      onEffortUpdate();
+    }
+  };
 
   return (
     <div className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition-all">
@@ -143,6 +155,46 @@ export const InitiativeCard = ({ initiative }: InitiativeCardProps) => {
 
       {isExpanded && (
         <div className="border-t bg-gray-50 p-4 space-y-4">
+          {/* Effort Tracking Section */}
+          {currentUserId && (initiative.status === 'Active' || initiative.status === 'Planning' || hasEffortLogs) && (
+            <div className="bg-white rounded-lg p-3 border border-blue-200">
+              <div className="flex items-center justify-between mb-3">
+                <h5 className="font-semibold text-sm flex items-center gap-2 text-blue-600">
+                  <Clock className="w-4 h-4" />
+                  My Effort Tracking
+                </h5>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowEffortModal(true);
+                  }}
+                  className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                >
+                  Log Effort
+                </button>
+              </div>
+              {hasEffortLogs ? (
+                <div className="bg-blue-50 rounded p-3">
+                  <EffortSparkline
+                    effortLogs={initiative.effort_logs || []}
+                    width={200}
+                    height={50}
+                  />
+                  {initiative.effort_trend && (
+                    <div className="mt-2 pt-2 border-t border-blue-200 text-xs text-gray-600">
+                      <span className="font-medium">Total time invested:</span>{' '}
+                      {initiative.effort_trend.total_hours} hours over {initiative.effort_trend.weeks_logged} weeks
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-xs text-gray-500 italic bg-blue-50 rounded p-3">
+                  No effort logged yet. Click "Log Effort" to track your time on this initiative.
+                </div>
+              )}
+            </div>
+          )}
+
           {(initiative.clinical_sponsor_name || initiative.governance_bodies?.length || initiative.key_collaborators?.length) && (
             <div className="bg-white rounded-lg p-3 border">
               <h5 className="font-semibold text-sm mb-2 flex items-center gap-2 text-[#6F47D0]">
@@ -418,6 +470,16 @@ export const InitiativeCard = ({ initiative }: InitiativeCardProps) => {
             </div>
           )}
         </div>
+      )}
+
+      {/* Effort Log Modal */}
+      {showEffortModal && currentUserId && (
+        <EffortLogModal
+          initiative={initiative}
+          teamMemberId={currentUserId}
+          onClose={() => setShowEffortModal(false)}
+          onSave={handleEffortSave}
+        />
       )}
     </div>
   );
