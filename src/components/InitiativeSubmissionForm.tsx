@@ -548,7 +548,7 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
                       onChange={e => updateTeamMemberAssignment(index, 'role', e.target.value)}
                     >
                       <option value="">Select role</option>
-                      <option>Primary</option>
+                      <option>Owner</option>
                       <option>Co-Owner</option>
                       <option>Secondary</option>
                       <option>Support</option>
@@ -627,6 +627,9 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
                 <option>Did we Deliver</option>
                 <option>Post Go Live Support</option>
                 <option>In Progress</option>
+                <option>Maintenance</option>
+                <option>Steady State</option>
+                <option>N/A</option>
               </select>
             </div>
             <div>
