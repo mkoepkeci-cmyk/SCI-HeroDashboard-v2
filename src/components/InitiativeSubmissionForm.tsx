@@ -580,11 +580,13 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
               >
                 <option value="">Select Type</option>
                 <option>System Initiative</option>
-                <option>Project</option>
+                <option>System Projects</option>
+                <option>Market Project</option>
+                <option>Ticket</option>
                 <option>Epic Gold</option>
                 <option>Governance</option>
+                <option>Policy/Guidelines</option>
                 <option>General Support</option>
-                <option>Policy</option>
               </select>
             </div>
             <div>
