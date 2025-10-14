@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Clock, TrendingUp, AlertCircle, Calendar, BarChart3 } from 'lucide-react';
+import { Clock, TrendingUp, AlertCircle, Calendar, BarChart3, User, List } from 'lucide-react';
 import { supabase, InitiativeWithDetails, EffortLog, TeamMember } from '../lib/supabase';
 import {
   getWeekStartDate,
@@ -12,11 +12,14 @@ import {
   getTrendColor,
   getLastNWeeks,
 } from '../lib/effortUtils';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import BulkEffortEntry from './BulkEffortEntry';
 
 interface PersonalWorkloadDashboardProps {
-  teamMember: TeamMember;
+  teamMember: TeamMember | null;
+  allTeamMembers: TeamMember[];
   initiatives: InitiativeWithDetails[];
+  onTeamMemberChange: (member: TeamMember) => void;
 }
 
 interface WorkTypeEffort {
@@ -38,19 +41,27 @@ const WORK_TYPE_COLORS: Record<string, string> = {
 
 export default function PersonalWorkloadDashboard({
   teamMember,
+  allTeamMembers,
   initiatives,
+  onTeamMemberChange,
 }: PersonalWorkloadDashboardProps) {
   const [effortLogs, setEffortLogs] = useState<EffortLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedWeek, setSelectedWeek] = useState(getWeekStartDate());
+  const [view, setView] = useState<'summary' | 'entry'>('entry');
 
   const recentWeeks = useMemo(() => getLastNWeeks(8), []);
 
   useEffect(() => {
     loadEffortLogs();
-  }, [teamMember.id]);
+  }, [teamMember?.id]);
 
   const loadEffortLogs = async () => {
+    if (!teamMember) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -153,28 +164,90 @@ export default function PersonalWorkloadDashboard({
     <div className="space-y-6">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg p-6">
-        <h2 className="text-2xl font-bold mb-2">My Workload Dashboard</h2>
-        <p className="text-blue-100">Track your effort, manage capacity, and stay balanced</p>
+        <h2 className="text-2xl font-bold mb-2">Effort Tracking</h2>
+        <p className="text-blue-100">Log your time, manage capacity, and stay balanced</p>
       </div>
 
-      {/* Week Selector */}
+      {/* Staff Selector + Week Selector + View Toggle */}
       <div className="bg-white rounded-lg border p-4">
-        <div className="flex items-center gap-3">
-          <Calendar className="w-5 h-5 text-gray-400" />
-          <label className="text-sm font-medium text-gray-700">Viewing Week:</label>
-          <select
-            value={selectedWeek}
-            onChange={(e) => setSelectedWeek(e.target.value)}
-            className="flex-1 max-w-xs px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            {recentWeeks.map(week => (
-              <option key={week} value={week}>
-                {formatWeekRange(week)} {week === getWeekStartDate() && '(Current)'}
-              </option>
-            ))}
-          </select>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Staff Selector */}
+          <div className="flex items-center gap-3">
+            <User className="w-5 h-5 text-gray-400 flex-shrink-0" />
+            <label className="text-sm font-medium text-gray-700 flex-shrink-0">Team Member:</label>
+            <select
+              value={teamMember?.id || ''}
+              onChange={(e) => {
+                const member = allTeamMembers.find(m => m.id === e.target.value);
+                if (member) onTeamMemberChange(member);
+              }}
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              {!teamMember && <option value="">Select a team member...</option>}
+              {allTeamMembers.map(member => (
+                <option key={member.id} value={member.id}>
+                  {member.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Week Selector */}
+          <div className="flex items-center gap-3">
+            <Calendar className="w-5 h-5 text-gray-400 flex-shrink-0" />
+            <label className="text-sm font-medium text-gray-700 flex-shrink-0">Week:</label>
+            <select
+              value={selectedWeek}
+              onChange={(e) => setSelectedWeek(e.target.value)}
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              {recentWeeks.map(week => (
+                <option key={week} value={week}>
+                  {formatWeekRange(week)} {week === getWeekStartDate() && '(Current)'}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* View Toggle */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setView('entry')}
+              className={`flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${
+                view === 'entry'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <List className="w-4 h-4" />
+              Log Effort
+            </button>
+            <button
+              onClick={() => setView('summary')}
+              className={`flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${
+                view === 'summary'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <BarChart3 className="w-4 h-4" />
+              Summary
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Conditional Content Based on View */}
+      {view === 'entry' ? (
+        <BulkEffortEntry
+          teamMemberId={teamMember?.id || null}
+          initiatives={initiatives}
+          selectedWeek={selectedWeek}
+          onSave={loadEffortLogs}
+        />
+      ) : (
+        <>
+          {/* Summary View - Existing Dashboard Content */}
 
       {/* Capacity Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -218,7 +291,7 @@ export default function PersonalWorkloadDashboard({
             <div className="text-sm font-medium text-gray-600">Active Assignments</div>
             <TrendingUp className="w-5 h-5 text-gray-400" />
           </div>
-          <div className="text-3xl font-bold text-gray-900">{teamMember.total_assignments}</div>
+          <div className="text-3xl font-bold text-gray-900">{teamMember?.total_assignments || 0}</div>
           <div className="text-xs text-gray-500 mt-1">
             {currentWeekSummary.initiativeCount} with logged effort this week
           </div>
@@ -338,9 +411,11 @@ export default function PersonalWorkloadDashboard({
           <h3 className="text-lg font-semibold text-gray-900 mb-2">No Effort Logged</h3>
           <p className="text-gray-600 max-w-md mx-auto">
             You haven't logged any effort for {formatWeekRange(selectedWeek)} yet.
-            Navigate to your active initiatives and click "Log Effort" to start tracking your time.
+            Switch to "Log Effort" view to start tracking your time.
           </p>
         </div>
+      )}
+        </>
       )}
     </div>
   );

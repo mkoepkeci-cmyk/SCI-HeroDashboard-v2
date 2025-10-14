@@ -1936,17 +1936,12 @@ function App() {
         ) : activeView === 'workload' ? (
           <WorkloadView />
         ) : activeView === 'myEffort' ? (
-          currentUser ? (
-            <PersonalWorkloadDashboard
-              teamMember={currentUser}
-              initiatives={teamMembers.flatMap(m => m.initiatives || [])}
-            />
-          ) : (
-            <div className="bg-white rounded-lg p-12 text-center">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No User Selected</h3>
-              <p className="text-gray-600">Please select a user to view their effort tracking.</p>
-            </div>
-          )
+          <PersonalWorkloadDashboard
+            teamMember={currentUser}
+            allTeamMembers={teamMembers}
+            initiatives={teamMembers.flatMap(m => m.initiatives || [])}
+            onTeamMemberChange={setCurrentUser}
+          />
         ) : activeView === 'insights' ? (
           <div className="h-[calc(100vh-12rem)] bg-white rounded-lg shadow-sm">
             <InsightsChat
