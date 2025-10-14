@@ -5,7 +5,7 @@ import { getWeekStartDate, formatWeekRange, getEffortSizeFromHours } from '../li
 
 interface BulkEffortEntryProps {
   teamMemberId: string | null;
-  initiatives: InitiativeWithDetails[];
+  initiatives?: InitiativeWithDetails[]; // Optional - will fetch if not provided
   selectedWeek: string;
   onSave: () => void;
 }
@@ -43,6 +43,29 @@ export default function BulkEffortEntry({
     try {
       setLoading(true);
 
+      console.log('[BulkEffortEntry] Loading data...');
+      console.log('- Team Member ID:', teamMemberId);
+      console.log('- Selected Week:', selectedWeek);
+      console.log('- Initiatives passed:', initiatives?.length || 0);
+
+      // Fetch all initiatives if not provided
+      let allInitiatives = initiatives || [];
+      if (!initiatives || initiatives.length === 0) {
+        console.log('- Fetching initiatives from database...');
+        const { data: fetchedInitiatives, error: initError } = await supabase
+          .from('initiatives')
+          .select('*')
+          .order('initiative_name', { ascending: true });
+
+        if (initError) {
+          console.error('Error fetching initiatives:', initError);
+          throw initError;
+        }
+
+        allInitiatives = fetchedInitiatives || [];
+        console.log('- Fetched initiatives:', allInitiatives.length);
+      }
+
       // Load existing logs for selected week
       const { data: currentLogs, error: currentError } = await supabase
         .from('effort_logs')
@@ -70,9 +93,11 @@ export default function BulkEffortEntry({
       // Create entries for all active initiatives
       // Note: Not filtering by team_member_id because initiatives might not have it set
       // Instead, we show all active/planning initiatives and let any team member log effort
-      const activeInitiatives = initiatives.filter(
+      const activeInitiatives = allInitiatives.filter(
         i => i.status === 'Active' || i.status === 'Planning'
       );
+
+      console.log('- Active/Planning initiatives:', activeInitiatives.length);
 
       const newEntries: InitiativeEffortEntry[] = activeInitiatives.map(initiative => {
         const existingLog = (currentLogs || []).find(log => log.initiative_id === initiative.id);
