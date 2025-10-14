@@ -889,20 +889,20 @@ function App() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-xl font-bold">Team Workload Analysis</h2>
-              <p className="text-sm text-white/90">{teamMembers.length} SCIs • {totalActiveHours.toFixed(1)}h/week active</p>
+              <p className="text-[10px] text-white/90">{teamMembers.length} SCIs • {totalActiveHours.toFixed(1)}h/week active</p>
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center">
                 <div className="text-2xl font-bold">{(avgUtilization * 100).toFixed(0)}%</div>
-                <div className="text-xs text-white/90">Avg Capacity</div>
+                <div className="text-[10px] text-white/90">Avg Capacity</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold">{overCapacity + nearCapacity}</div>
-                <div className="text-xs text-white/90">At/Over</div>
+                <div className="text-[10px] text-white/90">At/Over</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold">{(avgDataQuality * 100).toFixed(0)}%</div>
-                <div className="text-xs text-white/90">Data Quality</div>
+                <div className="text-[10px] text-white/90">Data Quality</div>
               </div>
             </div>
           </div>
@@ -1007,7 +1007,7 @@ function App() {
               </div>
 
               {/* Key Metrics - Dynamic based on cardMetricView */}
-              <div className="space-y-1 text-xs">
+              <div className="space-y-0.5 text-[10px] leading-tight">
                 {cardMetricView === 'capacity' && (
                   <>
                     <div className="flex justify-between">
@@ -1055,7 +1055,7 @@ function App() {
                 )}
 
                 {cardMetricView === 'effort' && (
-                  <>
+                  <div className="space-y-0.5">
                     {Object.entries({ XS: workload.XS, S: workload.S, M: workload.M, L: workload.L, XL: workload.XL })
                       .filter(([_, count]) => count > 0)
                       .map(([size, count]) => (
@@ -1065,13 +1065,13 @@ function App() {
                         </div>
                       ))}
                     {Object.values({ XS: workload.XS, S: workload.S, M: workload.M, L: workload.L, XL: workload.XL }).every(v => v === 0) && (
-                      <div className="text-center text-gray-500 py-2">No data</div>
+                      <div className="text-center text-gray-500 py-1">No data</div>
                     )}
-                  </>
+                  </div>
                 )}
 
                 {cardMetricView === 'quality' && (
-                  <>
+                  <div className="space-y-0.5">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Complete</span>
                       <span className="font-bold text-green-600">{dataQuality.hasWorkEffort}</span>
@@ -1080,7 +1080,7 @@ function App() {
                       <span className="text-gray-600">Missing</span>
                       <span className="font-bold text-red-600">{dataQuality.missingWorkEffort}</span>
                     </div>
-                    <div className="flex justify-between pt-1 border-t">
+                    <div className="flex justify-between pt-0.5 border-t border-gray-200">
                       <span className="text-gray-600">Quality</span>
                       <span
                         className="font-bold"
@@ -1089,7 +1089,7 @@ function App() {
                         {(dataQuality.completionRate * 100).toFixed(0)}%
                       </span>
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
 
@@ -1209,7 +1209,7 @@ function App() {
                 {/* Data Quality Details */}
                 <div>
                   <h4 className="font-semibold text-sm mb-2">Data Quality</h4>
-                  <div className="space-y-1 text-xs">
+                  <div className="space-y-1 text-[10px]">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Complete</span>
                       <span className="font-semibold text-green-600">{memberWorkload.dataQuality.hasWorkEffort}</span>
@@ -1301,7 +1301,7 @@ function App() {
                         <span className="text-2xl">{getCapacityEmoji(capacityStatus)}</span>
                         <div>
                           <h4 className="font-bold text-gray-800">{member.name}</h4>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-[10px] text-gray-600">
                             {workload.totalMin}-{workload.totalMax} hrs/week • {workload.totalAssignments} assignments
                           </p>
                         </div>
@@ -1310,7 +1310,7 @@ function App() {
                         <div className="text-sm font-bold" style={{ color: getCapacityColor(capacityStatus) }}>
                           {getCapacityLabel(capacityStatus)}
                         </div>
-                        <div className="text-xs text-gray-600">
+                        <div className="text-[10px] text-gray-600">
                           {Math.round((member.dashboard_metrics?.capacity_utilization || 0) * 100)}% capacity
                         </div>
                       </div>
@@ -1319,7 +1319,7 @@ function App() {
                 </div>
                 {availableMembers.length > 0 && (
                   <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
-                    <p className="text-sm text-green-800">
+                    <p className="text-[10px] text-green-800">
                       ℹ️ <span className="font-semibold">{availableMembers.length} SCI{availableMembers.length !== 1 ? 's' : ''} available</span> for new assignments
                     </p>
                   </div>
