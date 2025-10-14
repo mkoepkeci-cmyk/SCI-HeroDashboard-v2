@@ -560,16 +560,6 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-semibold mb-1">Owner *</label>
-              <input
-                required
-                className="w-full border rounded px-3 py-2 text-sm"
-                placeholder="Your name"
-                value={formData.ownerName}
-                onChange={e => setFormData({ ...formData, ownerName: e.target.value })}
-              />
-            </div>
             <div className="col-span-2">
               <label className="block text-sm font-semibold mb-1">Initiative Name *</label>
               <input
