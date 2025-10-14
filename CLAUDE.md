@@ -2,6 +2,34 @@
 
 A React-based dashboard application for tracking and visualizing the impact of CommonSpirit Health's System Clinical Informatics team initiatives, assignments, and performance metrics.
 
+## Data Architecture
+
+**All data comes from Supabase tables, synced from Google Sheets:**
+
+```
+Google Sheets (Source of Truth)
+    ↓ (Auto-sync)
+Supabase Tables
+    ↓ (API)
+React Dashboard App
+```
+
+### Data Sources
+
+1. **Google Sheets → Supabase** (Auto-synced):
+   - `team_members` - Team member information
+   - `assignments` - Individual work assignments
+   - `initiatives` - Initiative details and metadata
+   - `dashboard_metrics` - Pre-calculated workload metrics
+   - All other initiative-related tables
+
+2. **User-Generated Data** (Created in app):
+   - `effort_logs` - Weekly time tracking (NOT in Google Sheets)
+
+**IMPORTANT**: The dashboard reads from Supabase tables, NOT from CSV/Excel files. Any CSV references in docs are legacy and should be ignored.
+
+---
+
 ## Project Overview
 
 This application provides comprehensive visibility into team member portfolios, work distributions, and the financial/operational impact of clinical informatics initiatives across the health system.
@@ -12,6 +40,7 @@ This application provides comprehensive visibility into team member portfolios, 
 - **Team Member Portfolios**: Individual views showing work type distribution, EHR platform assignments, and key highlights
 - **Initiative Tracking**: Detailed tracking of major initiatives with financial impact, performance data, projections, and success stories
 - **Data Management**: Forms for creating and editing initiatives with metrics, financial data, and performance information
+- **Effort Tracking**: Weekly time logging for capacity management and workload visibility
 
 ---
 
@@ -212,13 +241,15 @@ src/
 
 The application uses Supabase with the following main tables:
 
-### Core Tables
+### Core Tables (Synced from Google Sheets)
 - `team_members`: Core team member information
+- `assignments`: Individual work assignments per team member
+- `dashboard_metrics`: Pre-calculated workload and capacity metrics
 - `work_type_summary`: Work type distribution per team member (AGGREGATE COUNTS - DO NOT DUPLICATE)
 - `ehr_platform_summary`: EHR platform assignments
 - `key_highlights`: Key achievements and highlights
 
-### Initiative Tables
+### Initiative Tables (Synced from Google Sheets)
 - `initiatives`: Main initiative records with new fields:
   - `role` (TEXT) - Primary/Co-Owner/Secondary/Support
   - `ehrs_impacted` (TEXT) - All/Epic/Cerner/Altera
@@ -228,6 +259,13 @@ The application uses Supabase with the following main tables:
 - `initiative_performance_data`: Operational performance metrics
 - `initiative_projections`: Future projections and goals
 - `initiative_stories`: Success stories and testimonials
+
+### Effort Tracking Tables (User-Generated)
+- `effort_logs`: Weekly time tracking per initiative
+  - One log per initiative per team member per week
+  - Tracks hours_spent, effort_size (XS-XXL), and notes
+  - NOT synced from Google Sheets - created by users in the app
+- Views: `weekly_effort_summary`, `initiative_effort_trends`
 
 ## Development
 
