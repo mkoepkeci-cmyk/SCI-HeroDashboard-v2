@@ -70,11 +70,11 @@ When answering questions:
 - Highlight potential concerns or opportunities
 - If asked about capacity, consider both active hours and assignment counts
 
-Format your responses in a clear, executive-friendly style.`;
+Format your responses in a clear, executive-friendly style. Keep responses concise and to-the-point - aim for 2-4 sentences unless more detail is specifically requested.`;
 
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-5-20250929',
-      max_tokens: 1024,
+      max_tokens: 512,
       system: systemPrompt,
       messages: messages,
     });
