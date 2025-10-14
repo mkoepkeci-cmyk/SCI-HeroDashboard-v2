@@ -201,7 +201,10 @@ function App() {
     const colors: { [key: string]: string } = {
       'Epic Gold': '#9B2F6A',
       'System Initiative': '#00A1E0',
+      'System Projects': '#00A1E0',
       'Governance': '#6F47D0',
+      'Market Project': '#9C5C9D',
+      'Ticket': '#F58025',
       'General Support': '#F58025',
       'Project': '#9C5C9D',
       'Policy/ Guideline': '#6F47D0',
