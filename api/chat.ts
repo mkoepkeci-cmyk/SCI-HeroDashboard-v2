@@ -1,22 +1,18 @@
 import Anthropic from '@anthropic-ai/sdk';
-
-// Vercel Serverless Function
-export const config = {
-  runtime: 'edge',
-};
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
 }
 
-export default async function handler(req: Request) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405 });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const { messages, context } = await req.json();
+    const { messages, context } = req.body;
 
     const anthropic = new Anthropic({
       apiKey: process.env.ANTHROPIC_API_KEY || '',
@@ -58,24 +54,12 @@ Format your responses in a clear, executive-friendly style.`;
       ? response.content[0].text
       : 'I apologize, but I could not generate a response.';
 
-    return new Response(
-      JSON.stringify({ message: assistantMessage }),
-      {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+    return res.status(200).json({ message: assistantMessage });
   } catch (error: any) {
     console.error('Chat API error:', error);
-    return new Response(
-      JSON.stringify({
-        error: 'Failed to process chat request',
-        details: error.message
-      }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+    return res.status(500).json({
+      error: 'Failed to process chat request',
+      details: error.message
+    });
   }
 }
