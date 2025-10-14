@@ -475,15 +475,19 @@ function App() {
             <div className="space-y-1">
               {Object.entries(metrics.ehrDistribution)
                 .sort((a, b) => b[1] - a[1])
-                .map(([ehr, count]) => (
-                  <div key={ehr} className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-[#9B2F6A]" />
-                    <div className="flex-1 flex items-center justify-between">
-                      <span className="text-sm text-gray-700">{ehr}</span>
-                      <span className="text-sm font-bold text-[#9B2F6A]">{count}</span>
+                .map(([ehr, count], index) => {
+                  const ehrColors = ['#9B2F6A', '#00A1E0', '#6F47D0', '#F58025', '#9C5C9D'];
+                  const color = ehrColors[index % ehrColors.length];
+                  return (
+                    <div key={ehr} className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+                      <div className="flex-1 flex items-center justify-between">
+                        <span className="text-sm text-gray-700">{ehr}</span>
+                        <span className="text-sm font-bold" style={{ color }}>{count}</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
             </div>
           </div>
         )}
@@ -494,15 +498,19 @@ function App() {
             <div className="grid grid-cols-2 gap-x-4 gap-y-1">
               {Object.entries(metrics.serviceLineDistribution)
                 .sort((a, b) => b[1] - a[1])
-                .map(([serviceLine, count]) => (
-                  <div key={serviceLine} className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-[#00A1E0]" />
-                    <div className="flex-1 flex items-center justify-between">
-                      <span className="text-sm text-gray-700">{serviceLine}</span>
-                      <span className="text-sm font-bold text-[#00A1E0]">{count}</span>
+                .map(([serviceLine, count], index) => {
+                  const serviceLineColors = ['#00A1E0', '#9B2F6A', '#F58025', '#6F47D0', '#9C5C9D', '#00856A', '#E91E63', '#FF9800'];
+                  const color = serviceLineColors[index % serviceLineColors.length];
+                  return (
+                    <div key={serviceLine} className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+                      <div className="flex-1 flex items-center justify-between">
+                        <span className="text-sm text-gray-700">{serviceLine}</span>
+                        <span className="text-sm font-bold" style={{ color }}>{count}</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
             </div>
           </div>
         )}
