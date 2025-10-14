@@ -73,7 +73,7 @@ When answering questions:
 Format your responses in a clear, executive-friendly style.`;
 
     const response = await anthropic.messages.create({
-      model: 'claude-3-sonnet-20240229',
+      model: 'claude-sonnet-4-5-20250929',
       max_tokens: 1024,
       system: systemPrompt,
       messages: messages,
