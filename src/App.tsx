@@ -18,11 +18,35 @@ interface TeamMemberWithDetails extends TeamMember {
 }
 
 function App() {
-  const [activeView, setActiveView] = useState<'overview' | 'team' | 'initiatives' | 'workload' | 'addData'>('overview');
+  // Get initial view from URL hash or default to 'overview'
+  const getInitialView = (): 'overview' | 'team' | 'initiatives' | 'workload' | 'addData' => {
+    const hash = window.location.hash.slice(1); // Remove the '#'
+    if (['overview', 'team', 'initiatives', 'workload', 'addData'].includes(hash)) {
+      return hash as 'overview' | 'team' | 'initiatives' | 'workload' | 'addData';
+    }
+    return 'overview';
+  };
+
+  const [activeView, setActiveView] = useState<'overview' | 'team' | 'initiatives' | 'workload' | 'addData'>(getInitialView());
   const [selectedMember, setSelectedMember] = useState<TeamMemberWithDetails | null>(null);
   const [teamMembers, setTeamMembers] = useState<TeamMemberWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingInitiative, setEditingInitiative] = useState<InitiativeWithDetails | null>(null);
+
+  // Update URL hash when view changes
+  useEffect(() => {
+    window.location.hash = activeView;
+  }, [activeView]);
+
+  // Listen for hash changes (back/forward navigation)
+  useEffect(() => {
+    const handleHashChange = () => {
+      const newView = getInitialView();
+      setActiveView(newView);
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   useEffect(() => {
     fetchTeamData();
@@ -717,6 +741,7 @@ function App() {
     const [sortBy, setSortBy] = useState<'name' | 'capacity' | 'hours' | 'quality'>('capacity');
     const [showDataQuality, setShowDataQuality] = useState(true);
     const [expandedWarnings, setExpandedWarnings] = useState<Set<string>>(new Set());
+    const [cardMetricView, setCardMetricView] = useState<'capacity' | 'worktype' | 'effort' | 'quality'>('capacity');
 
     // Use dashboard_metrics data (pre-calculated from Excel Dashboard)
     // STOP CALCULATING - use ONLY the Excel Dashboard data!
@@ -748,16 +773,29 @@ function App() {
           'Ticket': { count: dm.ticket_count || 0, hours: dm.ticket_hours || 0 },
         };
 
+        // Calculate effort size breakdown from actual assignments
+        const effortCounts = { XS: 0, S: 0, M: 0, L: 0, XL: 0 };
+        if (member.assignments) {
+          for (const assignment of member.assignments) {
+            if (assignment.work_effort) {
+              const effort = assignment.work_effort.split(' ')[0]; // Extract "XS" from "XS - Less than 1 hr/wk"
+              if (effort in effortCounts) {
+                effortCounts[effort as keyof typeof effortCounts]++;
+              }
+            }
+          }
+        }
+
         // Create a workload object that mimics the old structure for compatibility
         const workload = {
           totalMin: dm.active_hours_per_week, // Use active hours as both min and max
           totalMax: dm.active_hours_per_week,
           totalAssignments: dm.total_assignments,
-          XS: 0, // We don't have effort size breakdown in dashboard_metrics
-          S: 0,
-          M: 0,
-          L: 0,
-          XL: 0,
+          XS: effortCounts.XS,
+          S: effortCounts.S,
+          M: effortCounts.M,
+          L: effortCounts.L,
+          XL: effortCounts.XL,
         };
 
         // Data quality is now based on capacity_status warnings
@@ -815,10 +853,34 @@ function App() {
       return '#EF4444';
     };
 
-    // Team effort distribution is no longer available from dashboard_metrics
-    // We don't have XS/S/M/L/XL breakdown in the Excel Dashboard
-    // Set to zero to disable this visualization
-    const teamEffortDistribution = { XS: 0, S: 0, M: 0, L: 0, XL: 0 };
+    // Calculate team-wide effort distribution from individual workloads
+    const teamEffortDistribution = teamWorkloads.reduce((acc, w) => {
+      acc.XS += w.workload.XS;
+      acc.S += w.workload.S;
+      acc.M += w.workload.M;
+      acc.L += w.workload.L;
+      acc.XL += w.workload.XL;
+      return acc;
+    }, { XS: 0, S: 0, M: 0, L: 0, XL: 0 });
+
+    // Calculate team-wide work type distribution by hours and counts
+    const teamWorkTypeData = teamWorkloads.reduce((acc, w) => {
+      Object.entries(w.workTypeBreakdown).forEach(([type, data]) => {
+        if (!acc[type]) {
+          acc[type] = { count: 0, hours: 0 };
+        }
+        acc[type].count += data.count;
+        acc[type].hours += data.hours;
+      });
+      return acc;
+    }, {} as { [key: string]: { count: number; hours: number } });
+
+    // Calculate capacity distribution
+    const capacityDistribution = {
+      available: teamWorkloads.filter(w => w.capacityStatus === 'available').length,
+      at_capacity: teamWorkloads.filter(w => w.capacityStatus === 'at_capacity').length,
+      over_capacity: teamWorkloads.filter(w => w.capacityStatus === 'over_capacity').length,
+    };
 
     return (
       <div className="space-y-3">
@@ -848,28 +910,67 @@ function App() {
 
         {/* Controls */}
         <div className="flex items-center justify-between bg-white border rounded-lg p-2">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700">Sort:</span>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="border rounded px-2 py-1 text-xs"
-            >
-              <option value="capacity">Capacity %</option>
-              <option value="hours">Hours/Week</option>
-              <option value="quality">Data Quality</option>
-              <option value="name">Name</option>
-            </select>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700">Sort:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="border rounded px-2 py-1 text-xs"
+              >
+                <option value="capacity">Capacity %</option>
+                <option value="hours">Hours/Week</option>
+                <option value="quality">Data Quality</option>
+                <option value="name">Name</option>
+              </select>
+            </div>
+            <div className="h-4 w-px bg-gray-300"></div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700">Card View:</span>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => setCardMetricView('capacity')}
+                  className={`px-3 py-1 text-xs font-medium rounded transition-all ${
+                    cardMetricView === 'capacity'
+                      ? 'bg-[#9B2F6A] text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Capacity
+                </button>
+                <button
+                  onClick={() => setCardMetricView('worktype')}
+                  className={`px-3 py-1 text-xs font-medium rounded transition-all ${
+                    cardMetricView === 'worktype'
+                      ? 'bg-[#9B2F6A] text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Work Type
+                </button>
+                <button
+                  onClick={() => setCardMetricView('effort')}
+                  className={`px-3 py-1 text-xs font-medium rounded transition-all ${
+                    cardMetricView === 'effort'
+                      ? 'bg-[#9B2F6A] text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Effort Size
+                </button>
+                <button
+                  onClick={() => setCardMetricView('quality')}
+                  className={`px-3 py-1 text-xs font-medium rounded transition-all ${
+                    cardMetricView === 'quality'
+                      ? 'bg-[#9B2F6A] text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Data Quality
+                </button>
+              </div>
+            </div>
           </div>
-          <label className="flex items-center gap-2 text-xs">
-            <input
-              type="checkbox"
-              checked={showDataQuality}
-              onChange={(e) => setShowDataQuality(e.target.checked)}
-              className="rounded"
-            />
-            <span className="text-gray-700">Show Data Quality</span>
-          </label>
         </div>
 
         {/* Compact Team Grid */}
@@ -877,14 +978,10 @@ function App() {
           {sortedWorkloads.map(({ member, workload, capacityStatus, dataQuality, workTypeBreakdown }) => (
             <div
               key={member.id}
-              onClick={() => {
-                console.log('Clicking member:', member.name, 'Assignments:', member.assignments?.length || 0);
-                setSelectedMemberForDetail(member);
-              }}
-              className="bg-white rounded-lg p-2 hover:shadow-md transition-all cursor-pointer border-2"
-              style={{
-                borderColor: getCapacityColor(capacityStatus)
-              }}
+              onClick={() => setSelectedMemberForDetail(member)}
+              className={`bg-white rounded-lg p-2 hover:shadow-lg transition-all cursor-pointer shadow-md ${
+                cardMetricView === 'worktype' ? 'row-span-2' : ''
+              }`}
             >
               {/* Name & Avatar */}
               <div className="flex items-center gap-1.5 mb-2">
@@ -909,43 +1006,91 @@ function App() {
                 </div>
               </div>
 
-              {/* Key Metrics */}
+              {/* Key Metrics - Dynamic based on cardMetricView */}
               <div className="space-y-1 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Capacity</span>
-                  <span
-                    className="font-bold"
-                    style={{ color: getCapacityColor(capacityStatus) }}
-                  >
-                    {Math.round((member.dashboard_metrics?.capacity_utilization || 0) * 100)}%
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Hours</span>
-                  <span className="font-semibold">{workload.totalMax.toFixed(1)}h</span>
-                </div>
-                {showDataQuality && (
-                  <div className="flex justify-between pt-1 border-t">
-                    <span className="text-gray-600">Quality</span>
-                    <span
-                      className="font-bold"
-                      style={{ color: getDataQualityColor(dataQuality.completionRate) }}
-                    >
-                      {(dataQuality.completionRate * 100).toFixed(0)}%
-                    </span>
+                {cardMetricView === 'capacity' && (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Capacity</span>
+                      <span
+                        className="font-bold"
+                        style={{ color: getCapacityColor(capacityStatus) }}
+                      >
+                        {Math.round((member.dashboard_metrics?.capacity_utilization || 0) * 100)}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Hours</span>
+                      <span className="font-semibold">{workload.totalMax.toFixed(1)}h</span>
+                    </div>
+                  </>
+                )}
+
+                {cardMetricView === 'worktype' && (
+                  <div className="space-y-0.5">
+                    {Object.entries(workTypeBreakdown)
+                      .filter(([_, data]) => data.count > 0)
+                      .sort((a, b) => b[1].hours - a[1].hours)
+                      .map(([type, data]) => (
+                        <div key={type} className="flex justify-between items-center text-[10px] leading-tight">
+                          <div className="flex items-center gap-1 flex-1 min-w-0">
+                            <div
+                              className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                              style={{ backgroundColor: getWorkTypeColor(type) }}
+                            />
+                            <span className="text-gray-600 truncate">{type}</span>
+                          </div>
+                          <div className="flex gap-1.5 ml-1 flex-shrink-0">
+                            <span className="font-bold" style={{ color: getWorkTypeColor(type) }}>
+                              {data.count}
+                            </span>
+                            <span className="text-gray-500">•</span>
+                            <span className="font-semibold text-gray-700">
+                              {data.hours.toFixed(1)}h
+                            </span>
+                          </div>
+                        </div>
+                      ))}
                   </div>
                 )}
-              </div>
 
-              {/* Capacity Bar */}
-              <div className="mt-2 h-1 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className="h-full rounded-full"
-                  style={{
-                    width: `${Math.min((member.dashboard_metrics?.capacity_utilization || 0) * 100)}%`,
-                    backgroundColor: getCapacityColor(capacityStatus)
-                  }}
-                />
+                {cardMetricView === 'effort' && (
+                  <>
+                    {Object.entries({ XS: workload.XS, S: workload.S, M: workload.M, L: workload.L, XL: workload.XL })
+                      .filter(([_, count]) => count > 0)
+                      .map(([size, count]) => (
+                        <div key={size} className="flex justify-between">
+                          <span className="text-gray-600">{size}</span>
+                          <span className="font-bold text-[#9B2F6A]">{count}</span>
+                        </div>
+                      ))}
+                    {Object.values({ XS: workload.XS, S: workload.S, M: workload.M, L: workload.L, XL: workload.XL }).every(v => v === 0) && (
+                      <div className="text-center text-gray-500 py-2">No data</div>
+                    )}
+                  </>
+                )}
+
+                {cardMetricView === 'quality' && (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Complete</span>
+                      <span className="font-bold text-green-600">{dataQuality.hasWorkEffort}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Missing</span>
+                      <span className="font-bold text-red-600">{dataQuality.missingWorkEffort}</span>
+                    </div>
+                    <div className="flex justify-between pt-1 border-t">
+                      <span className="text-gray-600">Quality</span>
+                      <span
+                        className="font-bold"
+                        style={{ color: getDataQualityColor(dataQuality.completionRate) }}
+                      >
+                        {(dataQuality.completionRate * 100).toFixed(0)}%
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Missing Data Warning Details */}
@@ -1269,6 +1414,91 @@ function App() {
             </table>
           </div>
           )}
+        </div>
+
+        {/* Management Insights Grid */}
+        <div className="grid grid-cols-3 gap-4">
+          {/* Work Type by Hours */}
+          <div className="bg-white border rounded-lg p-4">
+            <h3 className="font-bold text-lg mb-4 text-gray-800">Hours by Work Type</h3>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart
+                data={Object.entries(teamWorkTypeData)
+                  .filter(([_, data]) => data.hours > 0)
+                  .sort((a, b) => b[1].hours - a[1].hours)
+                  .map(([type, data]) => ({
+                    name: type,
+                    hours: data.hours,
+                    color: getWorkTypeColor(type)
+                  }))}
+                margin={{ top: 20, right: 10, left: 10, bottom: 60 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="hours" radius={[8, 8, 0, 0]}>
+                  {Object.entries(teamWorkTypeData).map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={Object.values(teamWorkTypeData)[index] ? getWorkTypeColor(Object.keys(teamWorkTypeData)[index]) : '#565658'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Work Type by Count */}
+          <div className="bg-white border rounded-lg p-4">
+            <h3 className="font-bold text-lg mb-4 text-gray-800">Assignments by Work Type</h3>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart
+                data={Object.entries(teamWorkTypeData)
+                  .filter(([_, data]) => data.count > 0)
+                  .sort((a, b) => b[1].count - a[1].count)
+                  .map(([type, data]) => ({
+                    name: type,
+                    count: data.count,
+                    color: getWorkTypeColor(type)
+                  }))}
+                margin={{ top: 20, right: 10, left: 10, bottom: 60 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="count" radius={[8, 8, 0, 0]}>
+                  {Object.entries(teamWorkTypeData).map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={Object.values(teamWorkTypeData)[index] ? getWorkTypeColor(Object.keys(teamWorkTypeData)[index]) : '#565658'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Capacity Distribution */}
+          <div className="bg-white border rounded-lg p-4">
+            <h3 className="font-bold text-lg mb-4 text-gray-800">Team Capacity Status</h3>
+            <ResponsiveContainer width="100%" height={250}>
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: 'Available', value: capacityDistribution.available, color: '#22C55E' },
+                    { name: 'At Capacity', value: capacityDistribution.at_capacity, color: '#F59E0B' },
+                    { name: 'Over Capacity', value: capacityDistribution.over_capacity, color: '#EF4444' },
+                  ].filter(d => d.value > 0)}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  dataKey="value"
+                  label={(entry) => `${entry.name}: ${entry.value}`}
+                >
+                  {[capacityDistribution.available, capacityDistribution.at_capacity, capacityDistribution.over_capacity].map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={['#22C55E', '#F59E0B', '#EF4444'][index]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Team Effort Distribution */}

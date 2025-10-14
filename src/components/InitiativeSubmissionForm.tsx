@@ -264,34 +264,45 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
 
       if (!initiative) throw new Error(isEditing ? 'Failed to update initiative' : 'Failed to create initiative');
 
+      // When editing, delete ALL existing metrics first
       if (isEditing) {
-        await supabase.from('initiative_metrics').delete().eq('initiative_id', initiative.id);
+        const { error: deleteError } = await supabase
+          .from('initiative_metrics')
+          .delete()
+          .eq('initiative_id', initiative.id);
+
+        if (deleteError) {
+          console.error('Error deleting existing metrics:', deleteError);
+          throw new Error(`Failed to delete existing metrics: ${deleteError.message}`);
+        }
       }
 
-      if (metrics.some(m => m.metricName)) {
-        const metricsToInsert = metrics
-          .filter(m => m.metricName)
-          .map((m, idx) => ({
-            initiative_id: initiative.id,
-            metric_name: m.metricName,
-            metric_type: m.metricType,
-            unit: m.unit,
-            baseline_value: m.baselineValue ? parseFloat(m.baselineValue) : null,
-            baseline_date: m.baselineDate || null,
-            current_value: m.currentValue ? parseFloat(m.currentValue) : null,
-            measurement_date: m.measurementDate || null,
-            target_value: m.targetValue ? parseFloat(m.targetValue) : null,
-            improvement: m.improvement || null,
-            measurement_method: m.measurementMethod || null,
-            display_order: idx
-          }));
+      // Insert new metrics (only those with a metric name filled in)
+      const validMetrics = metrics.filter(m => m.metricName && m.metricName.trim());
 
-        if (metricsToInsert.length > 0) {
-          const { error: metricsError } = await supabase
-            .from('initiative_metrics')
-            .insert(metricsToInsert);
+      if (validMetrics.length > 0) {
+        const metricsToInsert = validMetrics.map((m, idx) => ({
+          initiative_id: initiative.id,
+          metric_name: m.metricName.trim(),
+          metric_type: m.metricType,
+          unit: m.unit,
+          baseline_value: m.baselineValue ? parseFloat(m.baselineValue) : null,
+          baseline_date: m.baselineDate || null,
+          current_value: m.currentValue ? parseFloat(m.currentValue) : null,
+          measurement_date: m.measurementDate || null,
+          target_value: m.targetValue ? parseFloat(m.targetValue) : null,
+          improvement: m.improvement || null,
+          measurement_method: m.measurementMethod || null,
+          display_order: idx
+        }));
 
-          if (metricsError) throw metricsError;
+        const { error: metricsError } = await supabase
+          .from('initiative_metrics')
+          .insert(metricsToInsert);
+
+        if (metricsError) {
+          console.error('Error inserting metrics:', metricsError);
+          throw new Error(`Failed to insert metrics: ${metricsError.message}`);
         }
       }
 
