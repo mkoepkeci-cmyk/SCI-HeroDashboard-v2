@@ -16,6 +16,12 @@ interface Metric {
   measurementMethod: string;
 }
 
+interface TeamMemberAssignment {
+  teamMemberId: string;
+  teamMemberName: string;
+  role: string;
+}
+
 interface InitiativeSubmissionFormProps {
   onClose: () => void;
   onSuccess?: () => void;
@@ -186,6 +192,12 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
     measurementMethod: ''
   }]);
 
+  const [teamMemberAssignments, setTeamMemberAssignments] = useState<TeamMemberAssignment[]>([{
+    teamMemberId: '',
+    teamMemberName: '',
+    role: ''
+  }]);
+
   const addMetric = () => {
     setMetrics([...metrics, {
       metricName: '',
@@ -209,6 +221,35 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
     const updated = [...metrics];
     updated[index][field] = value;
     setMetrics(updated);
+  };
+
+  const addTeamMember = () => {
+    setTeamMemberAssignments([...teamMemberAssignments, {
+      teamMemberId: '',
+      teamMemberName: '',
+      role: ''
+    }]);
+  };
+
+  const removeTeamMember = (index: number) => {
+    if (teamMemberAssignments.length > 1) {
+      setTeamMemberAssignments(teamMemberAssignments.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateTeamMemberAssignment = (index: number, field: keyof TeamMemberAssignment, value: string) => {
+    const updated = [...teamMemberAssignments];
+    updated[index][field] = value;
+
+    // Auto-fill team member name when selecting from dropdown
+    if (field === 'teamMemberId' && value) {
+      const selectedMember = teamMembers.find(m => m.id === value);
+      if (selectedMember) {
+        updated[index].teamMemberName = selectedMember.name;
+      }
+    }
+
+    setTeamMemberAssignments(updated);
   };
 
   const handleSubmit = async (e: React.FormEvent, saveAsDraft = false) => {
@@ -454,37 +495,71 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="border-b pb-4">
           <h3 className="font-bold text-lg mb-3 text-[#6F47D0]">Basic Information</h3>
+
+          {/* Team Member Assignments */}
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-semibold">Team Members & Roles</label>
+              <button
+                type="button"
+                onClick={addTeamMember}
+                className="text-[#6F47D0] text-xs hover:text-[#5A3AAB] flex items-center gap-1"
+              >
+                <Plus size={14} />
+                Add Team Member
+              </button>
+            </div>
+            {teamMemberAssignments.map((assignment, index) => (
+              <div key={index} className="bg-[#6F47D0]/10 border border-[#6F47D0]/30 rounded p-3 mb-2">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-semibold text-xs text-[#6F47D0]">Team Member #{index + 1}</span>
+                  {teamMemberAssignments.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeTeamMember(index)}
+                      className="text-red-600 text-xs hover:text-red-700"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold mb-1">SCI Team Member</label>
+                    <select
+                      className="w-full border rounded px-2 py-1.5 text-sm"
+                      value={assignment.teamMemberId}
+                      onChange={e => updateTeamMemberAssignment(index, 'teamMemberId', e.target.value)}
+                      disabled={loadingMembers}
+                    >
+                      <option value="">Select team member</option>
+                      {teamMembers.map((member) => (
+                        <option key={member.id} value={member.id}>
+                          {member.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold mb-1">Role</label>
+                    <select
+                      className="w-full border rounded px-2 py-1.5 text-sm"
+                      value={assignment.role}
+                      onChange={e => updateTeamMemberAssignment(index, 'role', e.target.value)}
+                    >
+                      <option value="">Select role</option>
+                      <option>Primary</option>
+                      <option>Co-Owner</option>
+                      <option>Secondary</option>
+                      <option>Support</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-semibold mb-1">Team Member</label>
-              <select
-                className="w-full border rounded px-3 py-2 text-sm"
-                value={formData.teamMemberId}
-                onChange={e => setFormData({ ...formData, teamMemberId: e.target.value })}
-                disabled={loadingMembers}
-              >
-                <option value="">Select team member (optional)</option>
-                {teamMembers.map((member) => (
-                  <option key={member.id} value={member.id}>
-                    {member.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold mb-1">Role</label>
-              <select
-                className="w-full border rounded px-3 py-2 text-sm"
-                value={formData.role}
-                onChange={e => setFormData({ ...formData, role: e.target.value })}
-              >
-                <option value="">Select role (optional)</option>
-                <option>Primary</option>
-                <option>Co-Owner</option>
-                <option>Secondary</option>
-                <option>Support</option>
-              </select>
-            </div>
             <div>
               <label className="block text-sm font-semibold mb-1">Owner *</label>
               <input
