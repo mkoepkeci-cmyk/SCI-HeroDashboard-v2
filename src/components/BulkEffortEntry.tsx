@@ -68,8 +68,10 @@ export default function BulkEffortEntry({
       setLastWeekData(previousLogs || []);
 
       // Create entries for all active initiatives
+      // Note: Not filtering by team_member_id because initiatives might not have it set
+      // Instead, we show all active/planning initiatives and let any team member log effort
       const activeInitiatives = initiatives.filter(
-        i => i.team_member_id === teamMemberId && (i.status === 'Active' || i.status === 'Planning')
+        i => i.status === 'Active' || i.status === 'Planning'
       );
 
       const newEntries: InitiativeEffortEntry[] = activeInitiatives.map(initiative => {
