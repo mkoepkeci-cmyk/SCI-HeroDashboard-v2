@@ -654,12 +654,25 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
             </div>
             <div>
               <label className="block text-sm font-semibold mb-1">Service Line</label>
-              <input
+              <select
                 className="w-full border rounded px-3 py-2 text-sm"
-                placeholder="e.g., Ambulatory, Pharmacy, Nursing"
                 value={formData.serviceLine}
                 onChange={e => setFormData({ ...formData, serviceLine: e.target.value })}
-              />
+              >
+                <option value="">Select Service Line (optional)</option>
+                <option>Ambulatory</option>
+                <option>Pharmacy</option>
+                <option>Nursing</option>
+                <option>Pharmacy & Oncology</option>
+                <option>Cardiology</option>
+                <option>Emergency Department</option>
+                <option>Inpatient</option>
+                <option>Perioperative</option>
+                <option>Laboratory</option>
+                <option>Radiology</option>
+                <option>Revenue Cycle</option>
+                <option>Other</option>
+              </select>
             </div>
             <div>
               <label className="block text-sm font-semibold mb-1">Start Date</label>
