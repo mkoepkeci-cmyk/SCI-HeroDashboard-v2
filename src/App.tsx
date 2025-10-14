@@ -476,9 +476,12 @@ function App() {
               {Object.entries(metrics.ehrDistribution)
                 .sort((a, b) => b[1] - a[1])
                 .map(([ehr, count]) => (
-                  <div key={ehr} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                    <span className="text-sm font-medium text-gray-700">{ehr}</span>
-                    <span className="text-sm font-bold text-[#9B2F6A]">{count}</span>
+                  <div key={ehr} className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-[#9B2F6A]" />
+                    <div className="flex-1 flex items-center justify-between">
+                      <span className="text-sm text-gray-700">{ehr}</span>
+                      <span className="text-sm font-bold text-[#9B2F6A]">{count}</span>
+                    </div>
                   </div>
                 ))}
             </div>
@@ -488,16 +491,16 @@ function App() {
         {expandedCard === 'serviceline' && (
           <div className="bg-white border rounded-lg p-3">
             <h3 className="font-semibold text-sm mb-2 text-gray-800">Service Line Impact</h3>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
               {Object.entries(metrics.serviceLineDistribution)
                 .sort((a, b) => b[1] - a[1])
                 .map(([serviceLine, count]) => (
-                  <div
-                    key={serviceLine}
-                    className="bg-[#00A1E0]/10 border border-[#00A1E0]/30 rounded-lg p-2 text-center"
-                  >
-                    <div className="text-xl font-bold text-[#00A1E0]">{count}</div>
-                    <div className="text-[10px] text-gray-700 font-medium mt-0.5">{serviceLine}</div>
+                  <div key={serviceLine} className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-[#00A1E0]" />
+                    <div className="flex-1 flex items-center justify-between">
+                      <span className="text-sm text-gray-700">{serviceLine}</span>
+                      <span className="text-sm font-bold text-[#00A1E0]">{count}</span>
+                    </div>
                   </div>
                 ))}
             </div>
