@@ -811,65 +811,76 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
 
         <div className="border-b pb-4">
           <h3 className="font-bold text-lg mb-3 text-[#00A1E0]">Revenue & Financial Impact</h3>
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-semibold mb-1">Actual Revenue/Savings ($)</label>
-                <input
-                  type="number"
-                  step="any"
-                  className="w-full border rounded px-3 py-2 text-sm"
-                  placeholder="Dollar amount realized"
-                  value={formData.actualRevenue}
-                  onChange={e => setFormData({ ...formData, actualRevenue: e.target.value })}
-                />
+          <div className="space-y-4">
+            {/* Projected Financial Impact */}
+            <div className="bg-blue-50 border border-blue-200 rounded p-3">
+              <h4 className="font-semibold text-sm mb-2 text-blue-900">Projected Financial Impact (Estimates/Pilot)</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-semibold mb-1">Projected Annual Revenue/Savings ($)</label>
+                  <input
+                    type="number"
+                    step="any"
+                    className="w-full border rounded px-3 py-2 text-sm"
+                    placeholder="Estimated full 12-month impact"
+                    value={formData.projectedAnnual}
+                    onChange={e => setFormData({ ...formData, projectedAnnual: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-1">Projection Basis</label>
+                  <input
+                    className="w-full border rounded px-3 py-2 text-sm"
+                    placeholder='e.g., "Pilot data × 12 months"'
+                    value={formData.projectionBasis}
+                    onChange={e => setFormData({ ...formData, projectionBasis: e.target.value })}
+                  />
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-semibold mb-1">Actual Timeframe</label>
-                <input
-                  className="w-full border rounded px-3 py-2 text-sm"
-                  placeholder='e.g., "FY25 Q1-Q2"'
-                  value={formData.actualTimeframe}
-                  onChange={e => setFormData({ ...formData, actualTimeframe: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-1">Measurement Start Date</label>
-                <input
-                  type="date"
-                  className="w-full border rounded px-3 py-2 text-sm"
-                  value={formData.measurementStartDate}
-                  onChange={e => setFormData({ ...formData, measurementStartDate: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-1">Measurement End Date</label>
-                <input
-                  type="date"
-                  className="w-full border rounded px-3 py-2 text-sm"
-                  value={formData.measurementEndDate}
-                  onChange={e => setFormData({ ...formData, measurementEndDate: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-1">Projected Annual ($)</label>
-                <input
-                  type="number"
-                  step="any"
-                  className="w-full border rounded px-3 py-2 text-sm"
-                  placeholder="Full 12-month projection"
-                  value={formData.projectedAnnual}
-                  onChange={e => setFormData({ ...formData, projectedAnnual: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-1">Projection Basis</label>
-                <input
-                  className="w-full border rounded px-3 py-2 text-sm"
-                  placeholder='e.g., "Current rate × 12"'
-                  value={formData.projectionBasis}
-                  onChange={e => setFormData({ ...formData, projectionBasis: e.target.value })}
-                />
+            </div>
+
+            {/* Realized Financial Impact */}
+            <div className="bg-green-50 border border-green-200 rounded p-3">
+              <h4 className="font-semibold text-sm mb-2 text-green-900">Realized Financial Impact (Actual Data)</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-semibold mb-1">Realized Revenue/Savings ($)</label>
+                  <input
+                    type="number"
+                    step="any"
+                    className="w-full border rounded px-3 py-2 text-sm"
+                    placeholder="Actual dollar amount achieved"
+                    value={formData.actualRevenue}
+                    onChange={e => setFormData({ ...formData, actualRevenue: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-1">Measurement Timeframe</label>
+                  <input
+                    className="w-full border rounded px-3 py-2 text-sm"
+                    placeholder='e.g., "FY25 Q1-Q2"'
+                    value={formData.actualTimeframe}
+                    onChange={e => setFormData({ ...formData, actualTimeframe: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-1">Measurement Start Date</label>
+                  <input
+                    type="date"
+                    className="w-full border rounded px-3 py-2 text-sm"
+                    value={formData.measurementStartDate}
+                    onChange={e => setFormData({ ...formData, measurementStartDate: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-1">Measurement End Date</label>
+                  <input
+                    type="date"
+                    className="w-full border rounded px-3 py-2 text-sm"
+                    value={formData.measurementEndDate}
+                    onChange={e => setFormData({ ...formData, measurementEndDate: e.target.value })}
+                  />
+                </div>
               </div>
             </div>
             <div>
