@@ -74,9 +74,15 @@ export const InsightsChat = ({ contextData }: InsightsChatProps) => {
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error('Error sending message:', error);
+
+      // Check if we're in local development (API route doesn't exist)
+      const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
       const errorMessage: Message = {
         role: 'assistant',
-        content: "I'm sorry, I encountered an error. Please try again.",
+        content: isLocalDev
+          ? "🔧 **Local Development Mode**\n\nThe AI chat API is not available in local development. This feature will work once the app is deployed to Vercel with the ANTHROPIC_API_KEY environment variable configured.\n\n**To enable AI chat:**\n1. Deploy to Vercel\n2. Add ANTHROPIC_API_KEY in Vercel Environment Variables\n3. The chat will automatically work in production!\n\nFor now, you can explore the UI and test the initiative browsing features on the Overview tab."
+          : "I'm sorry, I encountered an error connecting to the AI service. Please make sure the ANTHROPIC_API_KEY environment variable is configured in your deployment settings.",
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
