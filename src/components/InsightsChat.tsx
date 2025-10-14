@@ -59,11 +59,17 @@ export const InsightsChat = ({ contextData }: InsightsChatProps) => {
         }),
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+
+      const responseText = await response.text();
+      console.log('Response text:', responseText);
+
       if (!response.ok) {
-        throw new Error('Failed to get response');
+        throw new Error(`API returned ${response.status}: ${responseText}`);
       }
 
-      const data = await response.json();
+      const data = JSON.parse(responseText);
 
       const assistantMessage: Message = {
         role: 'assistant',
@@ -74,15 +80,18 @@ export const InsightsChat = ({ contextData }: InsightsChatProps) => {
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error('Error sending message:', error);
+      console.error('Error details:', error instanceof Error ? error.message : String(error));
 
       // Check if we're in local development (API route doesn't exist)
       const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+      const errorDetails = error instanceof Error ? error.message : String(error);
 
       const errorMessage: Message = {
         role: 'assistant',
         content: isLocalDev
           ? "🔧 **Local Development Mode**\n\nThe AI chat API is not available in local development. This feature will work once the app is deployed to Vercel with the ANTHROPIC_API_KEY environment variable configured.\n\n**To enable AI chat:**\n1. Deploy to Vercel\n2. Add ANTHROPIC_API_KEY in Vercel Environment Variables\n3. The chat will automatically work in production!\n\nFor now, you can explore the UI and test the initiative browsing features on the Overview tab."
-          : "I'm sorry, I encountered an error connecting to the AI service. Please make sure the ANTHROPIC_API_KEY environment variable is configured in your deployment settings.",
+          : `I'm sorry, I encountered an error connecting to the AI service.\n\n**Error Details:**\n${errorDetails}\n\n**Troubleshooting:**\n- Check that ANTHROPIC_API_KEY is configured in Vercel\n- Open browser console (F12) for detailed logs\n- Try the test endpoint: /api/test`,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
