@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
-import { DollarSign, Award, Loader2, Plus, List, TrendingUp } from 'lucide-react';
+import { DollarSign, Award, Loader2, Plus, List, TrendingUp, Search, Filter, X, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 import { supabase, TeamMember, WorkTypeSummary, EHRPlatformSummary, KeyHighlight, InitiativeWithDetails, Assignment, DashboardMetrics } from './lib/supabase';
 import { InitiativeSubmissionForm } from './components/InitiativeSubmissionForm';
 import { InitiativeCard } from './components/InitiativeCard';
 import { InitiativesView } from './components/InitiativesView';
+import { InitiativesTableView } from './components/InitiativesTableView';
+import { InsightsChat } from './components/InsightsChat';
 import { calculateWorkload, getCapacityStatus, getCapacityColor, getCapacityEmoji, getCapacityLabel, WORK_EFFORT_HOURS, parseWorkEffort } from './lib/workloadUtils';
 import StaffDetailModal from './components/StaffDetailModal';
 
@@ -19,15 +21,15 @@ interface TeamMemberWithDetails extends TeamMember {
 
 function App() {
   // Get initial view from URL hash or default to 'overview'
-  const getInitialView = (): 'overview' | 'team' | 'initiatives' | 'workload' | 'addData' => {
+  const getInitialView = (): 'overview' | 'team' | 'workload' | 'insights' | 'addData' => {
     const hash = window.location.hash.slice(1); // Remove the '#'
-    if (['overview', 'team', 'initiatives', 'workload', 'addData'].includes(hash)) {
-      return hash as 'overview' | 'team' | 'initiatives' | 'workload' | 'addData';
+    if (['overview', 'team', 'workload', 'insights', 'addData'].includes(hash)) {
+      return hash as 'overview' | 'team' | 'workload' | 'insights' | 'addData';
     }
     return 'overview';
   };
 
-  const [activeView, setActiveView] = useState<'overview' | 'team' | 'initiatives' | 'workload' | 'addData'>(getInitialView());
+  const [activeView, setActiveView] = useState<'overview' | 'team' | 'workload' | 'insights' | 'addData'>(getInitialView());
   const [selectedMember, setSelectedMember] = useState<TeamMemberWithDetails | null>(null);
   const [teamMembers, setTeamMembers] = useState<TeamMemberWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
@@ -272,6 +274,16 @@ function App() {
 
   const OverviewView = () => {
     const metrics = calculateOverviewMetrics();
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filterType, setFilterType] = useState('');
+    const [filterOwner, setFilterOwner] = useState('');
+    const [filterStatus, setFilterStatus] = useState('');
+    const [filterEHR, setFilterEHR] = useState('');
+    const [filterServiceLine, setFilterServiceLine] = useState('');
+    const [activeTab, setActiveTab] = useState<'active' | 'completed' | 'all'>('active');
+    const [selectedInitiative, setSelectedInitiative] = useState<InitiativeWithDetails | null>(null);
+    const [showFilters, setShowFilters] = useState(false);
+    const [expandedCard, setExpandedCard] = useState<'active' | 'completed' | 'ehr' | 'serviceline' | null>(null);
 
     // Format currency
     const formatCurrency = (value: number) => {
@@ -281,6 +293,67 @@ function App() {
         return `$${(value / 1000).toFixed(0)}K`;
       }
       return `$${value.toFixed(0)}`;
+    };
+
+    // Format large numbers
+    const formatNumber = (value: number) => {
+      if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+      if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
+      return value.toString();
+    };
+
+    // Get all initiatives for filtering
+    const allInitiatives = teamMembers.flatMap(member => member.initiatives || []);
+
+    // Filter initiatives based on search and filters
+    const filteredInitiatives = useMemo(() => {
+      return allInitiatives.filter((initiative) => {
+        const matchesTab =
+          activeTab === 'all' ||
+          (activeTab === 'active' && initiative.is_active === true) ||
+          (activeTab === 'completed' && initiative.is_active === false);
+
+        const matchesSearch = !searchQuery ||
+          initiative.initiative_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          initiative.owner_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (initiative.service_line && initiative.service_line.toLowerCase().includes(searchQuery.toLowerCase()));
+
+        const matchesOwner = !filterOwner || initiative.owner_name === filterOwner;
+        const matchesType = !filterType || initiative.type === filterType;
+        const matchesStatus = !filterStatus || initiative.status === filterStatus;
+        const matchesEHR = !filterEHR || initiative.ehrs_impacted === filterEHR || initiative.ehrs_impacted === 'All';
+        const matchesServiceLine = !filterServiceLine || initiative.service_line === filterServiceLine;
+
+        return matchesTab && matchesSearch && matchesOwner && matchesType && matchesStatus && matchesEHR && matchesServiceLine;
+      });
+    }, [allInitiatives, activeTab, searchQuery, filterOwner, filterType, filterStatus, filterEHR, filterServiceLine]);
+
+    // Get unique values for filters
+    const uniqueOwners = useMemo(() => [...new Set(allInitiatives.map(i => i.owner_name))].sort(), [allInitiatives]);
+    const uniqueTypes = useMemo(() => [...new Set(allInitiatives.map(i => i.type))].sort(), [allInitiatives]);
+    const uniqueStatuses = useMemo(() => [...new Set(allInitiatives.map(i => i.status))].sort(), [allInitiatives]);
+    const uniqueEHRs = useMemo(() => [...new Set(allInitiatives.map(i => i.ehrs_impacted).filter(Boolean))].sort(), [allInitiatives]);
+    const uniqueServiceLines = useMemo(() => [...new Set(allInitiatives.map(i => i.service_line).filter(Boolean))].sort(), [allInitiatives]);
+
+    // Calculate aggregate impact metrics from real data
+    const impactMetrics = useMemo(() => {
+      const totalRevenue = allInitiatives.reduce((sum, i) => sum + (i.financial_impact?.projected_annual || 0), 0);
+      const totalActualRevenue = allInitiatives.reduce((sum, i) => sum + (i.financial_impact?.actual_revenue || 0), 0);
+      const totalUsersDeployed = allInitiatives.reduce((sum, i) => sum + (i.performance_data?.users_deployed || 0), 0);
+      const totalPotentialUsers = allInitiatives.reduce((sum, i) => sum + (i.performance_data?.total_potential_users || 0), 0);
+
+      return { totalRevenue, totalActualRevenue, totalUsersDeployed, totalPotentialUsers };
+    }, [allInitiatives]);
+
+    const hasActiveFilters = filterOwner || filterStatus || filterType || filterEHR || filterServiceLine || searchQuery;
+
+    const clearFilters = () => {
+      setFilterOwner('');
+      setFilterStatus('');
+      setFilterType('');
+      setFilterEHR('');
+      setFilterServiceLine('');
+      setSearchQuery('');
     };
 
     return (
@@ -302,27 +375,137 @@ function App() {
             </div>
           </div>
           <div className="grid grid-cols-4 gap-2">
-            <div className="bg-white/15 rounded-lg p-2 border border-white/20">
+            <button
+              onClick={() => setExpandedCard(expandedCard === 'active' ? null : 'active')}
+              className="bg-white/15 rounded-lg p-2 border border-white/20 hover:bg-white/25 transition-all cursor-pointer text-left"
+            >
               <div className="text-xl font-bold">{metrics.activeInitiatives}</div>
               <div className="text-[10px] text-white/90 font-medium mt-0.5">Active Initiatives</div>
-            </div>
-            <div className="bg-white/15 rounded-lg p-2 border border-white/20">
+            </button>
+            <button
+              onClick={() => setExpandedCard(expandedCard === 'completed' ? null : 'completed')}
+              className="bg-white/15 rounded-lg p-2 border border-white/20 hover:bg-white/25 transition-all cursor-pointer text-left"
+            >
               <div className="text-xl font-bold">{metrics.completedInitiatives}</div>
               <div className="text-[10px] text-white/90 font-medium mt-0.5">Completed Projects</div>
-            </div>
-            <div className="bg-white/15 rounded-lg p-2 border border-white/20">
+            </button>
+            <button
+              onClick={() => setExpandedCard(expandedCard === 'ehr' ? null : 'ehr')}
+              className="bg-white/15 rounded-lg p-2 border border-white/20 hover:bg-white/25 transition-all cursor-pointer text-left"
+            >
               <div className="text-xl font-bold">{Object.keys(metrics.ehrDistribution).length}</div>
               <div className="text-[10px] text-white/90 font-medium mt-0.5">EHR Platforms</div>
-            </div>
-            <div className="bg-white/15 rounded-lg p-2 border border-white/20">
+            </button>
+            <button
+              onClick={() => setExpandedCard(expandedCard === 'serviceline' ? null : 'serviceline')}
+              className="bg-white/15 rounded-lg p-2 border border-white/20 hover:bg-white/25 transition-all cursor-pointer text-left"
+            >
               <div className="text-xl font-bold">{Object.keys(metrics.serviceLineDistribution).length}</div>
               <div className="text-[10px] text-white/90 font-medium mt-0.5">Service Lines</div>
-            </div>
+            </button>
           </div>
         </div>
 
-        {/* Active Initiatives Status */}
-        {metrics.allActiveInitiatives.length > 0 && (
+        {/* Expanded Card Details */}
+        {expandedCard === 'active' && (
+          <div className="bg-white border rounded-lg p-3">
+            <h3 className="font-semibold text-sm mb-2 text-gray-800">Active Initiatives by Work Type</h3>
+            <div className="space-y-1">
+              {Object.entries(
+                metrics.allActiveInitiatives.reduce((acc, initiative) => {
+                  const type = initiative.type || 'Other';
+                  acc[type] = (acc[type] || 0) + 1;
+                  return acc;
+                }, {} as Record<string, number>)
+              )
+                .sort((a, b) => b[1] - a[1])
+                .map(([type, count]) => (
+                  <div key={type} className="flex items-center gap-2">
+                    <div
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: getWorkTypeColor(type) }}
+                    />
+                    <div className="flex-1 flex items-center justify-between">
+                      <span className="text-sm text-gray-700">{type}</span>
+                      <span className="text-sm font-bold" style={{ color: getWorkTypeColor(type) }}>
+                        {count}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {expandedCard === 'completed' && (
+          <div className="bg-white border rounded-lg p-3">
+            <h3 className="font-semibold text-sm mb-2 text-gray-800">Completed Initiatives by Work Type</h3>
+            <div className="space-y-1">
+              {Object.entries(
+                allInitiatives
+                  .filter(i => i.is_active === false)
+                  .reduce((acc, initiative) => {
+                    const type = initiative.type || 'Other';
+                    acc[type] = (acc[type] || 0) + 1;
+                    return acc;
+                  }, {} as Record<string, number>)
+              )
+                .sort((a, b) => b[1] - a[1])
+                .map(([type, count]) => (
+                  <div key={type} className="flex items-center gap-2">
+                    <div
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: getWorkTypeColor(type) }}
+                    />
+                    <div className="flex-1 flex items-center justify-between">
+                      <span className="text-sm text-gray-700">{type}</span>
+                      <span className="text-sm font-bold" style={{ color: getWorkTypeColor(type) }}>
+                        {count}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {expandedCard === 'ehr' && (
+          <div className="bg-white border rounded-lg p-3">
+            <h3 className="font-semibold text-sm mb-2 text-gray-800">EHR Platform Coverage</h3>
+            <div className="space-y-1">
+              {Object.entries(metrics.ehrDistribution)
+                .sort((a, b) => b[1] - a[1])
+                .map(([ehr, count]) => (
+                  <div key={ehr} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <span className="text-sm font-medium text-gray-700">{ehr}</span>
+                    <span className="text-sm font-bold text-[#9B2F6A]">{count}</span>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {expandedCard === 'serviceline' && (
+          <div className="bg-white border rounded-lg p-3">
+            <h3 className="font-semibold text-sm mb-2 text-gray-800">Service Line Impact</h3>
+            <div className="grid grid-cols-4 gap-2">
+              {Object.entries(metrics.serviceLineDistribution)
+                .sort((a, b) => b[1] - a[1])
+                .map(([serviceLine, count]) => (
+                  <div
+                    key={serviceLine}
+                    className="bg-[#00A1E0]/10 border border-[#00A1E0]/30 rounded-lg p-2 text-center"
+                  >
+                    <div className="text-xl font-bold text-[#00A1E0]">{count}</div>
+                    <div className="text-[10px] text-gray-700 font-medium mt-0.5">{serviceLine}</div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {/* Active Initiatives Status - Remove this */}
+        {false && metrics.allActiveInitiatives.length > 0 && (
           <div className="bg-white border rounded-lg p-2">
             <h3 className="font-semibold text-[10px] mb-1.5 flex items-center justify-between">
               <span>Active Initiatives Overview</span>
@@ -358,44 +541,84 @@ function App() {
           </div>
         )}
 
-        {/* Work Type Distribution */}
-        <div className="grid grid-cols-2 gap-2">
+        {/* Work Type Distribution - Remove this */}
+        {false && (
+          <div className="grid grid-cols-2 gap-2">
+            <div className="bg-white border rounded-lg p-2">
+              <h3 className="font-semibold text-[10px] mb-1">Work Type Distribution</h3>
+              <div className="space-y-0.5">
+                {Object.entries(metrics.workTypeDistribution)
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([type, count]) => (
+                    <div key={type} className="flex items-center gap-1.5">
+                      <div
+                        className="w-1.5 h-1.5 rounded-full"
+                        style={{ backgroundColor: getWorkTypeColor(type) }}
+                      />
+                      <div className="flex-1 flex items-center justify-between">
+                        <span className="text-[10px] text-gray-700">{type}</span>
+                        <span className="text-[10px] font-bold" style={{ color: getWorkTypeColor(type) }}>
+                          {count}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+
+            <div className="bg-white border rounded-lg p-2">
+              <h3 className="font-semibold text-[10px] mb-1">EHR Platform Coverage</h3>
+              <div className="space-y-0.5">
+                {Object.entries(metrics.ehrDistribution)
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([ehr, count]) => (
+                    <div key={ehr} className="flex items-center justify-between p-1 bg-gray-50 rounded">
+                      <span className="text-[10px] font-medium text-gray-700">{ehr}</span>
+                      <span className="text-[10px] font-bold text-[#9B2F6A]">{count}</span>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Active Initiatives Status - HIDDEN */}
+        {false && metrics.allActiveInitiatives.length > 0 && (
           <div className="bg-white border rounded-lg p-2">
-            <h3 className="font-semibold text-[10px] mb-1">Work Type Distribution</h3>
-            <div className="space-y-0.5">
-              {Object.entries(metrics.workTypeDistribution)
+            <h3 className="font-semibold text-[10px] mb-1.5 flex items-center justify-between">
+              <span>Active Initiatives Overview</span>
+              <span className="text-[10px] font-normal text-gray-600">
+                {metrics.activeInitiatives} in progress
+              </span>
+            </h3>
+            <div className="grid grid-cols-5 gap-1.5">
+              {Object.entries(
+                metrics.allActiveInitiatives.reduce((acc, initiative) => {
+                  const type = initiative.type || 'Other';
+                  acc[type] = (acc[type] || 0) + 1;
+                  return acc;
+                }, {} as Record<string, number>)
+              )
                 .sort((a, b) => b[1] - a[1])
                 .map(([type, count]) => (
-                  <div key={type} className="flex items-center gap-1.5">
-                    <div
-                      className="w-1.5 h-1.5 rounded-full"
-                      style={{ backgroundColor: getWorkTypeColor(type) }}
-                    />
-                    <div className="flex-1 flex items-center justify-between">
-                      <span className="text-[10px] text-gray-700">{type}</span>
-                      <span className="text-[10px] font-bold" style={{ color: getWorkTypeColor(type) }}>
-                        {count}
-                      </span>
+                  <div
+                    key={type}
+                    className="border rounded-lg p-1.5 text-center"
+                    style={{
+                      borderColor: getWorkTypeColor(type),
+                      backgroundColor: `${getWorkTypeColor(type)}10`,
+                    }}
+                  >
+                    <div className="text-base font-bold" style={{ color: getWorkTypeColor(type) }}>
+                      {count}
                     </div>
+                    <div className="text-[10px] text-gray-700 mt-0.5">{type}</div>
                   </div>
                 ))}
             </div>
           </div>
+        )}
 
-          <div className="bg-white border rounded-lg p-2">
-            <h3 className="font-semibold text-[10px] mb-1">EHR Platform Coverage</h3>
-            <div className="space-y-0.5">
-              {Object.entries(metrics.ehrDistribution)
-                .sort((a, b) => b[1] - a[1])
-                .map(([ehr, count]) => (
-                  <div key={ehr} className="flex items-center justify-between p-1 bg-gray-50 rounded">
-                    <span className="text-[10px] font-medium text-gray-700">{ehr}</span>
-                    <span className="text-[10px] font-bold text-[#9B2F6A]">{count}</span>
-                  </div>
-                ))}
-            </div>
-          </div>
-        </div>
 
         {/* Top Initiatives by Revenue */}
         {metrics.topInitiativesByRevenue.length > 0 && (
@@ -439,67 +662,200 @@ function App() {
           </div>
         )}
 
-        {/* Service Line Impact */}
-        {Object.keys(metrics.serviceLineDistribution).length > 0 && (
-          <div className="bg-white border rounded-lg p-2">
-            <h3 className="font-semibold text-[10px] mb-1.5">Service Line Impact</h3>
-            <div className="grid grid-cols-4 gap-2">
-              {Object.entries(metrics.serviceLineDistribution)
-                .sort((a, b) => b[1] - a[1])
-                .map(([serviceLine, count]) => (
-                  <div
-                    key={serviceLine}
-                    className="bg-[#00A1E0]/10 border border-[#00A1E0]/30 rounded-lg p-1.5 text-center"
-                  >
-                    <div className="text-xl font-bold text-[#00A1E0]">{count}</div>
-                    <div className="text-[10px] text-gray-700 font-medium mt-0.5">{serviceLine}</div>
-                  </div>
-                ))}
+        {/* Key Impact Metrics Grid */}
+        <div className="bg-white border rounded-lg p-3">
+          <h3 className="font-semibold text-sm mb-2 text-gray-800">Team Impact Metrics</h3>
+          <div className="grid grid-cols-4 gap-3">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-2">
+              <div className="text-xs text-green-700 font-medium mb-1">Projected Revenue</div>
+              <div className="text-2xl font-bold text-green-600">{formatCurrency(impactMetrics.totalRevenue)}</div>
+            </div>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-2">
+              <div className="text-xs text-blue-700 font-medium mb-1">Actual Revenue</div>
+              <div className="text-2xl font-bold text-blue-600">{formatCurrency(impactMetrics.totalActualRevenue)}</div>
+            </div>
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-2">
+              <div className="text-xs text-purple-700 font-medium mb-1">Users Deployed</div>
+              <div className="text-2xl font-bold text-purple-600">{formatNumber(impactMetrics.totalUsersDeployed)}</div>
+            </div>
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-2">
+              <div className="text-xs text-orange-700 font-medium mb-1">Potential Users</div>
+              <div className="text-2xl font-bold text-orange-600">{formatNumber(impactMetrics.totalPotentialUsers)}</div>
             </div>
           </div>
-        )}
+        </div>
 
-        {/* Recent Completed Initiatives */}
-        {metrics.recentCompletedInitiatives.length > 0 && (
-          <div className="bg-white border rounded-lg p-2">
-            <h3 className="font-semibold text-[10px] mb-1.5 flex items-center justify-between">
-              <span>Recent Wins</span>
-              <span className="text-[10px] font-normal text-gray-600">
-                {metrics.completedInitiatives} total completed
+        {/* Initiative Search & Browse */}
+        <div className="bg-white border rounded-lg p-3">
+          <h3 className="font-semibold text-sm mb-3 text-gray-800">Browse Initiatives</h3>
+
+          {/* Tabs */}
+          <div className="flex gap-2 mb-3 border-b">
+            <button
+              onClick={() => setActiveTab('active')}
+              className={`px-4 py-2 text-sm font-semibold transition-all ${
+                activeTab === 'active'
+                  ? 'text-[#9B2F6A] border-b-2 border-[#9B2F6A]'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Active
+              <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+                activeTab === 'active' ? 'bg-[#9B2F6A] text-white' : 'bg-gray-200 text-gray-700'
+              }`}>
+                {metrics.activeInitiatives}
               </span>
-            </h3>
-            <div className="space-y-1">
-              {metrics.recentCompletedInitiatives.map((initiative) => (
-                <div
-                  key={initiative.id}
-                  className="flex items-center justify-between p-1.5 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all"
-                >
-                  <div className="flex items-center gap-2 flex-1">
-                    <div
-                      className="w-1.5 h-1.5 rounded-full"
-                      style={{ backgroundColor: getWorkTypeColor(initiative.type) }}
-                    />
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-[10px] text-gray-800">{initiative.initiative_name}</h4>
-                      <p className="text-[10px] text-gray-600">
-                        {initiative.owner_name} • {initiative.type}
-                        {initiative.service_line && ` • ${initiative.service_line}`}
-                      </p>
-                    </div>
-                  </div>
-                  {initiative.financial_impact?.projected_annual && (
-                    <div className="text-right">
-                      <div className="text-[10px] font-bold text-green-600">
-                        {formatCurrency(initiative.financial_impact.projected_annual)}
-                      </div>
-                      <div className="text-[10px] text-gray-600">Impact</div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+            </button>
+            <button
+              onClick={() => setActiveTab('completed')}
+              className={`px-4 py-2 text-sm font-semibold transition-all ${
+                activeTab === 'completed'
+                  ? 'text-[#9B2F6A] border-b-2 border-[#9B2F6A]'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Completed
+              <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+                activeTab === 'completed' ? 'bg-[#9B2F6A] text-white' : 'bg-gray-200 text-gray-700'
+              }`}>
+                {metrics.completedInitiatives}
+              </span>
+            </button>
+            <button
+              onClick={() => setActiveTab('all')}
+              className={`px-4 py-2 text-sm font-semibold transition-all ${
+                activeTab === 'all'
+                  ? 'text-[#9B2F6A] border-b-2 border-[#9B2F6A]'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              All
+              <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+                activeTab === 'all' ? 'bg-[#9B2F6A] text-white' : 'bg-gray-200 text-gray-700'
+              }`}>
+                {metrics.totalInitiatives}
+              </span>
+            </button>
           </div>
-        )}
+
+          {/* Search and Filters */}
+          <div className="space-y-2 mb-3">
+            <div className="flex items-center gap-2">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="Search initiatives by name, owner, or service line..."
+                  className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#9B2F6A] focus:border-transparent"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
+                  showFilters || hasActiveFilters
+                    ? 'bg-[#9B2F6A] text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <Filter className="w-4 h-4" />
+                Filters
+                {hasActiveFilters && !showFilters && (
+                  <span className="bg-white text-[#9B2F6A] rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+                    {[filterOwner, filterStatus, filterType, filterEHR, filterServiceLine].filter(Boolean).length}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            {showFilters && (
+              <div className="border rounded-lg p-2 bg-gray-50">
+                <div className="grid grid-cols-5 gap-2 mb-2">
+                  <select
+                    className="border rounded px-2 py-1.5 text-xs"
+                    value={filterOwner}
+                    onChange={(e) => setFilterOwner(e.target.value)}
+                  >
+                    <option value="">All Owners</option>
+                    {uniqueOwners.map((owner) => (
+                      <option key={owner} value={owner}>{owner}</option>
+                    ))}
+                  </select>
+                  <select
+                    className="border rounded px-2 py-1.5 text-xs"
+                    value={filterType}
+                    onChange={(e) => setFilterType(e.target.value)}
+                  >
+                    <option value="">All Types</option>
+                    {uniqueTypes.map((type) => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+                  <select
+                    className="border rounded px-2 py-1.5 text-xs"
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                  >
+                    <option value="">All Statuses</option>
+                    {uniqueStatuses.map((status) => (
+                      <option key={status} value={status}>{status}</option>
+                    ))}
+                  </select>
+                  <select
+                    className="border rounded px-2 py-1.5 text-xs"
+                    value={filterEHR}
+                    onChange={(e) => setFilterEHR(e.target.value)}
+                  >
+                    <option value="">All EHRs</option>
+                    {uniqueEHRs.map((ehr) => (
+                      <option key={ehr} value={ehr}>{ehr}</option>
+                    ))}
+                  </select>
+                  <select
+                    className="border rounded px-2 py-1.5 text-xs"
+                    value={filterServiceLine}
+                    onChange={(e) => setFilterServiceLine(e.target.value)}
+                  >
+                    <option value="">All Service Lines</option>
+                    {uniqueServiceLines.map((sl) => (
+                      <option key={sl} value={sl}>{sl}</option>
+                    ))}
+                  </select>
+                </div>
+                {hasActiveFilters && (
+                  <button
+                    onClick={clearFilters}
+                    className="flex items-center gap-1 px-2 py-1 text-xs text-[#9B2F6A] hover:bg-white rounded transition-all"
+                  >
+                    <X className="w-3 h-3" />
+                    Clear all filters
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Initiative Table View */}
+          {filteredInitiatives.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <p className="mb-2">No initiatives found</p>
+              {hasActiveFilters && (
+                <button onClick={clearFilters} className="text-sm text-[#9B2F6A] hover:underline">
+                  Clear filters to see all initiatives
+                </button>
+              )}
+            </div>
+          ) : (
+            <>
+              <div className="text-xs text-gray-600 mb-2">
+                Showing {filteredInitiatives.length} of {allInitiatives.length} initiatives
+              </div>
+              <InitiativesTableView initiatives={filteredInitiatives} />
+            </>
+          )}
+        </div>
+
       </div>
     );
   };
@@ -1612,20 +1968,6 @@ function App() {
                 Team
               </button>
               <button
-                onClick={() => {
-                  setEditingInitiative(null);
-                  setActiveView('initiatives');
-                }}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1 ${
-                  activeView === 'initiatives'
-                    ? 'bg-[#6F47D0] text-white shadow-md'
-                    : 'bg-gray-100 text-[#565658] hover:bg-gray-200'
-                }`}
-              >
-                <List size={16} />
-                Initiatives
-              </button>
-              <button
                 onClick={() => setActiveView('workload')}
                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1 ${
                   activeView === 'workload'
@@ -1635,6 +1977,17 @@ function App() {
               >
                 <TrendingUp size={16} />
                 Workload
+              </button>
+              <button
+                onClick={() => setActiveView('insights')}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1 ${
+                  activeView === 'insights'
+                    ? 'bg-gradient-to-r from-[#9B2F6A] to-[#6F47D0] text-white shadow-md'
+                    : 'bg-gradient-to-r from-[#9B2F6A]/10 to-[#6F47D0]/10 text-[#6F47D0] hover:from-[#9B2F6A]/20 hover:to-[#6F47D0]/20'
+                }`}
+              >
+                <Sparkles size={16} />
+                AI Insights
               </button>
               <button
                 onClick={() => {
@@ -1660,33 +2013,52 @@ function App() {
           <OverviewView />
         ) : activeView === 'team' ? (
           <TeamView />
-        ) : activeView === 'initiatives' ? (
-          <InitiativesView
-            onCreateNew={() => {
-              setEditingInitiative(null);
-              setActiveView('addData');
-            }}
-            onEdit={(initiative) => {
-              setEditingInitiative(initiative);
-              setActiveView('addData');
-            }}
-          />
         ) : activeView === 'workload' ? (
           <WorkloadView />
-        ) : (
+        ) : activeView === 'insights' ? (
+          <div className="h-[calc(100vh-12rem)] bg-white rounded-lg shadow-sm">
+            <InsightsChat
+              contextData={JSON.stringify({
+                teamMembers: teamMembers.map(tm => ({
+                  name: tm.name,
+                  totalAssignments: tm.total_assignments,
+                  initiatives: tm.initiatives?.map(i => ({
+                    name: i.initiative_name,
+                    type: i.type,
+                    status: i.status,
+                    role: i.role,
+                    ehrsImpacted: i.ehrs_impacted,
+                    serviceLine: i.service_line,
+                    isActive: i.is_active,
+                    financialImpact: i.financial_impact,
+                    performanceData: i.performance_data,
+                  }))
+                })),
+                summary: {
+                  totalTeamMembers: teamMembers.length,
+                  totalInitiatives: teamMembers.reduce((sum, tm) => sum + (tm.initiatives?.length || 0), 0),
+                  activeInitiatives: teamMembers.reduce((sum, tm) =>
+                    sum + (tm.initiatives?.filter(i => i.is_active).length || 0), 0),
+                  completedInitiatives: teamMembers.reduce((sum, tm) =>
+                    sum + (tm.initiatives?.filter(i => !i.is_active).length || 0), 0),
+                }
+              }, null, 2)}
+            />
+          </div>
+        ) : activeView === 'addData' ? (
           <InitiativeSubmissionForm
             editingInitiative={editingInitiative || undefined}
             onClose={() => {
               setEditingInitiative(null);
-              setActiveView('initiatives');
+              setActiveView('overview');
             }}
             onSuccess={() => {
               fetchTeamData();
               setEditingInitiative(null);
-              setActiveView('initiatives');
+              setActiveView('overview');
             }}
           />
-        )}
+        ) : null}
       </main>
     </div>
   );
