@@ -606,10 +606,8 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
                 onChange={e => setFormData({ ...formData, status: e.target.value })}
               >
                 <option value="">Select Status</option>
-                <option>Planning</option>
-                <option>Active</option>
-                <option>Scaling</option>
-                <option>Completed</option>
+                <option>In Progress</option>
+                <option>Complete</option>
                 <option>On Hold</option>
               </select>
             </div>
@@ -628,9 +626,7 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
                 <option>Deploy</option>
                 <option>Did we Deliver</option>
                 <option>Post Go Live Support</option>
-                <option>Maintenance</option>
-                <option>Steady State</option>
-                <option>N/A</option>
+                <option>In Progress</option>
               </select>
             </div>
             <div>
