@@ -284,54 +284,53 @@ function App() {
     };
 
     return (
-      <div className="space-y-4">
+      <div className="space-y-2">
         {/* Hero Banner */}
-        <div className="bg-[#9B2F6A] rounded-lg p-6 text-white shadow-lg">
-          <div className="flex items-center justify-between mb-4">
+        <div className="bg-[#9B2F6A] rounded-lg p-3 text-white shadow-lg">
+          <div className="flex items-center justify-between mb-2">
             <div className="flex-1">
-              <div className="inline-block bg-white/10 px-3 py-1 rounded-full mb-2">
-                <span className="text-xs font-semibold tracking-wide">CommonSpirit Health</span>
+              <div className="inline-block bg-white/10 px-2 py-0.5 rounded-full mb-1">
+                <span className="text-[10px] font-semibold tracking-wide">CommonSpirit Health</span>
               </div>
-              <h2 className="text-3xl font-bold mb-1 tracking-tight">System Clinical Informatics</h2>
-              <p className="text-white/90 text-sm font-medium">
+              <p className="text-white/90 text-[10px] font-medium">
                 {teamMembers.length} Team Members • {metrics.totalAssignments} Active Assignments • {metrics.totalInitiatives} Initiatives
               </p>
             </div>
             <div className="text-right">
-              <div className="text-3xl font-bold mb-1">{formatCurrency(metrics.totalRevenue)}</div>
-              <div className="text-sm text-white/90 font-medium">Total Revenue Impact</div>
+              <div className="text-2xl font-bold mb-0.5">{formatCurrency(metrics.totalRevenue)}</div>
+              <div className="text-[10px] text-white/90 font-medium">Total Revenue Impact</div>
             </div>
           </div>
-          <div className="grid grid-cols-4 gap-3">
-            <div className="bg-white/15 rounded-lg p-3 border border-white/20">
-              <div className="text-2xl font-bold">{metrics.activeInitiatives}</div>
-              <div className="text-xs text-white/90 font-medium mt-1">Active Initiatives</div>
+          <div className="grid grid-cols-4 gap-2">
+            <div className="bg-white/15 rounded-lg p-2 border border-white/20">
+              <div className="text-xl font-bold">{metrics.activeInitiatives}</div>
+              <div className="text-[10px] text-white/90 font-medium mt-0.5">Active Initiatives</div>
             </div>
-            <div className="bg-white/15 rounded-lg p-3 border border-white/20">
-              <div className="text-2xl font-bold">{metrics.completedInitiatives}</div>
-              <div className="text-xs text-white/90 font-medium mt-1">Completed Projects</div>
+            <div className="bg-white/15 rounded-lg p-2 border border-white/20">
+              <div className="text-xl font-bold">{metrics.completedInitiatives}</div>
+              <div className="text-[10px] text-white/90 font-medium mt-0.5">Completed Projects</div>
             </div>
-            <div className="bg-white/15 rounded-lg p-3 border border-white/20">
-              <div className="text-2xl font-bold">{Object.keys(metrics.ehrDistribution).length}</div>
-              <div className="text-xs text-white/90 font-medium mt-1">EHR Platforms</div>
+            <div className="bg-white/15 rounded-lg p-2 border border-white/20">
+              <div className="text-xl font-bold">{Object.keys(metrics.ehrDistribution).length}</div>
+              <div className="text-[10px] text-white/90 font-medium mt-0.5">EHR Platforms</div>
             </div>
-            <div className="bg-white/15 rounded-lg p-3 border border-white/20">
-              <div className="text-2xl font-bold">{Object.keys(metrics.serviceLineDistribution).length}</div>
-              <div className="text-xs text-white/90 font-medium mt-1">Service Lines</div>
+            <div className="bg-white/15 rounded-lg p-2 border border-white/20">
+              <div className="text-xl font-bold">{Object.keys(metrics.serviceLineDistribution).length}</div>
+              <div className="text-[10px] text-white/90 font-medium mt-0.5">Service Lines</div>
             </div>
           </div>
         </div>
 
         {/* Active Initiatives Status */}
         {metrics.allActiveInitiatives.length > 0 && (
-          <div className="bg-white border rounded-lg p-4">
-            <h3 className="font-semibold text-sm mb-3 flex items-center justify-between">
+          <div className="bg-white border rounded-lg p-2">
+            <h3 className="font-semibold text-[10px] mb-1.5 flex items-center justify-between">
               <span>Active Initiatives Overview</span>
-              <span className="text-xs font-normal text-gray-600">
+              <span className="text-[10px] font-normal text-gray-600">
                 {metrics.activeInitiatives} in progress
               </span>
             </h3>
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-5 gap-1.5">
               {Object.entries(
                 metrics.allActiveInitiatives.reduce((acc, initiative) => {
                   const type = initiative.type || 'Other';
@@ -343,16 +342,16 @@ function App() {
                 .map(([type, count]) => (
                   <div
                     key={type}
-                    className="border rounded-lg p-3 text-center"
+                    className="border rounded-lg p-1.5 text-center"
                     style={{
                       borderColor: getWorkTypeColor(type),
                       backgroundColor: `${getWorkTypeColor(type)}10`,
                     }}
                   >
-                    <div className="text-xl font-bold" style={{ color: getWorkTypeColor(type) }}>
+                    <div className="text-base font-bold" style={{ color: getWorkTypeColor(type) }}>
                       {count}
                     </div>
-                    <div className="text-xs text-gray-700 mt-1">{type}</div>
+                    <div className="text-[10px] text-gray-700 mt-0.5">{type}</div>
                   </div>
                 ))}
             </div>
@@ -360,21 +359,21 @@ function App() {
         )}
 
         {/* Work Type Distribution */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white border rounded-lg p-3">
-            <h3 className="font-semibold text-sm mb-2">Work Type Distribution</h3>
-            <div className="space-y-1">
+        <div className="grid grid-cols-2 gap-2">
+          <div className="bg-white border rounded-lg p-2">
+            <h3 className="font-semibold text-[10px] mb-1">Work Type Distribution</h3>
+            <div className="space-y-0.5">
               {Object.entries(metrics.workTypeDistribution)
                 .sort((a, b) => b[1] - a[1])
                 .map(([type, count]) => (
-                  <div key={type} className="flex items-center gap-2">
+                  <div key={type} className="flex items-center gap-1.5">
                     <div
-                      className="w-2 h-2 rounded-full"
+                      className="w-1.5 h-1.5 rounded-full"
                       style={{ backgroundColor: getWorkTypeColor(type) }}
                     />
                     <div className="flex-1 flex items-center justify-between">
-                      <span className="text-xs text-gray-700">{type}</span>
-                      <span className="text-xs font-bold" style={{ color: getWorkTypeColor(type) }}>
+                      <span className="text-[10px] text-gray-700">{type}</span>
+                      <span className="text-[10px] font-bold" style={{ color: getWorkTypeColor(type) }}>
                         {count}
                       </span>
                     </div>
@@ -383,15 +382,15 @@ function App() {
             </div>
           </div>
 
-          <div className="bg-white border rounded-lg p-3">
-            <h3 className="font-semibold text-sm mb-2">EHR Platform Coverage</h3>
-            <div className="space-y-1">
+          <div className="bg-white border rounded-lg p-2">
+            <h3 className="font-semibold text-[10px] mb-1">EHR Platform Coverage</h3>
+            <div className="space-y-0.5">
               {Object.entries(metrics.ehrDistribution)
                 .sort((a, b) => b[1] - a[1])
                 .map(([ehr, count]) => (
-                  <div key={ehr} className="flex items-center justify-between p-1.5 bg-gray-50 rounded">
-                    <span className="text-xs font-medium text-gray-700">{ehr}</span>
-                    <span className="text-sm font-bold text-[#9B2F6A]">{count}</span>
+                  <div key={ehr} className="flex items-center justify-between p-1 bg-gray-50 rounded">
+                    <span className="text-[10px] font-medium text-gray-700">{ehr}</span>
+                    <span className="text-[10px] font-bold text-[#9B2F6A]">{count}</span>
                   </div>
                 ))}
             </div>
@@ -400,29 +399,29 @@ function App() {
 
         {/* Top Initiatives by Revenue */}
         {metrics.topInitiativesByRevenue.length > 0 && (
-          <div className="bg-white border rounded-lg p-4">
-            <h3 className="font-semibold text-sm mb-3 flex items-center justify-between">
+          <div className="bg-white border rounded-lg p-2">
+            <h3 className="font-semibold text-[10px] mb-1.5 flex items-center justify-between">
               <span>Top Revenue-Generating Initiatives</span>
-              <span className="text-xs font-normal text-gray-600">Completed</span>
+              <span className="text-[10px] font-normal text-gray-600">Completed</span>
             </h3>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2">
               {metrics.topInitiativesByRevenue.map((initiative) => (
                 <div
                   key={initiative.id}
-                  className="border rounded-lg p-3 hover:shadow-md transition-all"
+                  className="border rounded-lg p-1.5 hover:shadow-md transition-all"
                   style={{ borderColor: getWorkTypeColor(initiative.type) }}
                 >
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-1.5 mb-1">
                     <div
-                      className="w-2 h-2 rounded-full"
+                      className="w-1.5 h-1.5 rounded-full"
                       style={{ backgroundColor: getWorkTypeColor(initiative.type) }}
                     />
-                    <span className="text-xs text-gray-600">{initiative.type}</span>
+                    <span className="text-[10px] text-gray-600">{initiative.type}</span>
                   </div>
-                  <h4 className="font-semibold text-sm mb-2 text-gray-800 line-clamp-2">
+                  <h4 className="font-semibold text-[10px] mb-1 text-gray-800 line-clamp-2">
                     {initiative.initiative_name}
                   </h4>
-                  <div className="space-y-1 text-xs">
+                  <div className="space-y-0.5 text-[10px]">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Revenue Impact</span>
                       <span className="font-bold text-green-600">
@@ -442,18 +441,18 @@ function App() {
 
         {/* Service Line Impact */}
         {Object.keys(metrics.serviceLineDistribution).length > 0 && (
-          <div className="bg-white border rounded-lg p-4">
-            <h3 className="font-semibold text-sm mb-3">Service Line Impact</h3>
-            <div className="grid grid-cols-4 gap-3">
+          <div className="bg-white border rounded-lg p-2">
+            <h3 className="font-semibold text-[10px] mb-1.5">Service Line Impact</h3>
+            <div className="grid grid-cols-4 gap-2">
               {Object.entries(metrics.serviceLineDistribution)
                 .sort((a, b) => b[1] - a[1])
                 .map(([serviceLine, count]) => (
                   <div
                     key={serviceLine}
-                    className="bg-[#00A1E0]/10 border border-[#00A1E0]/30 rounded-lg p-3 text-center"
+                    className="bg-[#00A1E0]/10 border border-[#00A1E0]/30 rounded-lg p-1.5 text-center"
                   >
-                    <div className="text-2xl font-bold text-[#00A1E0]">{count}</div>
-                    <div className="text-xs text-gray-700 font-medium mt-1">{serviceLine}</div>
+                    <div className="text-xl font-bold text-[#00A1E0]">{count}</div>
+                    <div className="text-[10px] text-gray-700 font-medium mt-0.5">{serviceLine}</div>
                   </div>
                 ))}
             </div>
@@ -462,27 +461,27 @@ function App() {
 
         {/* Recent Completed Initiatives */}
         {metrics.recentCompletedInitiatives.length > 0 && (
-          <div className="bg-white border rounded-lg p-4">
-            <h3 className="font-semibold text-sm mb-3 flex items-center justify-between">
+          <div className="bg-white border rounded-lg p-2">
+            <h3 className="font-semibold text-[10px] mb-1.5 flex items-center justify-between">
               <span>Recent Wins</span>
-              <span className="text-xs font-normal text-gray-600">
+              <span className="text-[10px] font-normal text-gray-600">
                 {metrics.completedInitiatives} total completed
               </span>
             </h3>
-            <div className="space-y-2">
+            <div className="space-y-1">
               {metrics.recentCompletedInitiatives.map((initiative) => (
                 <div
                   key={initiative.id}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all"
+                  className="flex items-center justify-between p-1.5 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all"
                 >
-                  <div className="flex items-center gap-3 flex-1">
+                  <div className="flex items-center gap-2 flex-1">
                     <div
-                      className="w-2 h-2 rounded-full"
+                      className="w-1.5 h-1.5 rounded-full"
                       style={{ backgroundColor: getWorkTypeColor(initiative.type) }}
                     />
                     <div className="flex-1">
-                      <h4 className="font-semibold text-sm text-gray-800">{initiative.initiative_name}</h4>
-                      <p className="text-xs text-gray-600">
+                      <h4 className="font-semibold text-[10px] text-gray-800">{initiative.initiative_name}</h4>
+                      <p className="text-[10px] text-gray-600">
                         {initiative.owner_name} • {initiative.type}
                         {initiative.service_line && ` • ${initiative.service_line}`}
                       </p>
@@ -490,10 +489,10 @@ function App() {
                   </div>
                   {initiative.financial_impact?.projected_annual && (
                     <div className="text-right">
-                      <div className="text-sm font-bold text-green-600">
+                      <div className="text-[10px] font-bold text-green-600">
                         {formatCurrency(initiative.financial_impact.projected_annual)}
                       </div>
-                      <div className="text-xs text-gray-600">Impact</div>
+                      <div className="text-[10px] text-gray-600">Impact</div>
                     </div>
                   )}
                 </div>
