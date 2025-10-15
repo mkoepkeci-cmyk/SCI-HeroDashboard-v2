@@ -97,6 +97,7 @@ export interface Initiative {
   key_collaborators?: string[];
   governance_bodies?: string[];
   team_member_id?: string;
+  governance_request_id?: string;  // Link back to governance request (if created from portal)
   is_draft: boolean;
   is_active?: boolean;
   completion_status: CompletionStatus;
@@ -282,6 +283,99 @@ export interface TeamMemberWithDashboard extends TeamMember {
   assignments: Assignment[];
 }
 
+// Governance Portal Types
+export type GovernanceStatus =
+  | 'Draft'
+  | 'Submitted'
+  | 'Under Review'
+  | 'Refinement'
+  | 'Ready for Governance'
+  | 'In Progress'
+  | 'Completed'
+  | 'Declined';
+
+export interface GovernanceRequest {
+  id: string;
+  request_id: string;  // Auto-generated GOV-YYYY-XXX
+
+  // Basic Information
+  title: string;
+  division_region: string;
+  submitter_name: string;
+  submitter_email: string;
+  problem_statement: string;
+  desired_outcomes: string;
+
+  // Leadership & Assignment
+  system_clinical_leader?: string;
+  assigned_sci_id?: string;
+  assigned_sci_name?: string;
+
+  // Value Proposition
+  patient_care_value?: string;
+  compliance_regulatory_value?: string;
+  financial_impact?: number;
+  target_timeline?: string;
+  estimated_scope?: string;
+
+  // Scoring (optional)
+  benefit_score?: number;
+  effort_score?: number;
+  total_score?: number;
+
+  // Workflow
+  status: GovernanceStatus;
+
+  // Conversion tracking
+  linked_initiative_id?: string;
+  converted_at?: string;
+  converted_by?: string;
+
+  // Dates
+  submitted_date?: string;
+  reviewed_date?: string;
+  approved_date?: string;
+  completed_date?: string;
+
+  // Metadata
+  created_at: string;
+  updated_at: string;
+  last_updated_by?: string;
+}
+
+export interface GovernanceAttachment {
+  id: string;
+  request_id: string;
+  file_name: string;
+  file_url: string;
+  file_size?: number;
+  uploaded_by?: string;
+  uploaded_at: string;
+}
+
+export interface GovernanceLink {
+  id: string;
+  request_id: string;
+  link_title: string;
+  link_url: string;
+  added_at: string;
+}
+
+export interface GovernanceComment {
+  id: string;
+  request_id: string;
+  author_name: string;
+  comment_text: string;
+  created_at: string;
+}
+
+export interface GovernanceRequestWithDetails extends GovernanceRequest {
+  attachments: GovernanceAttachment[];
+  links: GovernanceLink[];
+  comments: GovernanceComment[];
+  linked_initiative?: Initiative;
+}
+
 // Database schema type for TypeScript support
 export type Database = {
   public: {
@@ -294,6 +388,18 @@ export type Database = {
       };
       dashboard_metrics: {
         Row: DashboardMetrics;
+      };
+      governance_requests: {
+        Row: GovernanceRequest;
+      };
+      governance_attachments: {
+        Row: GovernanceAttachment;
+      };
+      governance_links: {
+        Row: GovernanceLink;
+      };
+      governance_comments: {
+        Row: GovernanceComment;
       };
     };
   };
