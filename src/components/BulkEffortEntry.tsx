@@ -114,8 +114,9 @@ export default function BulkEffortEntry({
 
       // Filter initiatives for this team member
       // Match by owner_name (from initiatives table) to team member name
+      // Include Active, In Progress, Planning, and Scaling statuses
       let filteredInitiatives = allInitiatives.filter(
-        i => (i.status === 'Active' || i.status === 'Planning')
+        i => (i.status === 'Active' || i.status === 'In Progress' || i.status === 'Planning' || i.status === 'Scaling')
       );
 
       // If we have a team member name, filter to only show their initiatives
