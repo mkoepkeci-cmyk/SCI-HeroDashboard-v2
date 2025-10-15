@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Clock, Save, Copy, User, X } from 'lucide-react';
-import { supabase, InitiativeWithDetails, EffortLog, EFFORT_SIZES, EffortSize } from '../lib/supabase';
+import { Clock, Save, Copy, User, X, UserPlus } from 'lucide-react';
+import { supabase, InitiativeWithDetails, EffortLog, EFFORT_SIZES, EffortSize, TeamMember } from '../lib/supabase';
 import { getWeekStartDate, formatWeekRange, getEffortSizeFromHours } from '../lib/effortUtils';
+import ReassignModal from './ReassignModal';
 
 interface BulkEffortEntryProps {
   teamMemberId: string | null;
@@ -16,8 +17,11 @@ interface InitiativeEffortEntry {
   hours: number;
   effortSize: EffortSize;
   note: string;
+  skipped: boolean; // True if explicitly marking as "no work this week"
   existingLog?: EffortLog;
   hasChanges: boolean;
+  isMiscAssignment?: boolean; // True if this is an ad-hoc misc assignment
+  miscAssignmentName?: string; // Name for misc assignments
 }
 
 export default function BulkEffortEntry({
@@ -31,10 +35,27 @@ export default function BulkEffortEntry({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [lastWeekData, setLastWeekData] = useState<EffortLog[]>([]);
+  const [allTeamMembers, setAllTeamMembers] = useState<TeamMember[]>([]);
+  const [reassigningInitiative, setReassigningInitiative] = useState<InitiativeWithDetails | null>(null);
 
   useEffect(() => {
     loadData();
+    loadTeamMembers();
   }, [teamMemberId, initiatives, selectedWeek]);
+
+  const loadTeamMembers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('team_members')
+        .select('*')
+        .order('name', { ascending: true });
+
+      if (error) throw error;
+      setAllTeamMembers(data || []);
+    } catch (err) {
+      console.error('Error loading team members:', err);
+    }
+  };
 
   const loadData = async () => {
     if (!teamMemberId) {
@@ -50,23 +71,20 @@ export default function BulkEffortEntry({
       console.log('- Selected Week:', selectedWeek);
       console.log('- Initiatives passed:', initiatives?.length || 0);
 
-      // Fetch all initiatives if not provided
-      let allInitiatives = initiatives || [];
-      if (!initiatives || initiatives.length === 0) {
-        console.log('- Fetching initiatives from database...');
-        const { data: fetchedInitiatives, error: initError } = await supabase
-          .from('initiatives')
-          .select('*')
-          .order('initiative_name', { ascending: true });
+      // Always fetch fresh initiatives from database to include newly created misc assignments
+      console.log('- Fetching initiatives from database...');
+      const { data: fetchedInitiatives, error: initError } = await supabase
+        .from('initiatives')
+        .select('*')
+        .order('initiative_name', { ascending: true });
 
-        if (initError) {
-          console.error('Error fetching initiatives:', initError);
-          throw initError;
-        }
-
-        allInitiatives = fetchedInitiatives || [];
-        console.log('- Fetched initiatives:', allInitiatives.length);
+      if (initError) {
+        console.error('Error fetching initiatives:', initError);
+        throw initError;
       }
+
+      const allInitiatives = fetchedInitiatives || [];
+      console.log('- Fetched initiatives:', allInitiatives.length);
 
       // Load existing logs for selected week
       const { data: currentLogs, error: currentError } = await supabase
@@ -111,12 +129,15 @@ export default function BulkEffortEntry({
       const newEntries: InitiativeEffortEntry[] = filteredInitiatives.map(initiative => {
         const existingLog = (currentLogs || []).find(log => log.initiative_id === initiative.id);
         const hours = existingLog?.hours_spent || 0;
+        // Check if note indicates this was skipped (0 hours with a note saying "No work")
+        const isSkipped = existingLog && hours === 0 && existingLog.note?.toLowerCase().includes('no work');
 
         return {
           initiative,
           hours,
           effortSize: existingLog?.effort_size || getEffortSizeFromHours(hours),
           note: existingLog?.note || '',
+          skipped: isSkipped || false,
           existingLog,
           hasChanges: false,
         };
@@ -178,6 +199,22 @@ export default function BulkEffortEntry({
     );
   };
 
+  const handleSkipToggle = (index: number) => {
+    setEntries(prev =>
+      prev.map((entry, i) =>
+        i === index
+          ? {
+              ...entry,
+              skipped: !entry.skipped,
+              hours: !entry.skipped ? 0 : entry.hours, // Set to 0 when skipping
+              note: !entry.skipped ? 'No work this week' : '', // Auto-fill note
+              hasChanges: true,
+            }
+          : entry
+      )
+    );
+  };
+
   const copyFromLastWeek = () => {
     if (!lastWeekData.length) return;
 
@@ -198,11 +235,92 @@ export default function BulkEffortEntry({
     );
   };
 
-  const handleRemoveInitiative = (index: number) => {
-    const initiative = entries[index].initiative;
-    if (confirm(`Remove "${initiative.initiative_name}" from this list?\n\nThis won't delete the initiative, just hide it from your effort tracking for now.`)) {
-      setEntries(prev => prev.filter((_, i) => i !== index));
+  const handleRemoveInitiative = async (index: number) => {
+    const entry = entries[index];
+    const name = entry.isMiscAssignment ? entry.miscAssignmentName : entry.initiative.initiative_name;
+
+    if (!confirm(`Delete "${name || 'this item'}"?\n\nThis will permanently delete the initiative and all associated data. This cannot be undone.`)) {
+      return;
     }
+
+    try {
+      // Only update database if it's not a temporary/unsaved initiative
+      if (!entry.initiative.id.startsWith('misc-')) {
+        console.log('[Delete] Attempting to mark initiative as deleted:', entry.initiative.id, entry.initiative.initiative_name);
+
+        // Instead of deleting, change status to "Deleted" so Google Sheets sync doesn't restore it
+        // The effort tracking view only shows Active/Planning initiatives, so this will hide it
+        const { error: initError } = await supabase
+          .from('initiatives')
+          .update({
+            status: 'Deleted',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', entry.initiative.id);
+
+        if (initError) {
+          console.error('[Delete] Error from Supabase:', initError);
+          throw initError;
+        }
+
+        console.log('[Delete] Initiative status changed to Deleted');
+      } else {
+        console.log('[Delete] Skipping database update for temporary initiative:', entry.initiative.id);
+      }
+
+      // Remove from UI immediately
+      setEntries(prev => prev.filter((_, i) => i !== index));
+      console.log('[Delete] Removed from UI');
+
+      // Notify parent to refresh data
+      onSave();
+      console.log('[Delete] Notified parent component');
+    } catch (err) {
+      console.error('[Delete] Error deleting initiative:', err);
+      alert(`Failed to delete initiative: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    }
+  };
+
+  const handleAddMiscAssignment = () => {
+    // Create a temporary initiative object for the misc assignment
+    const tempInitiative: InitiativeWithDetails = {
+      id: `misc-${Date.now()}`, // Temporary ID
+      initiative_name: 'Misc Assignment',
+      type: 'General Support',
+      status: 'Active',
+      owner_name: teamMemberName || '',
+      team_member_id: teamMemberId || '',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    const newEntry: InitiativeEffortEntry = {
+      initiative: tempInitiative,
+      hours: 0,
+      effortSize: 'S',
+      note: '',
+      skipped: false,
+      hasChanges: true,
+      isMiscAssignment: true,
+      miscAssignmentName: '',
+    };
+
+    // Add to the beginning of the array so it appears at the top
+    setEntries(prev => [newEntry, ...prev]);
+  };
+
+  const handleMiscAssignmentNameChange = (index: number, value: string) => {
+    setEntries(prev =>
+      prev.map((entry, i) =>
+        i === index
+          ? {
+              ...entry,
+              miscAssignmentName: value,
+              hasChanges: true,
+            }
+          : entry
+      )
+    );
   };
 
   const handleSaveAll = async () => {
@@ -211,11 +329,46 @@ export default function BulkEffortEntry({
     try {
       setSaving(true);
 
-      const changedEntries = entries.filter(e => e.hasChanges && e.hours > 0);
+      // Include entries with changes AND either hours > 0 OR skipped OR is misc assignment with name
+      const changedEntries = entries.filter(e =>
+        e.hasChanges && (
+          e.hours > 0 ||
+          e.skipped ||
+          (e.isMiscAssignment && e.miscAssignmentName?.trim())
+        )
+      );
 
       for (const entry of changedEntries) {
+        let initiativeId = entry.initiative.id;
+
+        // If this is a misc assignment, create the initiative first
+        if (entry.isMiscAssignment && entry.miscAssignmentName) {
+          const initiativeName = entry.miscAssignmentName.trim() || 'Misc Assignment';
+
+          // Create the initiative
+          const { data: newInitiative, error: initError } = await supabase
+            .from('initiatives')
+            .insert([{
+              initiative_name: initiativeName,
+              type: 'General Support',
+              status: 'Active',
+              owner_name: teamMemberName || '',
+              team_member_id: teamMemberId,
+            }])
+            .select()
+            .single();
+
+          if (initError) throw initError;
+          if (!newInitiative) throw new Error('Failed to create misc assignment initiative');
+
+          initiativeId = newInitiative.id;
+        } else if (entry.isMiscAssignment && !entry.miscAssignmentName?.trim()) {
+          // Skip misc assignments without a name
+          continue;
+        }
+
         const logData = {
-          initiative_id: entry.initiative.id,
+          initiative_id: initiativeId,
           team_member_id: teamMemberId,
           week_start_date: selectedWeek,
           hours_spent: entry.hours,
@@ -278,7 +431,13 @@ export default function BulkEffortEntry({
   }
 
   const totalHours = entries.reduce((sum, entry) => sum + entry.hours, 0);
-  const changedCount = entries.filter(e => e.hasChanges && e.hours > 0).length;
+  const changedCount = entries.filter(e =>
+    e.hasChanges && (
+      e.hours > 0 ||
+      e.skipped ||
+      (e.isMiscAssignment && e.miscAssignmentName?.trim())
+    )
+  ).length;
 
   return (
     <div className="space-y-4">
@@ -298,6 +457,13 @@ export default function BulkEffortEntry({
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={handleAddMiscAssignment}
+              className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors flex items-center gap-2"
+            >
+              <span className="text-lg">+</span>
+              Add Misc. Assignment
+            </button>
             {lastWeekData.length > 0 && (
               <button
                 onClick={copyFromLastWeek}
@@ -325,7 +491,9 @@ export default function BulkEffortEntry({
           <table className="w-full">
             <thead className="bg-gray-50 border-b">
               <tr>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase w-16">Skip</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Initiative</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase w-32">Owner</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Type</th>
                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase">Hours</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Size</th>
@@ -336,11 +504,48 @@ export default function BulkEffortEntry({
             <tbody className="divide-y divide-gray-200">
               {entries.map((entry, index) => (
                 <tr key={entry.initiative.id} className={entry.hasChanges ? 'bg-blue-50/50' : ''}>
+                  <td className="px-4 py-3 text-center">
+                    <input
+                      type="checkbox"
+                      checked={entry.skipped}
+                      onChange={() => handleSkipToggle(index)}
+                      className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 cursor-pointer"
+                      title="Skip this week - mark as no work"
+                    />
+                  </td>
                   <td className="px-4 py-3">
-                    <div className="font-medium text-sm text-gray-900">{entry.initiative.initiative_name}</div>
-                    {entry.initiative.service_line && (
-                      <div className="text-xs text-gray-500">{entry.initiative.service_line}</div>
+                    {entry.isMiscAssignment ? (
+                      <input
+                        type="text"
+                        value={entry.miscAssignmentName || ''}
+                        onChange={(e) => handleMiscAssignmentNameChange(index, e.target.value)}
+                        placeholder="Enter assignment name..."
+                        className="w-full px-2 py-1 font-medium text-sm border border-purple-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-purple-50"
+                      />
+                    ) : (
+                      <>
+                        <div className="font-medium text-sm text-gray-900">{entry.initiative.initiative_name}</div>
+                        {entry.initiative.service_line && (
+                          <div className="text-xs text-gray-500">{entry.initiative.service_line}</div>
+                        )}
+                      </>
                     )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-gray-700 truncate flex-1">
+                        {entry.initiative.owner_name || teamMemberName}
+                      </span>
+                      {!entry.isMiscAssignment && (
+                        <button
+                          onClick={() => setReassigningInitiative(entry.initiative)}
+                          className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 p-1 rounded transition-colors"
+                          title="Reassign to another SCI"
+                        >
+                          <UserPlus className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <span className="text-xs text-gray-600">{entry.initiative.type}</span>
@@ -402,6 +607,20 @@ export default function BulkEffortEntry({
           </table>
         </div>
       </div>
+
+      {/* Reassign Modal */}
+      {reassigningInitiative && (
+        <ReassignModal
+          initiative={reassigningInitiative}
+          allTeamMembers={allTeamMembers}
+          currentOwnerName={reassigningInitiative.owner_name || teamMemberName || ''}
+          onClose={() => setReassigningInitiative(null)}
+          onSuccess={() => {
+            loadData(); // Reload to reflect reassignment
+            onSave(); // Notify parent component
+          }}
+        />
+      )}
     </div>
   );
 }

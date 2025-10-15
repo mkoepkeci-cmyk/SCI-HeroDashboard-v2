@@ -41,6 +41,11 @@ This application provides comprehensive visibility into team member portfolios, 
 - **Initiative Tracking**: Detailed tracking of major initiatives with financial impact, performance data, projections, and success stories
 - **Data Management**: Forms for creating and editing initiatives with metrics, financial data, and performance information
 - **Effort Tracking**: Weekly time logging for capacity management and workload visibility
+  - **Bulk Effort Entry**: Table view showing all initiatives with inline editing
+  - **Skip Checkbox**: Mark initiatives as "no work this week" to document zero effort
+  - **Misc. Assignments**: Create ad-hoc General Support tasks on-the-fly
+  - **Quick Reassignment**: Reassign initiatives to other SCIs directly from effort table
+  - **Delete Functionality**: Permanently remove initiatives (soft delete with status change)
 
 ---
 
@@ -231,10 +236,20 @@ src/
 │   ├── CompletionIndicator.tsx         # Visual indicator for completion percentages
 │   ├── InitiativeCard.tsx              # Initiative display card with metrics
 │   ├── InitiativeSubmissionForm.tsx    # Form for creating/editing initiatives
-│   └── InitiativesView.tsx             # List view of all initiatives
+│   ├── InitiativesView.tsx             # List view of all initiatives
+│   ├── BulkEffortEntry.tsx             # Bulk effort logging table with inline editing
+│   ├── PersonalWorkloadDashboard.tsx   # Effort tracking dashboard with staff selector
+│   ├── ReassignModal.tsx               # Modal for quick initiative reassignment
+│   ├── EffortLogModal.tsx              # Modal for individual effort logging
+│   └── EffortSparkline.tsx             # Mini timeline for effort trends
 └── lib/
     ├── supabase.ts                     # Supabase client and type definitions
-    └── completionUtils.ts              # Utilities for completion calculations
+    ├── completionUtils.ts              # Utilities for completion calculations
+    └── effortUtils.ts                  # Effort tracking calculations and utilities
+supabase/
+└── migrations/
+    ├── 20250114000000_create_effort_logs_table.sql    # Effort tracking schema
+    └── 20250115000000_update_initiatives_rls.sql      # RLS policies for CRUD operations
 ```
 
 ## Database Schema
@@ -377,6 +392,101 @@ Multi-step form for managing initiatives:
 
 ### All Other Sections
 See `InitiativeSubmissionForm.tsx` for complete field list
+
+## Effort Tracking Features
+
+### Bulk Effort Entry Table
+**Location**: My Effort → Log Effort tab
+
+**Features:**
+- **Table Columns**: Skip | Initiative | Owner | Type | Hours | Size | Note | Remove
+- **Inline Editing**: Edit hours, select effort sizes (XS-XXL), add notes directly in table
+- **Skip Checkbox**: Mark initiatives as "no work this week" (saves 0 hours with note)
+- **Owner Column**: Shows current owner with reassign button
+- **Reassign Button**: Purple icon (👥) opens modal to reassign initiative to another SCI
+- **Remove Button**: X icon permanently deletes initiative (changes status to "Deleted")
+- **Add Misc. Assignment**: Purple button creates ad-hoc General Support tasks
+- **Copy Last Week**: Auto-fills effort data from previous week
+- **Save Changes**: Batch saves all modified entries
+
+**Effort Sizes:**
+- XS = 1.5 hours (Extra Small)
+- S = 4 hours (Small)
+- M = 8 hours (Medium)
+- L = 13 hours (Large)
+- XL = 18 hours (Extra Large)
+- XXL = 25 hours (Double XL)
+
+### Misc. Assignments
+**Purpose**: Create quick one-off tasks without formal initiative setup
+
+**Workflow:**
+1. Click "Add Misc. Assignment" → Row appears at top
+2. Enter assignment name in purple-highlighted field
+3. Log hours/size/notes as normal
+4. Click Save → Creates initiative with type "General Support"
+5. Appears in future effort tracking and Team views
+
+**Characteristics:**
+- Purple-highlighted editable name field
+- Type: General Support
+- Status: Active
+- Owner: Current user
+- Can be reassigned or deleted like any initiative
+
+### Quick Reassignment
+**Purpose**: Transfer initiative ownership between SCIs
+
+**Workflow:**
+1. Click purple reassign icon (👥) next to owner name
+2. Modal opens showing:
+   - Initiative details for context
+   - Current owner
+   - New owner dropdown (filters out current owner)
+   - Role selector (Owner/Co-Owner/Secondary/Support)
+3. Select new owner and role
+4. Click "Reassign"
+5. Initiative disappears from current user's list
+6. Initiative appears in new owner's list
+7. Work type counts recalculate for both users
+
+**Database Updates:**
+- `owner_name` → New owner's name
+- `team_member_id` → New owner's ID
+- `role` → Selected role
+- `updated_at` → Current timestamp
+
+### Delete Functionality
+**Purpose**: Permanently remove initiatives from database
+
+**Workflow:**
+1. Click X button on any row
+2. Confirm deletion dialog: "This will permanently delete the initiative and all associated data"
+3. On confirm:
+   - Initiative status changed to "Deleted" (soft delete)
+   - Initiative removed from UI
+   - No longer appears in effort tracking (only Active/Planning shown)
+4. Deletion persists (not restored by Google Sheets sync)
+
+**Technical Implementation:**
+- Soft delete: Changes `status` to "Deleted" instead of hard delete
+- Prevents Google Sheets sync from restoring deleted items
+- Effort tracking filters only show Active/Planning/Scaling initiatives
+- Can be reversed by manually changing status back in database
+
+### Role Field Update
+**Change**: Replaced "Primary" with "Owner" throughout the application
+
+**Updated Locations:**
+- Initiative form dropdown
+- Reassignment modal
+- Database `role` field values
+
+**Valid Role Options:**
+- Owner (was "Primary")
+- Co-Owner
+- Secondary
+- Support
 
 ## Notes
 

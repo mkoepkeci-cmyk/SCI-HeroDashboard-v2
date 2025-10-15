@@ -168,7 +168,7 @@ function App() {
           .map((h) => h.highlight);
 
         const memberInitiatives = initiativesWithDetails.filter(
-          (i) => i.team_member_id === member.id
+          (i) => i.team_member_id === member.id || i.owner_name === member.name
         );
 
         const memberAssignments = (assignments || []).filter(
@@ -180,9 +180,27 @@ function App() {
           (dm: any) => dm.team_member_id === member.id
         );
 
+        // Augment work types with counts from initiatives to include misc assignments
+        // Count initiatives by type for this member
+        const initiativeCounts = memberInitiatives.reduce((acc, initiative) => {
+          const type = initiative.type || 'General Support';
+          acc[type] = (acc[type] || 0) + 1;
+          return acc;
+        }, {} as { [key: string]: number });
+
+        // Merge work_type_summary counts with initiative counts
+        // For types that exist in both, use the max to ensure misc assignments are counted
+        const combinedWorkTypes = { ...memberWorkTypes };
+        Object.keys(initiativeCounts).forEach(type => {
+          combinedWorkTypes[type] = Math.max(
+            combinedWorkTypes[type] || 0,
+            initiativeCounts[type] || 0
+          );
+        });
+
         return {
           ...member,
-          workTypes: memberWorkTypes,
+          workTypes: combinedWorkTypes,
           ehrs: memberEHRs,
           topWork: memberHighlights,
           initiatives: memberInitiatives,
