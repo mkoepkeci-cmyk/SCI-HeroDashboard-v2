@@ -286,13 +286,10 @@ export interface TeamMemberWithDashboard extends TeamMember {
 // Governance Portal Types
 export type GovernanceStatus =
   | 'Draft'
-  | 'Submitted'
-  | 'Under Review'
-  | 'Refinement'
+  | 'Ready for Review'
+  | 'Needs Refinement'
   | 'Ready for Governance'
-  | 'In Progress'
-  | 'Completed'
-  | 'Declined';
+  | 'Dismissed';
 
 export interface GovernanceRequest {
   id: string;
@@ -314,9 +311,29 @@ export interface GovernanceRequest {
   // Value Proposition
   patient_care_value?: string;
   compliance_regulatory_value?: string;
-  financial_impact?: number;
+  financial_impact?: number; // Legacy field - kept for backward compatibility
   target_timeline?: string;
   estimated_scope?: string;
+
+  // Impact Metrics (structured data)
+  impact_metrics?: {
+    metric_name: string;
+    metric_type: string;
+    unit: string;
+    baseline_value?: number;
+    baseline_date?: string;
+    current_value?: number;
+    measurement_date?: string;
+    target_value?: number;
+    improvement?: string;
+    measurement_method?: string;
+  }[];
+
+  // Financial Impact Details
+  projected_annual_revenue?: number;
+  projection_basis?: string;
+  calculation_methodology?: string;
+  key_assumptions?: string[];
 
   // Scoring (optional)
   benefit_score?: number;

@@ -10,6 +10,7 @@ import { InsightsChat } from './components/InsightsChat';
 import PersonalWorkloadDashboard from './components/PersonalWorkloadDashboard';
 import { GovernancePortalView } from './components/GovernancePortalView';
 import { GovernanceRequestDetail } from './components/GovernanceRequestDetail';
+import { GovernanceRequestForm } from './components/GovernanceRequestForm';
 import { calculateWorkload, getCapacityStatus, getCapacityColor, getCapacityEmoji, getCapacityLabel, WORK_EFFORT_HOURS, parseWorkEffort } from './lib/workloadUtils';
 import StaffDetailModal from './components/StaffDetailModal';
 
@@ -38,10 +39,13 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [editingInitiative, setEditingInitiative] = useState<InitiativeWithDetails | null>(null);
   const [currentUser, setCurrentUser] = useState<TeamMemberWithDetails | null>(null); // For effort tracking
+  const [selectedInitiativeId, setSelectedInitiativeId] = useState<string | null>(null); // For viewing specific initiative
 
   // Governance portal state
   const [selectedGovernanceRequest, setSelectedGovernanceRequest] = useState<any>(null);
   const [showGovernanceForm, setShowGovernanceForm] = useState(false);
+  const [editingGovernanceRequest, setEditingGovernanceRequest] = useState<any>(null);
+  const [governanceRefreshKey, setGovernanceRefreshKey] = useState(0);
 
   // Update URL hash when view changes
   useEffect(() => {
@@ -919,66 +923,79 @@ function App() {
 
           {selectedMember.initiatives && selectedMember.initiatives.length > 0 && (
             <div className="mt-4">
-              <h3 className="font-semibold text-sm mb-3 flex items-center justify-between">
-                <span>Major Initiatives & Impact</span>
-                <span className="text-xs font-normal text-gray-600">
-                  {selectedMember.initiatives.length} initiative{selectedMember.initiatives.length !== 1 ? 's' : ''}
-                </span>
-              </h3>
-
-              {/* Group initiatives by work type */}
               {(() => {
-                const groupedInitiatives = selectedMember.initiatives.reduce((acc, initiative) => {
-                  const type = initiative.type || 'Other';
-                  if (!acc[type]) acc[type] = [];
-                  acc[type].push(initiative);
-                  return acc;
-                }, {} as Record<string, typeof selectedMember.initiatives>);
+                // Filter initiatives: Show only Active, Scaling, and Completed (hide Planning/Draft)
+                const visibleInitiatives = selectedMember.initiatives.filter(
+                  (i) => i.status === 'Active' || i.status === 'Scaling' || i.status === 'Completed'
+                );
 
-                // Define order and colors for categories
-                const categoryOrder = ['Project', 'System Initiative', 'Policy', 'Epic Gold', 'Governance', 'General Support', 'Other'];
-                const categoryColors: Record<string, string> = {
-                  'Project': '#9C5C9D',
-                  'System Initiative': '#00A1E0',
-                  'Policy': '#6F47D0',
-                  'Epic Gold': '#9B2F6A',
-                  'Governance': '#6F47D0',
-                  'General Support': '#F58025',
-                  'Other': '#565658'
-                };
+                if (visibleInitiatives.length === 0) return null;
 
-                return categoryOrder.map((category) => {
-                  const initiatives = groupedInitiatives[category];
-                  if (!initiatives || initiatives.length === 0) return null;
+                return (
+                  <>
+                    <h3 className="font-semibold text-sm mb-3 flex items-center justify-between">
+                      <span>Major Initiatives & Impact</span>
+                      <span className="text-xs font-normal text-gray-600">
+                        {visibleInitiatives.length} initiative{visibleInitiatives.length !== 1 ? 's' : ''}
+                      </span>
+                    </h3>
 
-                  return (
-                    <div key={category} className="mb-4">
-                      <div
-                        className="flex items-center gap-2 mb-2 pb-1 border-b-2"
-                        style={{ borderColor: categoryColors[category] }}
-                      >
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: categoryColors[category] }}
-                        ></div>
-                        <h4
-                          className="font-semibold text-sm"
-                          style={{ color: categoryColors[category] }}
-                        >
-                          {category}
-                        </h4>
-                        <span className="text-xs text-gray-600">
-                          ({initiatives.length})
-                        </span>
-                      </div>
-                      <div className="space-y-2">
-                        {initiatives.map((initiative) => (
-                          <InitiativeCard key={initiative.id} initiative={initiative} />
-                        ))}
-                      </div>
-                    </div>
-                  );
-                });
+                    {/* Group initiatives by work type */}
+                    {(() => {
+                      const groupedInitiatives = visibleInitiatives.reduce((acc, initiative) => {
+                        const type = initiative.type || 'Other';
+                        if (!acc[type]) acc[type] = [];
+                        acc[type].push(initiative);
+                        return acc;
+                      }, {} as Record<string, typeof visibleInitiatives>);
+
+                      // Define order and colors for categories
+                      const categoryOrder = ['Project', 'System Initiative', 'Policy', 'Epic Gold', 'Governance', 'General Support', 'Other'];
+                      const categoryColors: Record<string, string> = {
+                        'Project': '#9C5C9D',
+                        'System Initiative': '#00A1E0',
+                        'Policy': '#6F47D0',
+                        'Epic Gold': '#9B2F6A',
+                        'Governance': '#6F47D0',
+                        'General Support': '#F58025',
+                        'Other': '#565658'
+                      };
+
+                      return categoryOrder.map((category) => {
+                        const initiatives = groupedInitiatives[category];
+                        if (!initiatives || initiatives.length === 0) return null;
+
+                        return (
+                          <div key={category} className="mb-4">
+                            <div
+                              className="flex items-center gap-2 mb-2 pb-1 border-b-2"
+                              style={{ borderColor: categoryColors[category] }}
+                            >
+                              <div
+                                className="w-3 h-3 rounded-full"
+                                style={{ backgroundColor: categoryColors[category] }}
+                              ></div>
+                              <h4
+                                className="font-semibold text-sm"
+                                style={{ color: categoryColors[category] }}
+                              >
+                                {category}
+                              </h4>
+                              <span className="text-xs text-gray-600">
+                                ({initiatives.length})
+                              </span>
+                            </div>
+                            <div className="space-y-2">
+                              {initiatives.map((initiative) => (
+                                <InitiativeCard key={initiative.id} initiative={initiative} />
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      });
+                    })()}
+                  </>
+                );
               })()}
             </div>
           )}
@@ -1028,6 +1045,11 @@ function App() {
     const [showDataQuality, setShowDataQuality] = useState(true);
     const [expandedWarnings, setExpandedWarnings] = useState<Set<string>>(new Set());
     const [cardMetricView, setCardMetricView] = useState<'capacity' | 'worktype' | 'effort' | 'quality'>('capacity');
+
+    // Find and show the selected initiative from governance portal
+    const selectedInitiative = selectedInitiativeId
+      ? teamMembers.flatMap(m => m.initiatives || []).find(i => i.id === selectedInitiativeId)
+      : null;
 
     // Use dashboard_metrics data (pre-calculated from Excel Dashboard)
     // STOP CALCULATING - use ONLY the Excel Dashboard data!
@@ -1889,27 +1911,6 @@ function App() {
                 Overview
               </button>
               <button
-                onClick={() => setActiveView('team')}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-                  activeView === 'team'
-                    ? 'bg-[#9B2F6A] text-white shadow-md'
-                    : 'bg-gray-100 text-[#565658] hover:bg-gray-200'
-                }`}
-              >
-                Team
-              </button>
-              <button
-                onClick={() => setActiveView('workload')}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1 ${
-                  activeView === 'workload'
-                    ? 'bg-[#F58025] text-white shadow-md'
-                    : 'bg-gray-100 text-[#565658] hover:bg-gray-200'
-                }`}
-              >
-                <TrendingUp size={16} />
-                Workload
-              </button>
-              <button
                 onClick={() => setActiveView('governance')}
                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1 ${
                   activeView === 'governance'
@@ -1923,6 +1924,16 @@ function App() {
                 Governance
               </button>
               <button
+                onClick={() => setActiveView('team')}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                  activeView === 'team'
+                    ? 'bg-[#9B2F6A] text-white shadow-md'
+                    : 'bg-gray-100 text-[#565658] hover:bg-gray-200'
+                }`}
+              >
+                Team
+              </button>
+              <button
                 onClick={() => setActiveView('myEffort')}
                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1 ${
                   activeView === 'myEffort'
@@ -1934,6 +1945,17 @@ function App() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 My Effort
+              </button>
+              <button
+                onClick={() => setActiveView('workload')}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1 ${
+                  activeView === 'workload'
+                    ? 'bg-[#F58025] text-white shadow-md'
+                    : 'bg-gray-100 text-[#565658] hover:bg-gray-200'
+                }`}
+              >
+                <TrendingUp size={16} />
+                Workload
               </button>
               <button
                 onClick={() => setActiveView('insights')}
@@ -1975,14 +1997,42 @@ function App() {
         ) : activeView === 'governance' ? (
           <>
             <GovernancePortalView
+              key={governanceRefreshKey}
               onCreateNew={() => setShowGovernanceForm(true)}
               onViewRequest={(request) => setSelectedGovernanceRequest(request)}
+              onViewInitiative={(initiativeId) => {
+                setSelectedInitiativeId(initiativeId);
+              }}
             />
+            {showGovernanceForm && (
+              <GovernanceRequestForm
+                onClose={() => {
+                  setShowGovernanceForm(false);
+                  setEditingGovernanceRequest(null);
+                }}
+                onSuccess={() => {
+                  setShowGovernanceForm(false);
+                  setEditingGovernanceRequest(null);
+                  setGovernanceRefreshKey(prev => prev + 1); // Force portal refresh
+                }}
+                editingRequest={editingGovernanceRequest}
+              />
+            )}
             {selectedGovernanceRequest && (
               <GovernanceRequestDetail
                 request={selectedGovernanceRequest}
                 onClose={() => setSelectedGovernanceRequest(null)}
                 onUpdate={() => {
+                  setSelectedGovernanceRequest(null);
+                  setGovernanceRefreshKey(prev => prev + 1); // Refresh portal after updates/deletes
+                }}
+                onEdit={(request) => {
+                  setEditingGovernanceRequest(request);
+                  setShowGovernanceForm(true);
+                  setSelectedGovernanceRequest(null);
+                }}
+                onViewInitiative={(initiativeId) => {
+                  setSelectedInitiativeId(initiativeId);
                   setSelectedGovernanceRequest(null);
                 }}
               />
@@ -1994,6 +2044,7 @@ function App() {
             allTeamMembers={teamMembers}
             initiatives={teamMembers.flatMap(m => m.initiatives || [])}
             onTeamMemberChange={setCurrentUser}
+            onInitiativesRefresh={fetchTeamData}
           />
         ) : activeView === 'insights' ? (
           <div className="h-[calc(100vh-12rem)] bg-white rounded-lg shadow-sm">
@@ -2040,6 +2091,27 @@ function App() {
           />
         ) : null}
       </main>
+
+      {/* Global initiative modal - can appear on any tab */}
+      {selectedInitiativeId && (() => {
+        const initiative = teamMembers.flatMap(m => m.initiatives || []).find(i => i.id === selectedInitiativeId);
+        return initiative ? (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
+            <div className="min-h-screen flex items-start justify-center p-4 py-8">
+              <div className="max-w-6xl w-full">
+                <InitiativeSubmissionForm
+                  key={initiative.id + '-' + initiative.updated_at}
+                  editingInitiative={initiative}
+                  onClose={() => setSelectedInitiativeId(null)}
+                  onSuccess={async () => {
+                    await fetchTeamData();
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        ) : null;
+      })()}
     </div>
   );
 }

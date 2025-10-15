@@ -18,9 +18,10 @@ import {
 interface GovernancePortalViewProps {
   onCreateNew: () => void;
   onViewRequest: (request: GovernanceRequest) => void;
+  onViewInitiative?: (initiativeId: string) => void;
 }
 
-export const GovernancePortalView = ({ onCreateNew, onViewRequest }: GovernancePortalViewProps) => {
+export const GovernancePortalView = ({ onCreateNew, onViewRequest, onViewInitiative }: GovernancePortalViewProps) => {
   const [requests, setRequests] = useState<GovernanceRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
@@ -28,7 +29,8 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest }: GovernanceP
   const [filters, setFilters] = useState<RequestFilters>({});
   const [sortField, setSortField] = useState<SortField>('updated_at');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const [quickFilter, setQuickFilter] = useState<'all' | 'needsAssignment' | 'inPrep' | 'needsReview'>('all');
+  const [quickFilter, setQuickFilter] = useState<'all' | 'needsSci' | 'readyForReview' | 'needsRefinement' | 'readyForGovernance'>('all');
+  const [showSystemLevelModal, setShowSystemLevelModal] = useState(false);
 
   useEffect(() => {
     fetchGovernanceRequests();
@@ -60,13 +62,15 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest }: GovernanceP
   const filteredAndSortedRequests = useMemo(() => {
     let filtered = filterRequests(requests, { ...filters, search: searchQuery });
 
-    // Apply quick filters
-    if (quickFilter === 'needsAssignment') {
-      filtered = filtered.filter(r => r.status === 'Ready for Governance' && !r.linked_initiative_id);
-    } else if (quickFilter === 'inPrep') {
-      filtered = filtered.filter(r => r.status === 'Ready for Governance' && r.linked_initiative_id);
-    } else if (quickFilter === 'needsReview') {
-      filtered = filtered.filter(r => r.status === 'Submitted' || r.status === 'Under Review');
+    // Apply quick filters based on status
+    if (quickFilter === 'needsSci') {
+      filtered = filtered.filter(r => !r.assigned_sci_id && r.status !== 'Dismissed');
+    } else if (quickFilter === 'readyForReview') {
+      filtered = filtered.filter(r => r.status === 'Ready for Review');
+    } else if (quickFilter === 'needsRefinement') {
+      filtered = filtered.filter(r => r.status === 'Needs Refinement');
+    } else if (quickFilter === 'readyForGovernance') {
+      filtered = filtered.filter(r => r.status === 'Ready for Governance');
     }
 
     return sortRequests(filtered, sortField, sortDirection);
@@ -131,7 +135,7 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest }: GovernanceP
               className="text-sm text-purple-600 hover:text-purple-800 underline mt-2 inline-block"
               onClick={(e) => {
                 e.preventDefault();
-                alert('Guidance: This portal is exclusively for system-level requests that impact the organization at a system-wide level, affect multiple divisions/markets, or require enterprise-wide resources and governance approval. Individual market or facility-level requests should not be submitted here.');
+                setShowSystemLevelModal(true);
               }}
             >
               Not sure if your request is system-level? Click here
@@ -148,48 +152,43 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest }: GovernanceP
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Total Requests</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{metrics.total}</p>
-            </div>
-            <FileText className="w-8 h-8 text-gray-400" />
-          </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        {/* Total */}
+        <div className="bg-white border border-gray-200 rounded-lg p-2">
+          <p className="text-xs text-gray-600 uppercase font-medium">Total</p>
+          <p className="text-xl font-bold text-gray-900 mt-1">{metrics.total}</p>
         </div>
 
-        <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-green-700">Ready for Assignment</p>
-              <p className="text-3xl font-bold text-green-900 mt-1">{metrics.readyForAssignment}</p>
-            </div>
-            <CheckCircle2 className="w-8 h-8 text-green-500" />
-          </div>
-          <p className="text-xs text-green-600 mt-2">No SCI assigned yet</p>
+        {/* Draft */}
+        <div className="bg-gray-50 border border-gray-300 rounded-lg p-2">
+          <p className="text-xs text-gray-600 uppercase font-medium">📝 Draft</p>
+          <p className="text-xl font-bold text-gray-900 mt-1">{metrics.byStatus['Draft']}</p>
         </div>
 
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-purple-700">In Prep</p>
-              <p className="text-3xl font-bold text-purple-900 mt-1">{metrics.inPrep}</p>
-            </div>
-            <Users className="w-8 h-8 text-purple-500" />
-          </div>
-          <p className="text-xs text-purple-600 mt-2">SCI working on prep</p>
+        {/* Needs SCI Assigned */}
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-2">
+          <p className="text-xs text-orange-700 uppercase font-medium">Needs SCI</p>
+          <p className="text-xl font-bold text-orange-900 mt-1">
+            {requests.filter(r => !r.assigned_sci_id && r.status !== 'Dismissed').length}
+          </p>
         </div>
 
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-blue-700">Needs Review</p>
-              <p className="text-3xl font-bold text-blue-900 mt-1">{metrics.needsReview}</p>
-            </div>
-            <Clock className="w-8 h-8 text-blue-500" />
-          </div>
-          <p className="text-xs text-blue-600 mt-2">Awaiting system team review</p>
+        {/* Ready for Review */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-2">
+          <p className="text-xs text-blue-700 uppercase font-medium">📤 Ready for Review</p>
+          <p className="text-xl font-bold text-blue-900 mt-1">{metrics.byStatus['Ready for Review']}</p>
+        </div>
+
+        {/* Needs Refinement */}
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-2">
+          <p className="text-xs text-orange-700 uppercase font-medium">🔧 Needs Refinement</p>
+          <p className="text-xl font-bold text-orange-900 mt-1">{metrics.byStatus['Needs Refinement']}</p>
+        </div>
+
+        {/* Ready for Governance */}
+        <div className="bg-green-50 border border-green-200 rounded-lg p-2">
+          <p className="text-xs text-green-700 uppercase font-medium">✅ Ready for Gov</p>
+          <p className="text-xl font-bold text-green-900 mt-1">{metrics.byStatus['Ready for Governance']}</p>
         </div>
       </div>
 
@@ -203,37 +202,47 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest }: GovernanceP
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
-          All Requests
+          All ({metrics.total})
         </button>
         <button
-          onClick={() => setQuickFilter('needsAssignment')}
+          onClick={() => setQuickFilter('needsSci')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            quickFilter === 'needsAssignment'
-              ? 'bg-green-600 text-white'
+            quickFilter === 'needsSci'
+              ? 'bg-orange-600 text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
-          Needs SCI Assignment ({metrics.readyForAssignment})
+          Needs SCI ({requests.filter(r => !r.assigned_sci_id && r.status !== 'Dismissed').length})
         </button>
         <button
-          onClick={() => setQuickFilter('inPrep')}
+          onClick={() => setQuickFilter('readyForReview')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            quickFilter === 'inPrep'
-              ? 'bg-purple-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          In Prep ({metrics.inPrep})
-        </button>
-        <button
-          onClick={() => setQuickFilter('needsReview')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            quickFilter === 'needsReview'
+            quickFilter === 'readyForReview'
               ? 'bg-blue-600 text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
-          Needs Review ({metrics.needsReview})
+          Ready for Review ({metrics.byStatus['Ready for Review'] || 0})
+        </button>
+        <button
+          onClick={() => setQuickFilter('needsRefinement')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            quickFilter === 'needsRefinement'
+              ? 'bg-orange-600 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          Needs Refinement ({metrics.byStatus['Needs Refinement'] || 0})
+        </button>
+        <button
+          onClick={() => setQuickFilter('readyForGovernance')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            quickFilter === 'readyForGovernance'
+              ? 'bg-green-600 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          Ready for Governance ({metrics.byStatus['Ready for Governance'] || 0})
         </button>
       </div>
 
@@ -439,6 +448,65 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest }: GovernanceP
       <div className="text-sm text-gray-600 text-center">
         Showing {filteredAndSortedRequests.length} of {requests.length} requests
       </div>
+
+      {/* System-Level Information Modal */}
+      {showSystemLevelModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6">
+            <div className="flex items-start justify-between mb-4">
+              <h2 className="text-2xl font-bold text-gray-900">
+                System-Level Governance Request
+              </h2>
+              <button
+                onClick={() => setShowSystemLevelModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-gray-700 mb-4">
+                This portal is exclusively for <strong>system-level requests</strong> that:
+              </p>
+              <ul className="space-y-2 text-gray-700">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span>Impact the entire organization or multiple divisions/markets</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span>Require system-level governance approval and CI number assignment</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span>Utilize enterprise resources (system clinical informatics team, IT infrastructure)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span>Establish organization-wide standards or policies</span>
+                </li>
+              </ul>
+
+              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                <p className="text-sm text-yellow-800">
+                  <strong>Note:</strong> Individual market or facility-level requests should NOT be submitted through this portal.
+                  If your request only affects a single market or facility, please work with your local leadership.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowSystemLevelModal(false)}
+                className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+              >
+                Got it
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

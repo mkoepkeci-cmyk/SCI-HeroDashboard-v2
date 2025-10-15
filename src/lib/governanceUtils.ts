@@ -11,16 +11,7 @@ import { GovernanceStatus, GovernanceRequest } from './supabase';
 // Division/Region Options
 // ==============================================
 export const DIVISION_REGIONS = [
-  'System (system-wide, all divisions)',
-  'All California',
-  'AZ/NV',
-  'Arkansas',
-  'Northwest',
-  'Central',
-  'South-KY',
-  'South-TN',
-  'South-TX',
-  'Mountain',
+  'System Request',
 ] as const;
 
 // ==============================================
@@ -42,25 +33,18 @@ export const STATUS_CONFIG: Record<GovernanceStatus, StatusConfig> = {
     label: 'Draft',
     icon: '📝'
   },
-  'Submitted': {
+  'Ready for Review': {
     color: '#2563EB',
     bgColor: '#EFF6FF',
     borderColor: '#DBEAFE',
-    label: 'Submitted',
+    label: 'Ready for Review',
     icon: '📤'
   },
-  'Under Review': {
-    color: '#7C3AED',
-    bgColor: '#F5F3FF',
-    borderColor: '#E9D5FF',
-    label: 'Under Review',
-    icon: '👀'
-  },
-  'Refinement': {
+  'Needs Refinement': {
     color: '#EA580C',
     bgColor: '#FFF7ED',
     borderColor: '#FFEDD5',
-    label: 'Refinement',
+    label: 'Needs Refinement',
     icon: '🔧'
   },
   'Ready for Governance': {
@@ -70,25 +54,11 @@ export const STATUS_CONFIG: Record<GovernanceStatus, StatusConfig> = {
     label: 'Ready for Governance',
     icon: '✅'
   },
-  'In Progress': {
-    color: '#0891B2',
-    bgColor: '#ECFEFF',
-    borderColor: '#CFFAFE',
-    label: 'In Progress',
-    icon: '⚙️'
-  },
-  'Completed': {
-    color: '#047857',
-    bgColor: '#D1FAE5',
-    borderColor: '#6EE7B7',
-    label: 'Completed',
-    icon: '✓'
-  },
-  'Declined': {
+  'Dismissed': {
     color: '#DC2626',
     bgColor: '#FEF2F2',
     borderColor: '#FECACA',
-    label: 'Declined',
+    label: 'Dismissed',
     icon: '✗'
   }
 };
@@ -101,14 +71,11 @@ export function getStatusConfig(status: GovernanceStatus): StatusConfig {
 // Status Transition Validation
 // ==============================================
 export const VALID_STATUS_TRANSITIONS: Record<GovernanceStatus, GovernanceStatus[]> = {
-  'Draft': ['Submitted'],
-  'Submitted': ['Under Review', 'Draft'],
-  'Under Review': ['Refinement', 'Ready for Governance', 'Declined'],
-  'Refinement': ['Submitted', 'Declined'],
-  'Ready for Governance': ['In Progress', 'Declined'],  // In Progress = SCI assigned
-  'In Progress': ['Completed', 'Declined'],
-  'Completed': [],  // Terminal state
-  'Declined': []    // Terminal state
+  'Draft': ['Ready for Review', 'Dismissed'],
+  'Ready for Review': ['Needs Refinement', 'Ready for Governance', 'Dismissed'],
+  'Needs Refinement': ['Ready for Review', 'Dismissed'],
+  'Ready for Governance': ['Dismissed'],
+  'Dismissed': []  // Terminal state
 };
 
 export function canTransitionTo(fromStatus: GovernanceStatus, toStatus: GovernanceStatus): boolean {
@@ -235,13 +202,11 @@ export function getInPrep(requests: GovernanceRequest[]): GovernanceRequest[] {
 }
 
 export function getApproved(requests: GovernanceRequest[]): GovernanceRequest[] {
-  return requests.filter(r => r.status === 'In Progress');
+  return requests.filter(r => r.status === 'Ready for Governance');
 }
 
 export function getNeedsReview(requests: GovernanceRequest[]): GovernanceRequest[] {
-  return requests.filter(r =>
-    r.status === 'Submitted' || r.status === 'Under Review'
-  );
+  return requests.filter(r => r.status === 'Ready for Review');
 }
 
 export function getMyRequests(requests: GovernanceRequest[], userEmail: string): GovernanceRequest[] {
@@ -342,11 +307,6 @@ export function validateGovernanceRequest(
     if (!data.desired_outcomes || data.desired_outcomes.trim().length === 0) {
       errors.desired_outcomes = 'Desired outcomes are required to submit';
     }
-
-    // Ensure system-level justification
-    if (data.problem_statement && !containsSystemLevelKeywords(data.problem_statement)) {
-      errors.problem_statement = 'Problem statement should clearly indicate this is a system-level initiative affecting multiple markets or the entire organization';
-    }
   }
 
   return errors;
@@ -355,23 +315,6 @@ export function validateGovernanceRequest(
 function isValidEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
-}
-
-function containsSystemLevelKeywords(text: string): boolean {
-  const systemKeywords = [
-    'system',
-    'enterprise',
-    'organization',
-    'all markets',
-    'multiple',
-    'division',
-    'system-wide',
-    'across',
-    'commonspirit'
-  ];
-
-  const textLower = text.toLowerCase();
-  return systemKeywords.some(keyword => textLower.includes(keyword));
 }
 
 // ==============================================
@@ -389,13 +332,10 @@ export interface PipelineMetrics {
 export function calculatePipelineMetrics(requests: GovernanceRequest[]): PipelineMetrics {
   const byStatus: Record<GovernanceStatus, number> = {
     'Draft': 0,
-    'Submitted': 0,
-    'Under Review': 0,
-    'Refinement': 0,
+    'Ready for Review': 0,
+    'Needs Refinement': 0,
     'Ready for Governance': 0,
-    'In Progress': 0,
-    'Completed': 0,
-    'Declined': 0
+    'Dismissed': 0
   };
 
   requests.forEach(r => {

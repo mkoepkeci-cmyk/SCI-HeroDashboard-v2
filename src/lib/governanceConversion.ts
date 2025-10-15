@@ -1,11 +1,307 @@
 /**
  * Governance Request → Initiative Conversion
  *
- * Handles the workflow of converting governance requests into initiatives
- * when an SCI is assigned during the "Ready for Governance" stage.
+ * Two-phase workflow:
+ * Phase 1 (SCI Assignment): Create minimal initiative for effort tracking
+ * Phase 2 (Ready for Governance): Populate full initiative details for searchability
  */
 
 import { supabase, GovernanceRequest, Initiative, TeamMember } from './supabase';
+
+/**
+ * Phase 1: Create a minimal initiative when an SCI is assigned
+ *
+ * This happens as soon as an SCI is assigned to a governance request (can be in Draft status).
+ * Creates a basic initiative so the SCI can start logging effort immediately.
+ *
+ * Fields populated:
+ * - owner_name, team_member_id (the assigned SCI)
+ * - initiative_name (from governance request title)
+ * - type: 'Governance'
+ * - status: 'Planning' (will change to Active in Phase 2)
+ * - governance_request_id (link back)
+ * - clinical_sponsor_name (basic info)
+ */
+export async function createInitiativeForAssignedRequest(
+  governanceRequestId: string,
+  assignedSciId: string,
+  assignedSciName: string
+): Promise<ConversionResult> {
+  try {
+    console.log('Phase 1: Creating minimal initiative for effort tracking');
+
+    // Fetch the governance request
+    const { data: govRequest, error: fetchError } = await supabase
+      .from('governance_requests')
+      .select('*')
+      .eq('id', governanceRequestId)
+      .single();
+
+    if (fetchError || !govRequest) {
+      return {
+        success: false,
+        error: `Failed to fetch governance request: ${fetchError?.message || 'Not found'}`
+      };
+    }
+
+    // Check if initiative already exists
+    if (govRequest.linked_initiative_id) {
+      console.log('Initiative already exists, skipping creation');
+      return {
+        success: true, // Not an error - initiative already exists
+        initiativeId: govRequest.linked_initiative_id,
+        error: 'Initiative already exists for this request'
+      };
+    }
+
+    // Create a MINIMAL initiative for effort tracking
+    const { data: initiative, error: initiativeError } = await supabase
+      .from('initiatives')
+      .insert({
+        owner_name: assignedSciName,
+        initiative_name: govRequest.title,
+        type: 'System Initiative',  // System Initiative work type
+        status: 'Planning',  // Will become Active in Phase 2
+        role: 'Owner',
+        team_member_id: assignedSciId,
+        governance_request_id: govRequest.id,  // Link back to governance request
+        clinical_sponsor_name: govRequest.system_clinical_leader,
+        is_draft: false,
+        is_active: true,
+      })
+      .select()
+      .single();
+
+    if (initiativeError || !initiative) {
+      return {
+        success: false,
+        error: `Failed to create initiative: ${initiativeError?.message || 'Unknown error'}`
+      };
+    }
+
+    console.log('Phase 1 complete: Minimal initiative created:', initiative.id);
+
+    // Update governance request with link to initiative
+    const { error: updateError } = await supabase
+      .from('governance_requests')
+      .update({
+        linked_initiative_id: initiative.id,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', governanceRequestId);
+
+    if (updateError) {
+      console.warn('Failed to update governance request:', updateError);
+    }
+
+    return {
+      success: true,
+      initiativeId: initiative.id,
+      initiative: initiative as Initiative
+    };
+
+  } catch (error: any) {
+    console.error('Error creating initiative for assigned request:', error);
+    return {
+      success: false,
+      error: error.message || 'An unexpected error occurred'
+    };
+  }
+}
+
+/**
+ * Phase 2: Populate full initiative details when governance request reaches "Ready for Governance"
+ *
+ * This happens when the governance request status changes to "Ready for Governance".
+ * Enhances the existing minimal initiative with full details to make it searchable in Initiatives tab.
+ *
+ * Additional fields populated:
+ * - problem_statement (from governance request)
+ * - desired_outcomes
+ * - governance_bodies
+ * - key_collaborators
+ * - financial_impact data
+ * - start_date, end_date
+ * - status: 'Active' (changes from Planning)
+ *
+ * Also creates:
+ * - initiative_stories record (challenge, outcome)
+ * - initiative_financial_impact record (if financial data exists)
+ */
+export async function populateInitiativeDetails(
+  governanceRequestId: string
+): Promise<ConversionResult> {
+  try {
+    console.log('Phase 2: Populating full initiative details');
+
+    // Fetch the governance request
+    const { data: govRequest, error: fetchError } = await supabase
+      .from('governance_requests')
+      .select('*')
+      .eq('id', governanceRequestId)
+      .single();
+
+    if (fetchError || !govRequest) {
+      return {
+        success: false,
+        error: `Failed to fetch governance request: ${fetchError?.message || 'Not found'}`
+      };
+    }
+
+    // Validate that initiative exists
+    if (!govRequest.linked_initiative_id) {
+      return {
+        success: false,
+        error: 'No linked initiative found. Phase 1 must be completed first (SCI assignment).'
+      };
+    }
+
+    // Update the initiative with full details and defaults for "Ready for Governance"
+    const { data: initiative, error: updateError } = await supabase
+      .from('initiatives')
+      .update({
+        // Status and Phase defaults
+        status: 'Active',  // Change from Planning to Active when Ready for Governance
+        phase: 'Discovery/Define',  // Default phase for new governance initiatives
+
+        // Ensure SCI is set as owner (in case it wasn't set in Phase 1)
+        owner_name: govRequest.assigned_sci_name || govRequest.owner_name,
+        team_member_id: govRequest.assigned_sci_id || govRequest.team_member_id,
+
+        // Data from governance request
+        problem_statement: govRequest.problem_statement,
+        desired_outcomes: govRequest.desired_outcomes,
+        governance_bodies: govRequest.governance_bodies,
+        key_collaborators: govRequest.key_collaborators,
+        start_date: govRequest.submitted_date || new Date().toISOString(),
+        timeframe_display: `Target: ${govRequest.target_timeline || 'TBD'}`,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', govRequest.linked_initiative_id)
+      .select()
+      .single();
+
+    if (updateError || !initiative) {
+      return {
+        success: false,
+        error: `Failed to update initiative: ${updateError?.message || 'Unknown error'}`
+      };
+    }
+
+    console.log('Phase 2: Initiative updated to Active status');
+
+    // Create/update initiative story with challenge and outcome
+    const { data: existingStory } = await supabase
+      .from('initiative_stories')
+      .select('*')
+      .eq('initiative_id', govRequest.linked_initiative_id)
+      .single();
+
+    if (existingStory) {
+      // Update existing story
+      await supabase
+        .from('initiative_stories')
+        .update({
+          challenge: govRequest.problem_statement,
+          outcome: govRequest.desired_outcomes,
+          updated_at: new Date().toISOString()
+        })
+        .eq('initiative_id', govRequest.linked_initiative_id);
+    } else {
+      // Create new story
+      await supabase
+        .from('initiative_stories')
+        .insert({
+          initiative_id: govRequest.linked_initiative_id,
+          challenge: govRequest.problem_statement,
+          outcome: govRequest.desired_outcomes
+        });
+    }
+
+    console.log('Phase 2: Initiative story created/updated');
+
+    // Create/update financial impact if data exists
+    if (govRequest.projected_annual_revenue || govRequest.financial_impact) {
+      const { data: existingFinancial } = await supabase
+        .from('initiative_financial_impact')
+        .select('*')
+        .eq('initiative_id', govRequest.linked_initiative_id)
+        .single();
+
+      const financialData = {
+        projected_annual: govRequest.projected_annual_revenue || govRequest.financial_impact,
+        projection_basis: govRequest.projection_basis,
+        calculation_methodology: govRequest.calculation_methodology,
+        key_assumptions: govRequest.key_assumptions,
+        updated_at: new Date().toISOString()
+      };
+
+      if (existingFinancial) {
+        // Update existing financial record
+        await supabase
+          .from('initiative_financial_impact')
+          .update(financialData)
+          .eq('initiative_id', govRequest.linked_initiative_id);
+      } else {
+        // Create new financial record
+        await supabase
+          .from('initiative_financial_impact')
+          .insert({
+            ...financialData,
+            initiative_id: govRequest.linked_initiative_id,
+          });
+      }
+
+      console.log('Phase 2: Financial impact created/updated with methodology and assumptions');
+    }
+
+    // Create/update initiative metrics if they exist
+    if (govRequest.impact_metrics && Array.isArray(govRequest.impact_metrics) && govRequest.impact_metrics.length > 0) {
+      // Delete existing metrics first
+      await supabase
+        .from('initiative_metrics')
+        .delete()
+        .eq('initiative_id', govRequest.linked_initiative_id);
+
+      // Insert new metrics from governance request
+      const metricsToInsert = govRequest.impact_metrics.map((metric: any, index: number) => ({
+        initiative_id: govRequest.linked_initiative_id,
+        metric_name: metric.metric_name,
+        metric_type: metric.metric_type,
+        unit: metric.unit,
+        baseline_value: metric.baseline_value,
+        baseline_date: metric.baseline_date,
+        current_value: metric.current_value,
+        measurement_date: metric.measurement_date,
+        target_value: metric.target_value,
+        improvement: metric.improvement,
+        measurement_method: metric.measurement_method,
+        display_order: index
+      }));
+
+      await supabase
+        .from('initiative_metrics')
+        .insert(metricsToInsert);
+
+      console.log(`Phase 2: ${metricsToInsert.length} impact metrics transferred to initiative`);
+    }
+
+    console.log('Phase 2 complete: Initiative fully populated with metrics, financials, and searchable');
+
+    return {
+      success: true,
+      initiativeId: initiative.id,
+      initiative: initiative as Initiative
+    };
+
+  } catch (error: any) {
+    console.error('Error populating initiative details:', error);
+    return {
+      success: false,
+      error: error.message || 'An unexpected error occurred'
+    };
+  }
+}
 
 export interface ConversionParams {
   governanceRequestId: string;

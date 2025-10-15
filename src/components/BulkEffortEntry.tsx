@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Clock, Save, Copy, User, X, UserPlus } from 'lucide-react';
+import { Clock, Save, Copy, User, X, UserPlus, Edit } from 'lucide-react';
 import { supabase, InitiativeWithDetails, EffortLog, EFFORT_SIZES, EffortSize, TeamMember } from '../lib/supabase';
 import { getWeekStartDate, formatWeekRange, getEffortSizeFromHours } from '../lib/effortUtils';
 import ReassignModal from './ReassignModal';
@@ -10,6 +10,7 @@ interface BulkEffortEntryProps {
   initiatives?: InitiativeWithDetails[]; // Optional - will fetch if not provided
   selectedWeek: string;
   onSave: () => void;
+  onEditInitiative?: (initiative: InitiativeWithDetails) => void; // Callback to open edit form
 }
 
 interface InitiativeEffortEntry {
@@ -30,6 +31,7 @@ export default function BulkEffortEntry({
   initiatives,
   selectedWeek,
   onSave,
+  onEditInitiative,
 }: BulkEffortEntryProps) {
   const [entries, setEntries] = useState<InitiativeEffortEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -498,6 +500,7 @@ export default function BulkEffortEntry({
                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase">Hours</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Size</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Note</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase w-10">Edit</th>
                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase w-10"></th>
               </tr>
             </thead>
@@ -591,6 +594,17 @@ export default function BulkEffortEntry({
                       placeholder="Optional note..."
                       className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    {!entry.isMiscAssignment && onEditInitiative && (
+                      <button
+                        onClick={() => onEditInitiative(entry.initiative)}
+                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-colors p-1 rounded"
+                        title="Edit initiative details"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-center">
                     <button

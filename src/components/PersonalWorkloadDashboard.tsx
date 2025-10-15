@@ -14,12 +14,14 @@ import {
 } from '../lib/effortUtils';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import BulkEffortEntry from './BulkEffortEntry';
+import { InitiativeSubmissionForm } from './InitiativeSubmissionForm';
 
 interface PersonalWorkloadDashboardProps {
   teamMember: TeamMember | null;
   allTeamMembers: TeamMember[];
   initiatives: InitiativeWithDetails[];
   onTeamMemberChange: (member: TeamMember) => void;
+  onInitiativesRefresh?: () => void; // Callback to refresh initiatives after editing
 }
 
 interface WorkTypeEffort {
@@ -44,11 +46,13 @@ export default function PersonalWorkloadDashboard({
   allTeamMembers,
   initiatives,
   onTeamMemberChange,
+  onInitiativesRefresh,
 }: PersonalWorkloadDashboardProps) {
   const [effortLogs, setEffortLogs] = useState<EffortLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedWeek, setSelectedWeek] = useState(getWeekStartDate());
   const [view, setView] = useState<'summary' | 'entry'>('entry');
+  const [editingInitiative, setEditingInitiative] = useState<InitiativeWithDetails | null>(null);
 
   const recentWeeks = useMemo(() => getLastNWeeks(8), []);
 
@@ -245,6 +249,7 @@ export default function PersonalWorkloadDashboard({
           initiatives={initiatives}
           selectedWeek={selectedWeek}
           onSave={loadEffortLogs}
+          onEditInitiative={(initiative) => setEditingInitiative(initiative)}
         />
       ) : (
         <>
@@ -417,6 +422,27 @@ export default function PersonalWorkloadDashboard({
         </div>
       )}
         </>
+      )}
+
+      {/* Edit Initiative Modal */}
+      {editingInitiative && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
+          <div className="min-h-screen flex items-start justify-center p-4 py-8">
+            <div className="max-w-6xl w-full">
+              <InitiativeSubmissionForm
+                editingInitiative={editingInitiative}
+                onClose={() => setEditingInitiative(null)}
+                onSuccess={() => {
+                  setEditingInitiative(null);
+                  if (onInitiativesRefresh) {
+                    onInitiativesRefresh();
+                  }
+                  loadEffortLogs(); // Refresh effort logs in case initiative details changed
+                }}
+              />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

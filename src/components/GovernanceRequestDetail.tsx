@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
-import { X, Save, FileText, DollarSign, Users, Clock, CheckCircle2, AlertCircle, Loader2, MessageSquare, Send, ArrowRight, Link as LinkIcon } from 'lucide-react';
+import { X, Save, FileText, DollarSign, Users, Clock, CheckCircle2, AlertCircle, Loader2, MessageSquare, Send, ArrowRight, Link as LinkIcon, Trash2 } from 'lucide-react';
 import { supabase, GovernanceRequest, GovernanceComment, TeamMember, Initiative } from '../lib/supabase';
 import { getStatusConfig, formatDate, formatDateTime, formatCurrency, getAvailableStatuses, DIVISION_REGIONS } from '../lib/governanceUtils';
-import { convertGovernanceRequestToInitiative, approveGovernanceRequest } from '../lib/governanceConversion';
+import { convertGovernanceRequestToInitiative, approveGovernanceRequest, createInitiativeForAssignedRequest, populateInitiativeDetails } from '../lib/governanceConversion';
 
 interface GovernanceRequestDetailProps {
   request: GovernanceRequest;
   onClose: () => void;
   onUpdate: () => void;  // Refresh parent data
+  onEdit?: (request: GovernanceRequest) => void;  // Open form in edit mode
+  onViewInitiative?: (initiativeId: string) => void; // Navigate to initiative view
 }
 
-export const GovernanceRequestDetail = ({ request, onClose, onUpdate }: GovernanceRequestDetailProps) => {
+export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, onViewInitiative }: GovernanceRequestDetailProps) => {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [comments, setComments] = useState<GovernanceComment[]>([]);
@@ -67,6 +69,9 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate }: Governan
   };
 
   const handleStatusChange = async (newStatus: string) => {
+    console.log('handleStatusChange called with:', newStatus);
+    console.log('Current request.id:', request.id);
+
     try {
       setSaving(true);
 
@@ -75,27 +80,58 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate }: Governan
         updated_at: new Date().toISOString()
       };
 
-      // Set date fields based on status
-      if (newStatus === 'Submitted' && !request.submitted_date) {
+      // Set submitted_date when changing to Ready for Review
+      if (newStatus === 'Ready for Review' && !request.submitted_date) {
         updateData.submitted_date = new Date().toISOString();
-      } else if (newStatus === 'Ready for Governance' && !request.reviewed_date) {
-        updateData.reviewed_date = new Date().toISOString();
-      } else if (newStatus === 'Completed' && !request.completed_date) {
-        updateData.completed_date = new Date().toISOString();
+        console.log('Setting submitted_date');
       }
 
-      const { error } = await supabase
+      console.log('Updating with data:', updateData);
+
+      const { error, data } = await supabase
         .from('governance_requests')
         .update(updateData)
-        .eq('id', request.id);
+        .eq('id', request.id)
+        .select();
+
+      console.log('Update result:', { error, data });
 
       if (error) throw error;
 
-      setFormData({ ...formData, status: newStatus });
+      // Phase 1: Create initiative when status changes to "Ready for Review" (if SCI is assigned)
+      if (newStatus === 'Ready for Review' && formData.assigned_sci_id && !request.linked_initiative_id) {
+        console.log('Phase 1: Creating minimal initiative for Ready for Review status...');
+        const result = await createInitiativeForAssignedRequest(
+          request.id,
+          formData.assigned_sci_id,
+          formData.assigned_sci_name || 'Unknown'
+        );
+
+        if (!result.success && !result.error?.includes('already exists')) {
+          console.warn('Phase 1 failed:', result.error);
+        } else {
+          console.log('Phase 1 complete: Initiative created:', result.initiativeId);
+        }
+      }
+
+      // Phase 2: Populate full details when status changes to "Ready for Governance"
+      if (newStatus === 'Ready for Governance' && request.linked_initiative_id) {
+        console.log('Phase 2: Populating full initiative details for Ready for Governance status...');
+        const result = await populateInitiativeDetails(request.id);
+
+        if (!result.success) {
+          console.warn('Phase 2 failed:', result.error);
+          alert(`Warning: Initiative details could not be populated: ${result.error}`);
+        } else {
+          console.log('Phase 2 complete: Initiative fully populated:', result.initiativeId);
+        }
+      }
+
+      setFormData({ ...formData, status: newStatus } as any);
       onUpdate(); // Refresh parent
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating status:', error);
-      alert('Failed to update status');
+      alert(`Failed to update status: ${error?.message || JSON.stringify(error)}`);
     } finally {
       setSaving(false);
     }
@@ -191,6 +227,33 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate }: Governan
     }
   };
 
+  const handleDelete = async () => {
+    if (!confirm('⚠️ Are you sure you want to permanently delete this governance request?\n\nThis will delete:\n- The governance request\n- All associated comments\n- Any linked attachments or links\n\nThis action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      // Delete the request (CASCADE will handle comments, attachments, links)
+      const { error } = await supabase
+        .from('governance_requests')
+        .delete()
+        .eq('id', request.id);
+
+      if (error) throw error;
+
+      onUpdate(); // Refresh portal
+      onClose(); // Close detail modal
+
+    } catch (error: any) {
+      console.error('Error deleting request:', error);
+      alert(`Failed to delete request: ${error.message}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleSave = async () => {
     try {
       setSaving(true);
@@ -217,7 +280,7 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate }: Governan
   };
 
   const statusConfig = getStatusConfig(formData.status);
-  const canEdit = formData.status === 'Draft' || formData.status === 'Refinement';
+  const canEdit = formData.status === 'Draft' || formData.status === 'Needs Refinement';
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start justify-center p-4 overflow-y-auto z-50">
@@ -270,27 +333,123 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate }: Governan
             <div className="flex gap-3 items-center">
               <select
                 value={formData.status}
-                onChange={(e) => handleStatusChange(e.target.value)}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                 className="flex-1 border border-gray-300 rounded-lg p-2"
                 disabled={saving}
               >
-                {getAvailableStatuses(request.status).map(status => (
-                  <option key={status} value={status}>{status}</option>
-                ))}
+                {/* For Draft status, only show Ready for Review option */}
+                {request.status === 'Draft' ? (
+                  <>
+                    <option value="Draft">Draft</option>
+                    <option value="Ready for Review">Ready for Review</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="Draft">Draft</option>
+                    <option value="Ready for Review">Ready for Review</option>
+                    <option value="Needs Refinement">Needs Refinement</option>
+                    <option value="Ready for Governance">Ready for Governance</option>
+                    <option value="Dismissed">Dismissed</option>
+                  </>
+                )}
               </select>
-              {saving && <Loader2 className="w-5 h-5 animate-spin text-gray-500" />}
-            </div>
-
-            {/* Show approval button for In Progress status with linked initiative */}
-            {formData.status === 'In Progress' && request.linked_initiative_id && (
               <button
-                onClick={handleApprove}
-                disabled={saving}
-                className="mt-3 w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                onClick={() => handleStatusChange(formData.status)}
+                disabled={saving || formData.status === request.status}
+                className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                <CheckCircle2 className="w-4 h-4 inline mr-2" />
-                Mark as Approved by Governance
+                {saving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    Save Status
+                  </>
+                )}
               </button>
+            </div>
+          </div>
+
+          {/* SCI Assignment Panel */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h3 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
+              <Users className="w-5 h-5" />
+              Assign SCI
+            </h3>
+            <div className="flex gap-3 items-end">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-blue-900 mb-1">
+                  System Clinical Informaticist
+                </label>
+                <select
+                  value={assignedSciId}
+                  onChange={(e) => setAssignedSciId(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg p-2"
+                >
+                  <option value="">Select SCI...</option>
+                  {teamMembers.map(tm => (
+                    <option key={tm.id} value={tm.id}>{tm.name}</option>
+                  ))}
+                </select>
+              </div>
+              <button
+                onClick={async () => {
+                  if (!assignedSciId) {
+                    alert('Please select an SCI');
+                    return;
+                  }
+
+                  const selectedSci = teamMembers.find(tm => tm.id === assignedSciId);
+                  if (!selectedSci) return;
+
+                  try {
+                    setSaving(true);
+
+                    // Update governance request with assigned SCI
+                    const { error } = await supabase
+                      .from('governance_requests')
+                      .update({
+                        assigned_sci_id: assignedSciId,
+                        assigned_sci_name: selectedSci.name,
+                        updated_at: new Date().toISOString()
+                      })
+                      .eq('id', request.id);
+
+                    if (error) throw error;
+
+                    // Note: Initiative will be created when status changes to "Ready for Review"
+                    setFormData({ ...formData, assigned_sci_id: assignedSciId, assigned_sci_name: selectedSci.name });
+                    onUpdate();
+
+                  } catch (error: any) {
+                    alert(`Failed to assign SCI: ${error.message}`);
+                  } finally {
+                    setSaving(false);
+                  }
+                }}
+                disabled={!assignedSciId || saving}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    Save
+                  </>
+                )}
+              </button>
+            </div>
+            {formData.assigned_sci_name && (
+              <p className="text-sm text-blue-700 mt-2">
+                Currently assigned to: <strong>{formData.assigned_sci_name}</strong>
+              </p>
             )}
           </div>
 
@@ -383,16 +542,16 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate }: Governan
                     Status: {linkedInitiative.status} • Type: {linkedInitiative.type}
                   </p>
                 </div>
-                <a
-                  href={`#initiatives`}
+                <button
                   onClick={() => {
-                    // In real app, would navigate to initiative detail
-                    onClose();
+                    if (onViewInitiative && linkedInitiative) {
+                      onViewInitiative(linkedInitiative.id);
+                    }
                   }}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 >
                   View Initiative →
-                </a>
+                </button>
               </div>
             </div>
           )}
@@ -580,14 +739,27 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate }: Governan
             </>
           ) : (
             <>
-              {canEdit && (
+              {canEdit && onEdit && (
                 <button
-                  onClick={() => setEditing(true)}
+                  onClick={() => {
+                    onEdit(request);
+                    onClose(); // Close detail modal before opening form
+                  }}
                   className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
                 >
                   Edit Request
                 </button>
               )}
+              <button
+                onClick={handleDelete}
+                disabled={saving}
+                className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
+                title="Delete this governance request (for testing purposes)"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete
+              </button>
+              <div className="flex-1"></div>
               <button
                 onClick={onClose}
                 className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
