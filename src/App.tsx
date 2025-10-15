@@ -8,6 +8,8 @@ import { InitiativesView } from './components/InitiativesView';
 import { InitiativesTableView } from './components/InitiativesTableView';
 import { InsightsChat } from './components/InsightsChat';
 import PersonalWorkloadDashboard from './components/PersonalWorkloadDashboard';
+import { GovernancePortalView } from './components/GovernancePortalView';
+import { GovernanceRequestDetail } from './components/GovernanceRequestDetail';
 import { calculateWorkload, getCapacityStatus, getCapacityColor, getCapacityEmoji, getCapacityLabel, WORK_EFFORT_HOURS, parseWorkEffort } from './lib/workloadUtils';
 import StaffDetailModal from './components/StaffDetailModal';
 
@@ -22,20 +24,24 @@ interface TeamMemberWithDetails extends TeamMember {
 
 function App() {
   // Get initial view from URL hash or default to 'overview'
-  const getInitialView = (): 'overview' | 'team' | 'workload' | 'myEffort' | 'insights' | 'addData' => {
+  const getInitialView = (): 'overview' | 'team' | 'workload' | 'governance' | 'myEffort' | 'insights' | 'addData' => {
     const hash = window.location.hash.slice(1); // Remove the '#'
-    if (['overview', 'team', 'workload', 'myEffort', 'insights', 'addData'].includes(hash)) {
-      return hash as 'overview' | 'team' | 'workload' | 'myEffort' | 'insights' | 'addData';
+    if (['overview', 'team', 'workload', 'governance', 'myEffort', 'insights', 'addData'].includes(hash)) {
+      return hash as 'overview' | 'team' | 'workload' | 'governance' | 'myEffort' | 'insights' | 'addData';
     }
     return 'overview';
   };
 
-  const [activeView, setActiveView] = useState<'overview' | 'team' | 'workload' | 'myEffort' | 'insights' | 'addData'>(getInitialView());
+  const [activeView, setActiveView] = useState<'overview' | 'team' | 'workload' | 'governance' | 'myEffort' | 'insights' | 'addData'>(getInitialView());
   const [selectedMember, setSelectedMember] = useState<TeamMemberWithDetails | null>(null);
   const [teamMembers, setTeamMembers] = useState<TeamMemberWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingInitiative, setEditingInitiative] = useState<InitiativeWithDetails | null>(null);
   const [currentUser, setCurrentUser] = useState<TeamMemberWithDetails | null>(null); // For effort tracking
+
+  // Governance portal state
+  const [selectedGovernanceRequest, setSelectedGovernanceRequest] = useState<any>(null);
+  const [showGovernanceForm, setShowGovernanceForm] = useState(false);
 
   // Update URL hash when view changes
   useEffect(() => {
@@ -1904,6 +1910,19 @@ function App() {
                 Workload
               </button>
               <button
+                onClick={() => setActiveView('governance')}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1 ${
+                  activeView === 'governance'
+                    ? 'bg-[#6F47D0] text-white shadow-md'
+                    : 'bg-[#6F47D0]/10 text-[#6F47D0] hover:bg-[#6F47D0]/20'
+                }`}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Governance
+              </button>
+              <button
                 onClick={() => setActiveView('myEffort')}
                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1 ${
                   activeView === 'myEffort'
@@ -1953,6 +1972,22 @@ function App() {
           <TeamView />
         ) : activeView === 'workload' ? (
           <WorkloadView />
+        ) : activeView === 'governance' ? (
+          <>
+            <GovernancePortalView
+              onCreateNew={() => setShowGovernanceForm(true)}
+              onViewRequest={(request) => setSelectedGovernanceRequest(request)}
+            />
+            {selectedGovernanceRequest && (
+              <GovernanceRequestDetail
+                request={selectedGovernanceRequest}
+                onClose={() => setSelectedGovernanceRequest(null)}
+                onUpdate={() => {
+                  setSelectedGovernanceRequest(null);
+                }}
+              />
+            )}
+          </>
         ) : activeView === 'myEffort' ? (
           <PersonalWorkloadDashboard
             teamMember={currentUser}

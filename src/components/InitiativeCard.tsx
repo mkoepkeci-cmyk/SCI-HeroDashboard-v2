@@ -99,6 +99,14 @@ export const InitiativeCard = ({ initiative, currentUserId, onEffortUpdate }: In
                     {initiative.work_effort}
                   </span>
                 )}
+                {initiative.governance_request_id && (
+                  <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-[#6F47D0]/10 text-[#6F47D0] border border-[#6F47D0]/30 flex-shrink-0 flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Governance Request
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-3 text-xs text-gray-500 mt-0.5 flex-wrap">
                 <span className="font-medium text-gray-700">{initiative.owner_name}</span>
