@@ -485,6 +485,36 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
         </div>
       )}
 
+      {/* Governance Request Indicator */}
+      {isEditing && editingInitiative && editingInitiative.governance_request_id && (
+        <div className="mb-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-purple-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-purple-900">
+                Governance Request Initiative
+              </p>
+              <p className="text-xs text-purple-700">
+                This initiative was created from a governance request. Some fields have been pre-filled from the original submission.
+              </p>
+            </div>
+            <a
+              href={`#governance`}
+              onClick={(e) => {
+                e.preventDefault();
+                // In production, would navigate to governance detail view
+                alert(`This initiative was created from governance request ID: ${editingInitiative.governance_request_id}\n\nClick OK to view the governance portal.`);
+              }}
+              className="text-sm text-purple-600 hover:text-purple-800 underline whitespace-nowrap"
+            >
+              View Original Request →
+            </a>
+          </div>
+        </div>
+      )}
+
       {error && (
         <div className="bg-red-50 border border-red-200 rounded p-3 mb-4 flex items-start gap-2">
           <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
