@@ -125,10 +125,10 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest, onViewInitiat
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-purple-900 mb-2">
-              System-Level Governance Intake Portal
+              SCI Consultant Request Portal
             </h1>
             <p className="text-purple-700">
-              For enterprise initiatives requiring system governance approval and affecting multiple markets or the entire organization.
+              Submit requests for System Clinical Informatics consultation on enterprise initiatives affecting multiple markets or the entire organization.
             </p>
             <a
               href="#"

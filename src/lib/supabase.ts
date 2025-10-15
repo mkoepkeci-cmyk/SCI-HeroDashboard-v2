@@ -335,6 +335,38 @@ export interface GovernanceRequest {
   calculation_methodology?: string;
   key_assumptions?: string[];
 
+  // Impact Categories (checkboxes - must be demonstrable)
+  impact_commonspirit_board_goal?: boolean;
+  impact_commonspirit_2026_5for25?: boolean;
+  impact_system_policy?: boolean;
+  impact_patient_safety?: boolean;
+  impact_regulatory_compliance?: boolean;
+  impact_financial?: boolean;
+  impact_other?: string;  // Free text for "Other:"
+
+  // Supporting Information
+  supporting_information?: string;  // Regulatory, policy, practice guidelines, etc.
+
+  // Groups Impacted (checkboxes)
+  groups_nurses?: boolean;
+  groups_physicians_apps?: boolean;
+  groups_therapies?: boolean;
+  groups_lab?: boolean;
+  groups_pharmacy?: boolean;
+  groups_radiology?: boolean;
+  groups_administration?: boolean;
+  groups_other?: string;  // Free text for "Other:"
+
+  // Regional Impact
+  regions_impacted?: string;  // All regions or specific list
+
+  // Required Date
+  required_date?: string;  // Date string
+  required_date_reason?: string;  // Regulation effective, policy effective, etc.
+
+  // Additional Comments
+  additional_comments?: string;
+
   // Scoring (optional)
   benefit_score?: number;
   effort_score?: number;

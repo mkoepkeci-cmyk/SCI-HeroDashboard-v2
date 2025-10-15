@@ -31,7 +31,44 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
 
   const isEditing = !!editingRequest;
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    title: string;
+    division_region: string;
+    submitter_name: string;
+    submitter_email: string;
+    problem_statement: string;
+    desired_outcomes: string;
+    system_clinical_leader: string;
+    patient_care_value: string;
+    compliance_regulatory_value: string;
+    financial_impact: string;
+    target_timeline: string;
+    estimated_scope: string;
+    projected_annual_revenue: string;
+    projection_basis: string;
+    calculation_methodology: string;
+    key_assumptions: string;
+    impact_commonspirit_board_goal: boolean;
+    impact_commonspirit_2026_5for25: boolean;
+    impact_system_policy: boolean;
+    impact_patient_safety: boolean;
+    impact_regulatory_compliance: boolean;
+    impact_financial: boolean;
+    impact_other: string;
+    supporting_information: string;
+    groups_nurses: boolean;
+    groups_physicians_apps: boolean;
+    groups_therapies: boolean;
+    groups_lab: boolean;
+    groups_pharmacy: boolean;
+    groups_radiology: boolean;
+    groups_administration: boolean;
+    groups_other: string;
+    regions_impacted: string;
+    required_date: string;
+    required_date_reason: string;
+    additional_comments: string;
+  }>({
     title: editingRequest?.title || '',
     division_region: editingRequest?.division_region || '',
     submitter_name: editingRequest?.submitter_name || '',
@@ -50,6 +87,38 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
     projection_basis: editingRequest?.projection_basis || '',
     calculation_methodology: editingRequest?.calculation_methodology || '',
     key_assumptions: editingRequest?.key_assumptions?.join('\n') || '',
+
+    // Impact Categories
+    impact_commonspirit_board_goal: editingRequest?.impact_commonspirit_board_goal || false,
+    impact_commonspirit_2026_5for25: editingRequest?.impact_commonspirit_2026_5for25 || false,
+    impact_system_policy: editingRequest?.impact_system_policy || false,
+    impact_patient_safety: editingRequest?.impact_patient_safety || false,
+    impact_regulatory_compliance: editingRequest?.impact_regulatory_compliance || false,
+    impact_financial: editingRequest?.impact_financial || false,
+    impact_other: editingRequest?.impact_other || '',
+
+    // Supporting Information
+    supporting_information: editingRequest?.supporting_information || '',
+
+    // Groups Impacted
+    groups_nurses: editingRequest?.groups_nurses || false,
+    groups_physicians_apps: editingRequest?.groups_physicians_apps || false,
+    groups_therapies: editingRequest?.groups_therapies || false,
+    groups_lab: editingRequest?.groups_lab || false,
+    groups_pharmacy: editingRequest?.groups_pharmacy || false,
+    groups_radiology: editingRequest?.groups_radiology || false,
+    groups_administration: editingRequest?.groups_administration || false,
+    groups_other: editingRequest?.groups_other || '',
+
+    // Regional Impact
+    regions_impacted: editingRequest?.regions_impacted || '',
+
+    // Required Date
+    required_date: editingRequest?.required_date || '',
+    required_date_reason: editingRequest?.required_date_reason || '',
+
+    // Additional Comments
+    additional_comments: editingRequest?.additional_comments || '',
   });
 
   // Metrics state (dynamic array)
@@ -82,7 +151,7 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
     }];
   });
 
-  const handleChange = (field: string, value: string) => {
+  const handleChange = (field: string, value: string | boolean) => {
     setFormData({ ...formData, [field]: value });
     setError(null);
   };
@@ -158,12 +227,39 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
         financial_impact: formData.financial_impact ? parseFloat(formData.financial_impact) : null,
         target_timeline: formData.target_timeline || null,
         estimated_scope: formData.estimated_scope || null,
-        // New fields
+        // Impact metrics
         impact_metrics: impactMetrics.length > 0 ? impactMetrics : null,
+        // Financial fields
         projected_annual_revenue: formData.projected_annual_revenue ? parseFloat(formData.projected_annual_revenue) : null,
         projection_basis: formData.projection_basis || null,
         calculation_methodology: formData.calculation_methodology || null,
         key_assumptions: keyAssumptions.length > 0 ? keyAssumptions : null,
+        // Impact categories
+        impact_commonspirit_board_goal: formData.impact_commonspirit_board_goal,
+        impact_commonspirit_2026_5for25: formData.impact_commonspirit_2026_5for25,
+        impact_system_policy: formData.impact_system_policy,
+        impact_patient_safety: formData.impact_patient_safety,
+        impact_regulatory_compliance: formData.impact_regulatory_compliance,
+        impact_financial: formData.impact_financial,
+        impact_other: formData.impact_other || null,
+        // Supporting information
+        supporting_information: formData.supporting_information || null,
+        // Groups impacted
+        groups_nurses: formData.groups_nurses,
+        groups_physicians_apps: formData.groups_physicians_apps,
+        groups_therapies: formData.groups_therapies,
+        groups_lab: formData.groups_lab,
+        groups_pharmacy: formData.groups_pharmacy,
+        groups_radiology: formData.groups_radiology,
+        groups_administration: formData.groups_administration,
+        groups_other: formData.groups_other || null,
+        // Regional impact
+        regions_impacted: formData.regions_impacted || null,
+        // Required date
+        required_date: formData.required_date || null,
+        required_date_reason: formData.required_date_reason || null,
+        // Additional comments
+        additional_comments: formData.additional_comments || null,
         updated_at: new Date().toISOString(),
       };
 
@@ -176,7 +272,7 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
 
         if (updateError) throw updateError;
 
-        alert('Governance request updated successfully!');
+        alert('SCI consultant request updated successfully!');
       } else {
         // Create new request
         const requestId = await generateNextRequestId();
@@ -191,7 +287,7 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
 
         if (insertError) throw insertError;
 
-        alert(`Draft governance request created: ${requestId}`);
+        alert(`Draft SCI consultant request created: ${requestId}`);
       }
 
       onSuccess();
@@ -251,12 +347,39 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
         financial_impact: formData.financial_impact ? parseFloat(formData.financial_impact) : null,
         target_timeline: formData.target_timeline || null,
         estimated_scope: formData.estimated_scope || null,
-        // New fields
+        // Impact metrics
         impact_metrics: impactMetrics.length > 0 ? impactMetrics : null,
+        // Financial fields
         projected_annual_revenue: formData.projected_annual_revenue ? parseFloat(formData.projected_annual_revenue) : null,
         projection_basis: formData.projection_basis || null,
         calculation_methodology: formData.calculation_methodology || null,
         key_assumptions: keyAssumptions.length > 0 ? keyAssumptions : null,
+        // Impact categories
+        impact_commonspirit_board_goal: formData.impact_commonspirit_board_goal,
+        impact_commonspirit_2026_5for25: formData.impact_commonspirit_2026_5for25,
+        impact_system_policy: formData.impact_system_policy,
+        impact_patient_safety: formData.impact_patient_safety,
+        impact_regulatory_compliance: formData.impact_regulatory_compliance,
+        impact_financial: formData.impact_financial,
+        impact_other: formData.impact_other || null,
+        // Supporting information
+        supporting_information: formData.supporting_information || null,
+        // Groups impacted
+        groups_nurses: formData.groups_nurses,
+        groups_physicians_apps: formData.groups_physicians_apps,
+        groups_therapies: formData.groups_therapies,
+        groups_lab: formData.groups_lab,
+        groups_pharmacy: formData.groups_pharmacy,
+        groups_radiology: formData.groups_radiology,
+        groups_administration: formData.groups_administration,
+        groups_other: formData.groups_other || null,
+        // Regional impact
+        regions_impacted: formData.regions_impacted || null,
+        // Required date
+        required_date: formData.required_date || null,
+        required_date_reason: formData.required_date_reason || null,
+        // Additional comments
+        additional_comments: formData.additional_comments || null,
         status: 'Ready for Review',
         updated_at: new Date().toISOString(),
       };
@@ -273,7 +396,7 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
 
         if (updateError) throw updateError;
 
-        alert('Governance request submitted for review!');
+        alert('SCI consultant request submitted for review!');
       } else {
         // Create new request and submit
         const requestId = await generateNextRequestId();
@@ -288,7 +411,7 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
 
         if (insertError) throw insertError;
 
-        alert(`Governance request submitted for review: ${requestId}`);
+        alert(`SCI consultant request submitted for review: ${requestId}`);
       }
 
       onSuccess();
@@ -308,7 +431,7 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
         <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            System-Level Governance Request
+            System-Level SCI Consultant Request
           </h2>
 
           <div className="mb-6">
@@ -390,12 +513,12 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
           <div className="flex items-start justify-between">
             <div>
               <h2 className="text-2xl font-bold text-gray-900">
-                {isEditing ? 'Edit Governance Request' : 'New System-Level Governance Request'}
+                {isEditing ? 'Edit SCI Consultant Request' : 'New System-Level SCI Consultant Request'}
               </h2>
               <p className="text-sm text-gray-600 mt-1">
                 {isEditing
                   ? `Request ID: ${editingRequest.request_id}`
-                  : 'Submit a system-level initiative for governance review and approval'
+                  : 'Submit a system-level initiative for review and approval'
                 }
               </p>
             </div>
@@ -781,6 +904,248 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
                 placeholder="List ALL assumptions"
                 value={formData.key_assumptions}
                 onChange={e => handleChange('key_assumptions', e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* Category of Impact */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-lg text-gray-900">Category of Impact</h3>
+            <p className="text-sm text-gray-600">Check all that apply. These should be demonstrable if checked.</p>
+
+            <div className="space-y-2">
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={formData.impact_commonspirit_board_goal}
+                  onChange={(e) => handleChange('impact_commonspirit_board_goal', e.target.checked)}
+                  className="w-4 h-4 text-purple-600"
+                />
+                <span className="text-sm text-gray-900">CommonSpirit Board Goal</span>
+              </label>
+
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={formData.impact_commonspirit_2026_5for25}
+                  onChange={(e) => handleChange('impact_commonspirit_2026_5for25', e.target.checked)}
+                  className="w-4 h-4 text-purple-600"
+                />
+                <span className="text-sm text-gray-900">CommonSpirit 2026 or 5 for '25</span>
+              </label>
+
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={formData.impact_system_policy}
+                  onChange={(e) => handleChange('impact_system_policy', e.target.checked)}
+                  className="w-4 h-4 text-purple-600"
+                />
+                <span className="text-sm text-gray-900">System Policy</span>
+              </label>
+
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={formData.impact_patient_safety}
+                  onChange={(e) => handleChange('impact_patient_safety', e.target.checked)}
+                  className="w-4 h-4 text-purple-600"
+                />
+                <span className="text-sm text-gray-900">Patient Safety</span>
+              </label>
+
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={formData.impact_regulatory_compliance}
+                  onChange={(e) => handleChange('impact_regulatory_compliance', e.target.checked)}
+                  className="w-4 h-4 text-purple-600"
+                />
+                <span className="text-sm text-gray-900">Regulatory Compliance</span>
+              </label>
+
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={formData.impact_financial}
+                  onChange={(e) => handleChange('impact_financial', e.target.checked)}
+                  className="w-4 h-4 text-purple-600"
+                />
+                <span className="text-sm text-gray-900">Financial</span>
+              </label>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Other:</label>
+                <input
+                  type="text"
+                  value={formData.impact_other}
+                  onChange={(e) => handleChange('impact_other', e.target.value)}
+                  placeholder="Specify other impact category"
+                  className="w-full border border-gray-300 rounded-lg p-2"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Supporting Information
+              </label>
+              <textarea
+                rows={4}
+                value={formData.supporting_information}
+                onChange={(e) => handleChange('supporting_information', e.target.value)}
+                placeholder="Any regulatory, policy, practice guidelines, etc. that support the request and selected categories..."
+                className="w-full border border-gray-300 rounded-lg p-2"
+              />
+            </div>
+          </div>
+
+          {/* Groups Impacted */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-lg text-gray-900">Groups Impacted by Problem</h3>
+            <p className="text-sm text-gray-600">Check all that apply. Please ensure that each group is aware and supports the request.</p>
+
+            <div className="space-y-2">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={formData.groups_nurses}
+                onChange={(e) => handleChange('groups_nurses', e.target.checked)}
+                className="w-4 h-4 text-purple-600"
+              />
+              <span className="text-sm text-gray-900">Nurses</span>
+            </label>
+
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={formData.groups_physicians_apps}
+                onChange={(e) => handleChange('groups_physicians_apps', e.target.checked)}
+                className="w-4 h-4 text-purple-600"
+              />
+              <span className="text-sm text-gray-900">Physicians/APPs</span>
+            </label>
+
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={formData.groups_therapies}
+                onChange={(e) => handleChange('groups_therapies', e.target.checked)}
+                className="w-4 h-4 text-purple-600"
+              />
+              <span className="text-sm text-gray-900">Therapies</span>
+            </label>
+
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={formData.groups_lab}
+                onChange={(e) => handleChange('groups_lab', e.target.checked)}
+                className="w-4 h-4 text-purple-600"
+              />
+              <span className="text-sm text-gray-900">Lab</span>
+            </label>
+
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={formData.groups_pharmacy}
+                onChange={(e) => handleChange('groups_pharmacy', e.target.checked)}
+                className="w-4 h-4 text-purple-600"
+              />
+              <span className="text-sm text-gray-900">Pharmacy</span>
+            </label>
+
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={formData.groups_radiology}
+                onChange={(e) => handleChange('groups_radiology', e.target.checked)}
+                className="w-4 h-4 text-purple-600"
+              />
+              <span className="text-sm text-gray-900">Radiology</span>
+            </label>
+
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={formData.groups_administration}
+                onChange={(e) => handleChange('groups_administration', e.target.checked)}
+                className="w-4 h-4 text-purple-600"
+              />
+              <span className="text-sm text-gray-900">Administration</span>
+            </label>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Other:</label>
+              <input
+                type="text"
+                value={formData.groups_other}
+                onChange={(e) => handleChange('groups_other', e.target.value)}
+                placeholder="Specify other groups"
+                className="w-full border border-gray-300 rounded-lg p-2"
+              />
+              </div>
+            </div>
+          </div>
+
+          {/* Regional Impact & Timeline */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-lg text-gray-900">Regional Impact & Timeline</h3>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                What regions are impacted by this change?
+              </label>
+              <input
+                type="text"
+                value={formData.regions_impacted}
+                onChange={(e) => handleChange('regions_impacted', e.target.value)}
+                placeholder="e.g., All regions (South, Mountain, Northwest, California, Central) or specific regions"
+                className="w-full border border-gray-300 rounded-lg p-2"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Is there a required date for problem resolution?
+              </label>
+              <input
+                type="date"
+                value={formData.required_date}
+                onChange={(e) => handleChange('required_date', e.target.value)}
+                className="w-full border border-gray-300 rounded-lg p-2"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Regulation effective date, policy effective date, survey action plan, etc.
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Reason for Required Date
+              </label>
+              <input
+                type="text"
+                value={formData.required_date_reason}
+                onChange={(e) => handleChange('required_date_reason', e.target.value)}
+                placeholder="e.g., CMS regulation effective date, Joint Commission requirement"
+                className="w-full border border-gray-300 rounded-lg p-2"
+              />
+            </div>
+          </div>
+
+          {/* Additional Comments */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-lg text-gray-900">Additional Comments</h3>
+
+            <div>
+              <textarea
+                rows={5}
+                value={formData.additional_comments}
+                onChange={(e) => handleChange('additional_comments', e.target.value)}
+                placeholder="Any additional information that would be helpful in evaluating this request..."
+                className="w-full border border-gray-300 rounded-lg p-2"
               />
             </div>
           </div>

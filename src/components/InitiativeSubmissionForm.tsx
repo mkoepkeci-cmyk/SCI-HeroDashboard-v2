@@ -485,7 +485,7 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
         </div>
       )}
 
-      {/* Governance Request Indicator */}
+      {/* SCI Consultant Request Indicator */}
       {isEditing && editingInitiative && editingInitiative.governance_request_id && (
         <div className="mb-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
           <div className="flex items-center gap-2">
@@ -494,10 +494,10 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
             </svg>
             <div className="flex-1">
               <p className="text-sm font-medium text-purple-900">
-                Governance Request Initiative
+                SCI Consultant Request Initiative
               </p>
               <p className="text-xs text-purple-700">
-                This initiative was created from a governance request. Some fields have been pre-filled from the original submission.
+                This initiative was created from an SCI consultant request. Some fields have been pre-filled from the original submission.
               </p>
             </div>
             <a
@@ -505,7 +505,7 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
               onClick={(e) => {
                 e.preventDefault();
                 // In production, would navigate to governance detail view
-                alert(`This initiative was created from governance request ID: ${editingInitiative.governance_request_id}\n\nClick OK to view the governance portal.`);
+                alert(`This initiative was created from SCI consultant request ID: ${editingInitiative.governance_request_id}\n\nClick OK to view the request portal.`);
               }}
               className="text-sm text-purple-600 hover:text-purple-800 underline whitespace-nowrap"
             >
@@ -614,7 +614,7 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
                 <option>Market Project</option>
                 <option>Ticket</option>
                 <option>Epic Gold</option>
-                <option>Governance</option>
+                <option>SCI Consultant Request</option>
                 <option>Policy/Guidelines</option>
                 <option>General Support</option>
               </select>
