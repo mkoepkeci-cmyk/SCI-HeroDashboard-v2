@@ -5,6 +5,7 @@ import { getWeekStartDate, formatWeekRange, getEffortSizeFromHours } from '../li
 
 interface BulkEffortEntryProps {
   teamMemberId: string | null;
+  teamMemberName?: string | null; // For filtering by owner_name
   initiatives?: InitiativeWithDetails[]; // Optional - will fetch if not provided
   selectedWeek: string;
   onSave: () => void;
@@ -21,6 +22,7 @@ interface InitiativeEffortEntry {
 
 export default function BulkEffortEntry({
   teamMemberId,
+  teamMemberName,
   initiatives,
   selectedWeek,
   onSave,
@@ -90,16 +92,23 @@ export default function BulkEffortEntry({
 
       setLastWeekData(previousLogs || []);
 
-      // Create entries for all active initiatives
-      // Note: Not filtering by team_member_id because initiatives might not have it set
-      // Instead, we show all active/planning initiatives and let any team member log effort
-      const activeInitiatives = allInitiatives.filter(
-        i => i.status === 'Active' || i.status === 'Planning'
+      // Filter initiatives for this team member
+      // Match by owner_name (from initiatives table) to team member name
+      let filteredInitiatives = allInitiatives.filter(
+        i => (i.status === 'Active' || i.status === 'Planning')
       );
 
-      console.log('- Active/Planning initiatives:', activeInitiatives.length);
+      // If we have a team member name, filter to only show their initiatives
+      if (teamMemberName) {
+        filteredInitiatives = filteredInitiatives.filter(
+          i => i.owner_name === teamMemberName || i.team_member_id === teamMemberId
+        );
+        console.log(`- Filtering for ${teamMemberName}:`, filteredInitiatives.length, 'initiatives');
+      } else {
+        console.log('- Showing all active initiatives:', filteredInitiatives.length);
+      }
 
-      const newEntries: InitiativeEffortEntry[] = activeInitiatives.map(initiative => {
+      const newEntries: InitiativeEffortEntry[] = filteredInitiatives.map(initiative => {
         const existingLog = (currentLogs || []).find(log => log.initiative_id === initiative.id);
         const hours = existingLog?.hours_spent || 0;
 

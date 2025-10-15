@@ -241,6 +241,7 @@ export default function PersonalWorkloadDashboard({
       {view === 'entry' ? (
         <BulkEffortEntry
           teamMemberId={teamMember?.id || null}
+          teamMemberName={teamMember?.name || null}
           initiatives={initiatives}
           selectedWeek={selectedWeek}
           onSave={loadEffortLogs}
