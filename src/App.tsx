@@ -319,6 +319,7 @@ function App() {
     const [filterStatus, setFilterStatus] = useState('');
     const [filterEHR, setFilterEHR] = useState('');
     const [filterServiceLine, setFilterServiceLine] = useState('');
+    const [filterGovernance, setFilterGovernance] = useState<'all' | 'governance' | 'non-governance'>('all');
     const [activeTab, setActiveTab] = useState<'active' | 'completed' | 'all'>('active');
     const [selectedInitiative, setSelectedInitiative] = useState<InitiativeWithDetails | null>(null);
     const [showFilters, setShowFilters] = useState(false);
@@ -363,9 +364,14 @@ function App() {
         const matchesEHR = !filterEHR || initiative.ehrs_impacted === filterEHR || initiative.ehrs_impacted === 'All';
         const matchesServiceLine = !filterServiceLine || initiative.service_line === filterServiceLine;
 
-        return matchesTab && matchesSearch && matchesOwner && matchesType && matchesStatus && matchesEHR && matchesServiceLine;
+        const matchesGovernance =
+          filterGovernance === 'all' ||
+          (filterGovernance === 'governance' && initiative.governance_request_id) ||
+          (filterGovernance === 'non-governance' && !initiative.governance_request_id);
+
+        return matchesTab && matchesSearch && matchesOwner && matchesType && matchesStatus && matchesEHR && matchesServiceLine && matchesGovernance;
       });
-    }, [allInitiatives, activeTab, searchQuery, filterOwner, filterType, filterStatus, filterEHR, filterServiceLine]);
+    }, [allInitiatives, activeTab, searchQuery, filterOwner, filterType, filterStatus, filterEHR, filterServiceLine, filterGovernance]);
 
     // Get unique values for filters
     const uniqueOwners = useMemo(() => [...new Set(allInitiatives.map(i => i.owner_name))].sort(), [allInitiatives]);
@@ -384,7 +390,7 @@ function App() {
       return { totalRevenue, totalActualRevenue, totalUsersDeployed, totalPotentialUsers };
     }, [allInitiatives]);
 
-    const hasActiveFilters = filterOwner || filterStatus || filterType || filterEHR || filterServiceLine || searchQuery;
+    const hasActiveFilters = filterOwner || filterStatus || filterType || filterEHR || filterServiceLine || filterGovernance !== 'all' || searchQuery;
 
     const clearFilters = () => {
       setFilterOwner('');
@@ -392,6 +398,7 @@ function App() {
       setFilterType('');
       setFilterEHR('');
       setFilterServiceLine('');
+      setFilterGovernance('all');
       setSearchQuery('');
     };
 
@@ -698,7 +705,7 @@ function App() {
                 Filters
                 {hasActiveFilters && !showFilters && (
                   <span className="bg-white text-[#9B2F6A] rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
-                    {[filterOwner, filterStatus, filterType, filterEHR, filterServiceLine].filter(Boolean).length}
+                    {[filterOwner, filterStatus, filterType, filterEHR, filterServiceLine, filterGovernance !== 'all'].filter(Boolean).length}
                   </span>
                 )}
               </button>
@@ -706,6 +713,42 @@ function App() {
 
             {showFilters && (
               <div className="border rounded-lg p-2 bg-gray-50">
+                {/* Governance Quick Filters */}
+                <div className="flex gap-2 mb-2 pb-2 border-b">
+                  <button
+                    onClick={() => setFilterGovernance('all')}
+                    className={`px-3 py-1.5 rounded text-xs font-medium transition-all ${
+                      filterGovernance === 'all'
+                        ? 'bg-[#9B2F6A] text-white'
+                        : 'bg-white text-gray-700 hover:bg-gray-100 border'
+                    }`}
+                  >
+                    All Initiatives
+                  </button>
+                  <button
+                    onClick={() => setFilterGovernance('governance')}
+                    className={`px-3 py-1.5 rounded text-xs font-medium transition-all flex items-center gap-1 ${
+                      filterGovernance === 'governance'
+                        ? 'bg-green-600 text-white'
+                        : 'bg-white text-gray-700 hover:bg-gray-100 border'
+                    }`}
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Ready for Governance
+                  </button>
+                  <button
+                    onClick={() => setFilterGovernance('non-governance')}
+                    className={`px-3 py-1.5 rounded text-xs font-medium transition-all ${
+                      filterGovernance === 'non-governance'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white text-gray-700 hover:bg-gray-100 border'
+                    }`}
+                  >
+                    Standard Initiatives
+                  </button>
+                </div>
                 <div className="grid grid-cols-5 gap-2 mb-2">
                   <select
                     className="border rounded px-2 py-1.5 text-xs"
