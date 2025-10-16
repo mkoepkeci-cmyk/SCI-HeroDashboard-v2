@@ -114,9 +114,15 @@ export default function BulkEffortEntry({
 
       // Filter initiatives for this team member
       // Match by owner_name (from initiatives table) to team member name
-      // Include Active, In Progress, Planning, and Scaling statuses
+      // ONLY include standard initiative statuses (not governance request statuses)
+      // Governance requests (Draft, Ready for Review, Needs Refinement) show in SCIRequestsCard above
       let filteredInitiatives = allInitiatives.filter(
-        i => (i.status === 'Active' || i.status === 'In Progress' || i.status === 'Planning' || i.status === 'Scaling')
+        i => (
+          i.status === 'Active' ||
+          i.status === 'In Progress' ||
+          i.status === 'Planning' ||
+          i.status === 'Scaling'
+        )
       );
 
       // If we have a team member name, filter to only show their initiatives
@@ -128,6 +134,26 @@ export default function BulkEffortEntry({
       } else {
         console.log('- Showing all active initiatives:', filteredInitiatives.length);
       }
+
+      // Sort initiatives: priority statuses at top, then by name
+      const statusPriority: Record<string, number> = {
+        'Planning': 1,  // New initiatives being planned
+        'Active': 2,     // Active work
+        'In Progress': 3, // Work in progress
+        'Scaling': 4,    // Scaling across organization
+      };
+
+      filteredInitiatives.sort((a, b) => {
+        const aPriority = statusPriority[a.status || ''] || 99;
+        const bPriority = statusPriority[b.status || ''] || 99;
+
+        if (aPriority !== bPriority) {
+          return aPriority - bPriority;
+        }
+
+        // Same priority level - sort by name
+        return (a.initiative_name || '').localeCompare(b.initiative_name || '');
+      });
 
       const newEntries: InitiativeEffortEntry[] = filteredInitiatives.map(initiative => {
         const existingLog = (currentLogs || []).find(log => log.initiative_id === initiative.id);
@@ -506,9 +532,10 @@ export default function BulkEffortEntry({
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {entries.map((entry, index) => (
-                <tr key={entry.initiative.id} className={entry.hasChanges ? 'bg-blue-50/50' : ''}>
-                  <td className="px-4 py-3 text-center">
+              {entries.map((entry, index) => {
+                return (
+                  <tr key={entry.initiative.id} className={entry.hasChanges ? 'bg-blue-50/50' : ''}>
+                      <td className="px-4 py-3 text-center">
                     <input
                       type="checkbox"
                       checked={entry.skipped}
@@ -617,7 +644,8 @@ export default function BulkEffortEntry({
                     </button>
                   </td>
                 </tr>
-              ))}
+              );
+              })}
             </tbody>
           </table>
         </div>

@@ -15,6 +15,7 @@ import {
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import BulkEffortEntry from './BulkEffortEntry';
 import { InitiativeSubmissionForm } from './InitiativeSubmissionForm';
+import { SCIRequestsCard } from './SCIRequestsCard';
 
 interface PersonalWorkloadDashboardProps {
   teamMember: TeamMember | null;
@@ -241,6 +242,18 @@ export default function PersonalWorkloadDashboard({
         </div>
       </div>
 
+      {/* SCI Requests Card - Only show if team member has assigned requests */}
+      {teamMember && (
+        <SCIRequestsCard
+          teamMemberId={teamMember.id}
+          onRequestClick={(request) => {
+            // Navigate to governance portal and show the request detail
+            console.log('Request clicked:', request);
+            // Could implement navigation to request detail view here
+          }}
+        />
+      )}
+
       {/* Conditional Content Based on View */}
       {view === 'entry' ? (
         <BulkEffortEntry
@@ -432,12 +445,13 @@ export default function PersonalWorkloadDashboard({
               <InitiativeSubmissionForm
                 editingInitiative={editingInitiative}
                 onClose={() => setEditingInitiative(null)}
-                onSuccess={() => {
-                  setEditingInitiative(null);
+                onSuccess={async () => {
+                  // Refresh data BEFORE closing modal to ensure updates are visible
                   if (onInitiativesRefresh) {
-                    onInitiativesRefresh();
+                    await onInitiativesRefresh();
                   }
-                  loadEffortLogs(); // Refresh effort logs in case initiative details changed
+                  await loadEffortLogs(); // Refresh effort logs in case initiative details changed
+                  setEditingInitiative(null); // Close modal AFTER data refresh
                 }}
               />
             </div>

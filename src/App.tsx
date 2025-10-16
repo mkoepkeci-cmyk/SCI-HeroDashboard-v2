@@ -11,6 +11,7 @@ import PersonalWorkloadDashboard from './components/PersonalWorkloadDashboard';
 import { GovernancePortalView } from './components/GovernancePortalView';
 import { GovernanceRequestDetail } from './components/GovernanceRequestDetail';
 import { GovernanceRequestForm } from './components/GovernanceRequestForm';
+import { LandingPage } from './components/LandingPage';
 import { calculateWorkload, getCapacityStatus, getCapacityColor, getCapacityEmoji, getCapacityLabel, WORK_EFFORT_HOURS, parseWorkEffort } from './lib/workloadUtils';
 import StaffDetailModal from './components/StaffDetailModal';
 
@@ -24,16 +25,16 @@ interface TeamMemberWithDetails extends TeamMember {
 }
 
 function App() {
-  // Get initial view from URL hash or default to 'overview'
-  const getInitialView = (): 'overview' | 'team' | 'workload' | 'governance' | 'myEffort' | 'insights' | 'addData' => {
+  // Get initial view from URL hash or default to 'landing'
+  const getInitialView = (): 'landing' | 'overview' | 'team' | 'workload' | 'governance' | 'myEffort' | 'insights' | 'addData' => {
     const hash = window.location.hash.slice(1); // Remove the '#'
-    if (['overview', 'team', 'workload', 'governance', 'myEffort', 'insights', 'addData'].includes(hash)) {
-      return hash as 'overview' | 'team' | 'workload' | 'governance' | 'myEffort' | 'insights' | 'addData';
+    if (['landing', 'overview', 'team', 'workload', 'governance', 'myEffort', 'insights', 'addData'].includes(hash)) {
+      return hash as 'landing' | 'overview' | 'team' | 'workload' | 'governance' | 'myEffort' | 'insights' | 'addData';
     }
-    return 'overview';
+    return 'landing';
   };
 
-  const [activeView, setActiveView] = useState<'overview' | 'team' | 'workload' | 'governance' | 'myEffort' | 'insights' | 'addData'>(getInitialView());
+  const [activeView, setActiveView] = useState<'landing' | 'overview' | 'team' | 'workload' | 'governance' | 'myEffort' | 'insights' | 'addData'>(getInitialView());
   const [selectedMember, setSelectedMember] = useState<TeamMemberWithDetails | null>(null);
   const [teamMembers, setTeamMembers] = useState<TeamMemberWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1938,7 +1939,10 @@ function App() {
       <nav className="bg-white border-b sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <div>
+            <div
+              className="cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={() => setActiveView('landing')}
+            >
               <h1 className="text-xl font-bold text-[#9B2F6A]">System Clinical Informatics</h1>
               <p className="text-xs text-[#565658] font-medium">CommonSpirit Health • Excellence & Innovation</p>
             </div>
@@ -2030,8 +2034,10 @@ function App() {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-4 py-4">
-        {activeView === 'overview' ? (
+      <main className={activeView === 'landing' ? '' : 'max-w-7xl mx-auto px-4 py-4'}>
+        {activeView === 'landing' ? (
+          <LandingPage onGetStarted={() => setActiveView('overview')} />
+        ) : activeView === 'overview' ? (
           <OverviewView />
         ) : activeView === 'team' ? (
           <TeamView />
@@ -2126,8 +2132,9 @@ function App() {
               setEditingInitiative(null);
               setActiveView('overview');
             }}
-            onSuccess={() => {
-              fetchTeamData();
+            onSuccess={async () => {
+              // Refresh data BEFORE closing/navigating to ensure updates are visible
+              await fetchTeamData();
               setEditingInitiative(null);
               setActiveView('overview');
             }}
@@ -2147,7 +2154,9 @@ function App() {
                   editingInitiative={initiative}
                   onClose={() => setSelectedInitiativeId(null)}
                   onSuccess={async () => {
+                    // Refresh data BEFORE closing modal to ensure updates are visible
                     await fetchTeamData();
+                    setSelectedInitiativeId(null); // Close modal AFTER data refresh
                   }}
                 />
               </div>
