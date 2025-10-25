@@ -53,13 +53,24 @@ TypeScript scripts related to running migrations:
 - `run-migration.ts` - Helper script to run SQL migrations
 - `deduplicate-assignments.ts` - Cleanup script for duplicate records
 
-#### `/scripts/migrations-adhoc/` (5 SQL files)
+#### `/scripts/migrations-adhoc/` (12 SQL files)
 Ad-hoc SQL migrations from October 2025 that were run manually (not via Supabase CLI):
+
+**Schema Changes:**
 - `add-capacity-workload-fields.sql` - Added capacity tracking fields
 - `add-missing-assignment-columns.sql` - Fixed missing columns
 - `add-weighted-workload-fields.sql` - Added workload calculation fields
 - `create-dashboard-metrics-table.sql` - Created metrics aggregation table
+- `STEP_1_ADD_COLUMNS.sql` - Added role, ehrs_impacted, service_line columns
+- `STEP_2_UPDATE_EXISTING.sql` - Updated existing data with new field values
+- `RUN_THIS_SQL_FIRST.sql` - Added initiative fields (role, EHRs, service line)
+- `RUN_THIS_EXACT_SQL_IN_SUPABASE.sql` - Manual schema updates
+- `VERIFY_COLUMNS_EXIST.sql` - Verification queries
+
+**Data Cleanup:**
 - `fix-data-quality-issues.sql` - Data cleanup and quality fixes
+- `DEDUPLICATE_ASSIGNMENTS.sql` - Removed duplicate assignment records
+- `test-governance-data.sql` - Test data for governance portal
 
 **Note**: The official database migrations are in `/supabase/migrations/` (not archived).
 These ad-hoc migrations were applied directly to the database during development.
