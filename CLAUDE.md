@@ -28,26 +28,45 @@ A React-based dashboard application for tracking and visualizing the impact of C
 
 ## Data Architecture
 
-### Data Sources
+### ⚠️ Current Migration Phase: Temporary Google Sheets Sync
 
-**Primary: Google Sheets → Supabase (Auto-synced)**
+**The dashboard is FULLY FUNCTIONAL for creating, editing, and deleting data.** However, during this initial migration phase, a **temporary one-way sync** from Google Sheets to Supabase is active to allow users to clean up existing initiative data in the familiar spreadsheet environment.
+
+**Current Data Flow (TEMPORARY):**
 
 ```
-Google Sheets (Source of Truth)
-    ↓ (Auto-sync)
-Supabase Tables (PostgreSQL)
+Google Sheets (Temporary Staging Area)
+    ↓ (One-way sync via Apps Script - TEMPORARY)
+Supabase Database (PostgreSQL)
     ↓ (Supabase Client API)
-React Dashboard App
+React Dashboard App (Full CRUD capabilities)
 ```
 
-**Synced Tables** (from Google Sheets):
+**⚠️ Important Sync Behavior:**
+- **One-way sync**: Google Sheets → Supabase (changes in Google Sheets overwrite dashboard changes)
+- **Sync source**: Only items currently visible in `/documents/SCI Workload Tracker - New System.xlsx` are synced
+- **Dashboard edits ARE allowed**: You can create/edit/delete initiatives in the dashboard
+- **Potential overwrites**: If the sync runs after you edit in the dashboard, your changes may be overwritten by Google Sheets data
+- **Recommendation during migration**: For authoritative changes, edit in Google Sheets OR coordinate with team to avoid conflicts
+
+**Tables Currently Synced from Google Sheets:**
 - `team_members`, `assignments`, `work_type_summary`
 - `ehr_platform_summary`, `key_highlights`, `dashboard_metrics`
 - `initiatives` and all related tables (metrics, financial_impact, performance_data, projections, stories)
+- **Note**: Only rows/records visible in the SCI Workload Tracker Excel document are synced
 
-**User-Generated** (created in app):
+**Tables Created ONLY in Dashboard (NOT synced):**
 - `effort_logs` - Weekly time tracking
 - `governance_requests` - SCI consultation requests
+
+**Future State (After Migration Complete):**
+```
+Supabase Database (Single Source of Truth)
+    ↓ (Supabase Client API)
+React Dashboard App (Primary Interface)
+```
+
+Once users complete their data cleanup, the Google Sheets sync will be **permanently disabled** and the dashboard will become the sole interface for all data management. No target date set yet.
 
 **IMPORTANT**: Dashboard reads from Supabase, NOT from CSV/Excel files. CSV references are legacy.
 
@@ -355,7 +374,7 @@ See `/docs/database/SCHEMA_OVERVIEW.md` for complete schema documentation.
 3. Confirm deletion dialog
 4. Initiative status changed to "Deleted" (soft delete)
 5. Initiative removed from all active views
-6. **Note**: Not restored by Google Sheets sync
+6. **⚠️ During Migration Phase**: If the initiative still exists in Google Sheets, it may be re-synced on the next sync run. For permanent deletion during migration, also remove the initiative from Google Sheets. Once the sync is disabled, dashboard deletions will be permanent.
 
 ---
 
