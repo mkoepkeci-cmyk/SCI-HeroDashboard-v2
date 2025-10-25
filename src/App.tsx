@@ -26,15 +26,20 @@ interface TeamMemberWithDetails extends TeamMember {
 
 function App() {
   // Get initial view from URL hash or default to 'landing'
-  const getInitialView = (): 'landing' | 'overview' | 'team' | 'workload' | 'governance' | 'myEffort' | 'insights' | 'addData' => {
+  const getInitialView = (): 'landing' | 'dashboard' | 'workload' | 'governance' | 'myEffort' | 'insights' | 'addData' => {
     const hash = window.location.hash.slice(1); // Remove the '#'
-    if (['landing', 'overview', 'team', 'workload', 'governance', 'myEffort', 'insights', 'addData'].includes(hash)) {
-      return hash as 'landing' | 'overview' | 'team' | 'workload' | 'governance' | 'myEffort' | 'insights' | 'addData';
+    // Support legacy 'overview' and 'team' hashes by mapping to 'dashboard'
+    if (hash === 'overview' || hash === 'team') {
+      return 'dashboard';
+    }
+    if (['landing', 'dashboard', 'workload', 'governance', 'myEffort', 'insights', 'addData'].includes(hash)) {
+      return hash as 'landing' | 'dashboard' | 'workload' | 'governance' | 'myEffort' | 'insights' | 'addData';
     }
     return 'landing';
   };
 
-  const [activeView, setActiveView] = useState<'landing' | 'overview' | 'team' | 'workload' | 'governance' | 'myEffort' | 'insights' | 'addData'>(getInitialView());
+  const [activeView, setActiveView] = useState<'landing' | 'dashboard' | 'workload' | 'governance' | 'myEffort' | 'insights' | 'addData'>(getInitialView());
+  const [dashboardSubView, setDashboardSubView] = useState<'overview' | 'team'>('overview'); // Toggle between overview and team
   const [selectedMember, setSelectedMember] = useState<TeamMemberWithDetails | null>(null);
   const [teamMembers, setTeamMembers] = useState<TeamMemberWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
@@ -256,10 +261,14 @@ function App() {
   const calculateOverviewMetrics = () => {
     const totalAssignments = teamMembers.reduce((sum, member) => sum + member.total_assignments, 0);
 
-    // Get all initiatives with details
-    const allInitiatives = teamMembers.flatMap(member => member.initiatives || []);
-    const activeInitiatives = allInitiatives.filter(i => i.is_active === true);
-    const completedInitiatives = allInitiatives.filter(i => i.is_active === false);
+    // Get all initiatives with details (excluding deleted)
+    const allInitiatives = teamMembers.flatMap(member => member.initiatives || [])
+      .filter(i => i.status !== 'Deleted');
+    const activeInitiatives = allInitiatives.filter(i =>
+      i.status === 'Active' || i.status === 'Planning' || i.status === 'Scaling' ||
+      i.status === 'Not Started' || i.status === 'In Progress'
+    );
+    const completedInitiatives = allInitiatives.filter(i => i.status === 'Completed');
 
     // Calculate total financial impact
     const totalRevenue = allInitiatives.reduce((sum, initiative) => {
@@ -343,16 +352,20 @@ function App() {
       return value.toString();
     };
 
-    // Get all initiatives for filtering
-    const allInitiatives = teamMembers.flatMap(member => member.initiatives || []);
+    // Get all initiatives for filtering (excluding deleted)
+    const allInitiatives = teamMembers.flatMap(member => member.initiatives || [])
+      .filter(i => i.status !== 'Deleted');
 
     // Filter initiatives based on search and filters
     const filteredInitiatives = useMemo(() => {
       return allInitiatives.filter((initiative) => {
         const matchesTab =
           activeTab === 'all' ||
-          (activeTab === 'active' && initiative.is_active === true) ||
-          (activeTab === 'completed' && initiative.is_active === false);
+          (activeTab === 'active' && (
+            initiative.status === 'Active' || initiative.status === 'Planning' || initiative.status === 'Scaling' ||
+            initiative.status === 'Not Started' || initiative.status === 'In Progress'
+          )) ||
+          (activeTab === 'completed' && initiative.status === 'Completed');
 
         const matchesSearch = !searchQuery ||
           initiative.initiative_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -436,20 +449,14 @@ function App() {
               <div className="text-xl font-bold">{metrics.completedInitiatives}</div>
               <div className="text-[10px] text-white/90 font-medium mt-0.5">Completed Projects</div>
             </button>
-            <button
-              onClick={() => setExpandedCard(expandedCard === 'ehr' ? null : 'ehr')}
-              className="bg-white/15 rounded-lg p-2 border border-white/20 hover:bg-white/25 transition-all cursor-pointer text-left"
-            >
-              <div className="text-xl font-bold">{Object.keys(metrics.ehrDistribution).length}</div>
-              <div className="text-[10px] text-white/90 font-medium mt-0.5">EHR Platforms</div>
-            </button>
-            <button
-              onClick={() => setExpandedCard(expandedCard === 'serviceline' ? null : 'serviceline')}
-              className="bg-white/15 rounded-lg p-2 border border-white/20 hover:bg-white/25 transition-all cursor-pointer text-left"
-            >
-              <div className="text-xl font-bold">{Object.keys(metrics.serviceLineDistribution).length}</div>
-              <div className="text-[10px] text-white/90 font-medium mt-0.5">Service Lines</div>
-            </button>
+            <div className="bg-white/15 rounded-lg p-2 border border-white/20 text-left">
+              <div className="text-xl font-bold">{formatCurrency(impactMetrics.totalActualRevenue)}</div>
+              <div className="text-[10px] text-white/90 font-medium mt-0.5">Actual Revenue</div>
+            </div>
+            <div className="bg-white/15 rounded-lg p-2 border border-white/20 text-left">
+              <div className="text-xl font-bold">{formatCurrency(impactMetrics.totalRevenue)}</div>
+              <div className="text-[10px] text-white/90 font-medium mt-0.5">Projected Revenue</div>
+            </div>
           </div>
         </div>
 
@@ -490,7 +497,7 @@ function App() {
             <div className="space-y-1">
               {Object.entries(
                 allInitiatives
-                  .filter(i => i.is_active === false)
+                  .filter(i => i.status === 'Completed')
                   .reduce((acc, initiative) => {
                     const type = initiative.type || 'Other';
                     acc[type] = (acc[type] || 0) + 1;
@@ -516,117 +523,112 @@ function App() {
           </div>
         )}
 
-        {expandedCard === 'ehr' && (
-          <div className="bg-white border rounded-lg p-3">
-            <h3 className="font-semibold text-sm mb-2 text-gray-800">EHR Platform Coverage</h3>
-            <div className="space-y-1">
-              {Object.entries(metrics.ehrDistribution)
-                .sort((a, b) => b[1] - a[1])
-                .map(([ehr, count], index) => {
-                  const ehrColors = ['#9B2F6A', '#00A1E0', '#6F47D0', '#F58025', '#9C5C9D'];
-                  const color = ehrColors[index % ehrColors.length];
-                  return (
-                    <div key={ehr} className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
-                      <div className="flex-1 flex items-center justify-between">
-                        <span className="text-sm text-gray-700">{ehr}</span>
-                        <span className="text-sm font-bold" style={{ color }}>{count}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-            </div>
-          </div>
-        )}
 
-        {expandedCard === 'serviceline' && (
-          <div className="bg-white border rounded-lg p-3">
-            <h3 className="font-semibold text-sm mb-2 text-gray-800">Service Line Impact</h3>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-              {Object.entries(metrics.serviceLineDistribution)
-                .sort((a, b) => b[1] - a[1])
-                .map(([serviceLine, count], index) => {
-                  const serviceLineColors = ['#00A1E0', '#9B2F6A', '#F58025', '#6F47D0', '#9C5C9D', '#00856A', '#E91E63', '#FF9800'];
-                  const color = serviceLineColors[index % serviceLineColors.length];
-                  return (
-                    <div key={serviceLine} className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
-                      <div className="flex-1 flex items-center justify-between">
-                        <span className="text-sm text-gray-700">{serviceLine}</span>
-                        <span className="text-sm font-bold" style={{ color }}>{count}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-            </div>
-          </div>
-        )}
-
-
-        {/* Top Initiatives by Revenue */}
-        {metrics.topInitiativesByRevenue.length > 0 && (
-          <div className="bg-white border rounded-lg p-2">
-            <h3 className="font-semibold text-[10px] mb-1.5 flex items-center justify-between">
-              <span>Top Revenue-Generating Initiatives</span>
-              <span className="text-[10px] font-normal text-gray-600">Completed</span>
-            </h3>
-            <div className="grid grid-cols-3 gap-2">
-              {metrics.topInitiativesByRevenue.map((initiative) => (
-                <div
-                  key={initiative.id}
-                  className="border rounded-lg p-1.5 hover:shadow-md transition-all"
-                  style={{ borderColor: getWorkTypeColor(initiative.type) }}
-                >
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <div
-                      className="w-1.5 h-1.5 rounded-full"
-                      style={{ backgroundColor: getWorkTypeColor(initiative.type) }}
-                    />
-                    <span className="text-[10px] text-gray-600">{initiative.type}</span>
-                  </div>
-                  <h4 className="font-semibold text-[10px] mb-1 text-gray-800 line-clamp-2">
-                    {initiative.initiative_name}
-                  </h4>
-                  <div className="space-y-0.5 text-[10px]">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Revenue Impact</span>
-                      <span className="font-bold text-green-600">
-                        {formatCurrency(initiative.financial_impact?.projected_annual || 0)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Owner</span>
-                      <span className="font-medium text-gray-700">{initiative.owner_name}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Key Impact Metrics Grid */}
+        {/* Top Performing Initiatives - 2 Rows */}
         <div className="bg-white border rounded-lg p-3">
-          <h3 className="font-semibold text-sm mb-2 text-gray-800">Team Impact Metrics</h3>
+          <h3 className="font-semibold text-sm mb-3 text-gray-800">Top Performing Initiatives</h3>
           <div className="grid grid-cols-4 gap-3">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-2">
-              <div className="text-xs text-green-700 font-medium mb-1">Projected Revenue</div>
-              <div className="text-2xl font-bold text-green-600">{formatCurrency(impactMetrics.totalRevenue)}</div>
-            </div>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-2">
-              <div className="text-xs text-blue-700 font-medium mb-1">Actual Revenue</div>
-              <div className="text-2xl font-bold text-blue-600">{formatCurrency(impactMetrics.totalActualRevenue)}</div>
-            </div>
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-2">
-              <div className="text-xs text-purple-700 font-medium mb-1">Users Deployed</div>
-              <div className="text-2xl font-bold text-purple-600">{formatNumber(impactMetrics.totalUsersDeployed)}</div>
-            </div>
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-2">
-              <div className="text-xs text-orange-700 font-medium mb-1">Potential Users</div>
-              <div className="text-2xl font-bold text-orange-600">{formatNumber(impactMetrics.totalPotentialUsers)}</div>
-            </div>
+            {/* Get top initiatives by different metrics */}
+            {(() => {
+              // Get ALL initiatives (both active and completed) from all team members, excluding deleted
+              const allInits = teamMembers.flatMap(member => member.initiatives || [])
+                .filter(i => i.status !== 'Deleted');
+
+              // Sort by different criteria and take unique initiatives
+              const byRevenue = [...allInits]
+                .filter(i => i.financial_impact?.projected_annual || i.financial_impact?.actual_revenue)
+                .sort((a, b) => {
+                  const aVal = (b.financial_impact?.projected_annual || b.financial_impact?.actual_revenue || 0);
+                  const bVal = (a.financial_impact?.projected_annual || a.financial_impact?.actual_revenue || 0);
+                  return aVal - bVal;
+                });
+
+              const byUsers = [...allInits]
+                .filter(i => i.performance_data?.users_deployed)
+                .sort((a, b) => (b.performance_data?.users_deployed || 0) - (a.performance_data?.users_deployed || 0));
+
+              // Combine and deduplicate (max 8 initiatives, 2 rows of 4)
+              const seen = new Set();
+              const topInitiatives = [];
+
+              for (const init of [...byRevenue, ...byUsers]) {
+                if (!seen.has(init.id) && topInitiatives.length < 8) {
+                  seen.add(init.id);
+                  topInitiatives.push(init);
+                }
+              }
+
+              return topInitiatives.map((initiative) => {
+                const revenue = initiative.financial_impact?.projected_annual || initiative.financial_impact?.actual_revenue;
+                const users = initiative.performance_data?.users_deployed;
+                const actual = initiative.financial_impact?.actual_revenue;
+
+                // Determine primary metric to highlight
+                let metricLabel = '';
+                let metricValue = '';
+                let metricColor = '';
+
+                if (revenue && revenue > 0) {
+                  metricLabel = actual ? 'Actual Revenue' : 'Revenue Impact';
+                  // Show in thousands (K) if under $1M, otherwise millions (M)
+                  if ((actual || revenue) < 1000000) {
+                    metricValue = '$' + Math.round((actual || revenue) / 1000) + 'K';
+                  } else {
+                    metricValue = formatCurrency(actual || revenue);
+                  }
+                  metricColor = 'text-green-600';
+                } else if (users && users > 0) {
+                  metricLabel = 'Users Deployed';
+                  metricValue = formatNumber(users);
+                  metricColor = 'text-purple-600';
+                }
+
+                return (
+                  <div
+                    key={initiative.id}
+                    className="border rounded-lg p-2 hover:shadow-md transition-all cursor-pointer"
+                    style={{ borderColor: getWorkTypeColor(initiative.type) }}
+                    onClick={() => setSelectedInitiative(initiative)}
+                  >
+                    <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                      <div
+                        className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: getWorkTypeColor(initiative.type) }}
+                      />
+                      <span className="text-[10px] text-gray-600">{initiative.type}</span>
+                      {initiative.ehrs_impacted && (
+                        <span className="text-[9px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded-full font-medium">
+                          {initiative.ehrs_impacted}
+                        </span>
+                      )}
+                      {initiative.status === 'Completed' && (
+                        <span className="ml-auto text-[9px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full">
+                          Completed
+                        </span>
+                      )}
+                    </div>
+                    <h4 className="font-semibold text-xs mb-1.5 text-gray-800 line-clamp-2 min-h-[2.5rem]">
+                      {initiative.initiative_name}
+                    </h4>
+                    <div className="space-y-1 text-[10px]">
+                      {metricLabel && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">{metricLabel}</span>
+                          <span className={`font-bold ${metricColor}`}>{metricValue}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Owner</span>
+                        <span className="font-medium text-gray-700 truncate ml-1">{initiative.owner_name}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              });
+            })()}
           </div>
         </div>
+
 
         {/* Initiative Search & Browse */}
         <div className="bg-white border rounded-lg p-3">
@@ -830,7 +832,10 @@ function App() {
               <div className="text-xs text-gray-600 mb-2">
                 Showing {filteredInitiatives.length} of {allInitiatives.length} initiatives
               </div>
-              <InitiativesTableView initiatives={filteredInitiatives} />
+              <InitiativesTableView
+                initiatives={filteredInitiatives}
+                expandAll={hasActiveFilters}
+              />
             </>
           )}
         </div>
@@ -968,9 +973,10 @@ function App() {
           {selectedMember.initiatives && selectedMember.initiatives.length > 0 && (
             <div className="mt-4">
               {(() => {
-                // Filter initiatives: Show only Active, Scaling, and Completed (hide Planning/Draft)
+                // Filter initiatives: Show only active and completed (hide On Hold, Cancelled)
                 const visibleInitiatives = selectedMember.initiatives.filter(
-                  (i) => i.status === 'Active' || i.status === 'Scaling' || i.status === 'Completed'
+                  (i) => i.status === 'Active' || i.status === 'Scaling' || i.status === 'Planning' ||
+                         i.status === 'In Progress' || i.status === 'Not Started' || i.status === 'Completed'
                 );
 
                 if (visibleInitiatives.length === 0) return null;
@@ -1948,14 +1954,17 @@ function App() {
             </div>
             <div className="flex gap-2">
               <button
-                onClick={() => setActiveView('overview')}
+                onClick={() => {
+                  setActiveView('dashboard');
+                  setDashboardSubView('overview');
+                }}
                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-                  activeView === 'overview'
+                  activeView === 'dashboard'
                     ? 'bg-[#9B2F6A] text-white shadow-md'
                     : 'bg-gray-100 text-[#565658] hover:bg-gray-200'
                 }`}
               >
-                Overview
+                Dashboard
               </button>
               <button
                 onClick={() => setActiveView('governance')}
@@ -1969,16 +1978,6 @@ function App() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 SCI Requests
-              </button>
-              <button
-                onClick={() => setActiveView('team')}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-                  activeView === 'team'
-                    ? 'bg-[#9B2F6A] text-white shadow-md'
-                    : 'bg-gray-100 text-[#565658] hover:bg-gray-200'
-                }`}
-              >
-                Team
               </button>
               <button
                 onClick={() => setActiveView('myEffort')}
@@ -2036,11 +2035,35 @@ function App() {
 
       <main className={activeView === 'landing' ? '' : 'max-w-7xl mx-auto px-4 py-4'}>
         {activeView === 'landing' ? (
-          <LandingPage onGetStarted={() => setActiveView('overview')} />
-        ) : activeView === 'overview' ? (
-          <OverviewView />
-        ) : activeView === 'team' ? (
-          <TeamView />
+          <LandingPage onGetStarted={() => setActiveView('dashboard')} />
+        ) : activeView === 'dashboard' ? (
+          <div className="space-y-4">
+            {/* Dashboard Sub-Navigation Toggle */}
+            <div className="flex gap-2 border-b pb-2">
+              <button
+                onClick={() => setDashboardSubView('overview')}
+                className={`px-4 py-2 rounded-t-lg text-sm font-semibold transition-all ${
+                  dashboardSubView === 'overview'
+                    ? 'bg-white text-[#9B2F6A] border-b-2 border-[#9B2F6A]'
+                    : 'bg-gray-50 text-[#565658] hover:bg-gray-100'
+                }`}
+              >
+                Overview
+              </button>
+              <button
+                onClick={() => setDashboardSubView('team')}
+                className={`px-4 py-2 rounded-t-lg text-sm font-semibold transition-all ${
+                  dashboardSubView === 'team'
+                    ? 'bg-white text-[#9B2F6A] border-b-2 border-[#9B2F6A]'
+                    : 'bg-gray-50 text-[#565658] hover:bg-gray-100'
+                }`}
+              >
+                Team
+              </button>
+            </div>
+            {/* Render appropriate sub-view */}
+            {dashboardSubView === 'overview' ? <OverviewView /> : <TeamView />}
+          </div>
         ) : activeView === 'workload' ? (
           <WorkloadView />
         ) : activeView === 'governance' ? (

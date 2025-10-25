@@ -164,7 +164,10 @@ export const InitiativeCard = ({ initiative, currentUserId, onEffortUpdate }: In
       {isExpanded && (
         <div className="border-t bg-gray-50 p-4 space-y-4">
           {/* Effort Tracking Section */}
-          {currentUserId && (initiative.status === 'Active' || initiative.status === 'Planning' || hasEffortLogs) && (
+          {currentUserId && (
+            initiative.status === 'Active' || initiative.status === 'Planning' || initiative.status === 'Scaling' ||
+            initiative.status === 'Not Started' || initiative.status === 'In Progress' || hasEffortLogs
+          ) && (
             <div className="bg-white rounded-lg p-3 border border-blue-200">
               <div className="flex items-center justify-between mb-3">
                 <h5 className="font-semibold text-sm flex items-center gap-2 text-blue-600">

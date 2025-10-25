@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { InitiativeWithDetails } from '../lib/supabase';
 import { InitiativeModal } from './InitiativeModal';
@@ -6,27 +6,27 @@ import { InitiativeModal } from './InitiativeModal';
 interface InitiativesTableViewProps {
   initiatives: InitiativeWithDetails[];
   onEdit?: (initiative: InitiativeWithDetails) => void;
+  expandAll?: boolean; // Expand all categories when search/filters are active
 }
 
 const getTypeColor = (type: string): string => {
   const colors: { [key: string]: string } = {
-    'Epic Gold': '#9B2F6A',
     'System Initiative': '#00A1E0',
-    'Governance': '#6F47D0',
-    'General Support': '#F58025',
-    'Project': '#9C5C9D',
-    'Policy': '#6F47D0',
+    'System Projects': '#9C5C9D',
+    'Market Projects': '#9B2F6A',
+    'Tickets': '#F58025',
+    'Other': '#565658',
   };
   return colors[type] || '#565658';
 };
 
 const getStatusBadge = (status: string): string => {
   const badges: { [key: string]: string } = {
-    'Planning': '📋',
-    'Active': '🔄',
-    'Scaling': '📈',
-    'Completed': '✓',
+    'Not Started': '📋',
+    'In Progress': '🔄',
     'On Hold': '⏸',
+    'Completed': '✓',
+    'Cancelled': '❌',
   };
   return badges[status] || '•';
 };
@@ -41,32 +41,53 @@ const formatCurrency = (value?: number): string => {
   return `$${value.toLocaleString()}`;
 };
 
-export const InitiativesTableView = ({ initiatives, onEdit }: InitiativesTableViewProps) => {
+export const InitiativesTableView = ({ initiatives, onEdit, expandAll = false }: InitiativesTableViewProps) => {
   const [selectedInitiative, setSelectedInitiative] = useState<InitiativeWithDetails | null>(null);
 
   // Get all category names from categoryOrder
   const categoryOrder = [
-    'Epic Gold',
     'System Initiative',
-    'Project',
-    'Policy',
-    'Governance',
-    'General Support',
+    'System Projects',
+    'Market Projects',
+    'Tickets',
     'Other'
   ];
 
-  // Start with all categories collapsed
+  // Start with all categories collapsed unless expandAll is true
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(
-    new Set(categoryOrder)
+    expandAll ? new Set() : new Set(categoryOrder)
   );
 
-  // Group initiatives by type
-  const groupedInitiatives = initiatives.reduce((acc, initiative) => {
-    const type = initiative.type || 'Other';
-    if (!acc[type]) acc[type] = [];
-    acc[type].push(initiative);
-    return acc;
-  }, {} as Record<string, InitiativeWithDetails[]>);
+  // Update collapsed state when expandAll changes
+  useEffect(() => {
+    setCollapsedCategories(expandAll ? new Set() : new Set(categoryOrder));
+  }, [expandAll]);
+
+  // Map database types to display categories
+  const mapTypeToCategory = (type: string): string => {
+    if (!type) return 'Other';
+
+    // Direct matches
+    if (type === 'System Initiative') return 'System Initiative';
+    if (type === 'Market Project') return 'Market Projects';
+    if (type === 'Ticket') return 'Tickets';
+
+    // Map "Project" to "System Projects"
+    if (type === 'Project') return 'System Projects';
+
+    // Everything else goes to Other (General Support, Policy/ Guideline, Epic Gold, Epic Upgrades, Skip, etc.)
+    return 'Other';
+  };
+
+  // Group initiatives by category, filtering out "Skip" type
+  const groupedInitiatives = initiatives
+    .filter(initiative => initiative.type !== 'Skip')
+    .reduce((acc, initiative) => {
+      const category = mapTypeToCategory(initiative.type);
+      if (!acc[category]) acc[category] = [];
+      acc[category].push(initiative);
+      return acc;
+    }, {} as Record<string, InitiativeWithDetails[]>);
 
   // Sort initiatives alphabetically within each category
   Object.keys(groupedInitiatives).forEach(category => {
