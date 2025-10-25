@@ -2,498 +2,530 @@
 
 A React-based dashboard application for tracking and visualizing the impact of CommonSpirit Health's System Clinical Informatics team initiatives, assignments, and performance metrics.
 
+---
+
+## Current Status (October 2025)
+
+**Production Ready - 409 Active Initiatives Across 16 Team Members**
+
+### Completed Features
+- ✅ Dashboard with Overview and Team portfolio views
+- ✅ SCI Requests (Governance Portal) - Intake and workflow management
+- ✅ Browse Initiatives - Categorized, searchable initiative library
+- ✅ My Effort - Weekly time tracking with bulk entry
+- ✅ Workload Analytics - Capacity management and trends
+- ✅ Complete metrics tracking with validated data
+- ✅ Initiative management with full CRUD operations
+- ✅ Status standardization across all views
+
+### Data Status
+- **409 initiatives** populated and active
+- **16 team members** with complete portfolios
+- **Validated metrics** from PDF documentation
+- **Active effort tracking** for capacity management
+
+---
+
 ## Data Architecture
 
-**All data comes from Supabase tables, synced from Google Sheets:**
+### Data Sources
+
+**Primary: Google Sheets → Supabase (Auto-synced)**
 
 ```
 Google Sheets (Source of Truth)
     ↓ (Auto-sync)
-Supabase Tables
-    ↓ (API)
+Supabase Tables (PostgreSQL)
+    ↓ (Supabase Client API)
 React Dashboard App
 ```
 
-### Data Sources
+**Synced Tables** (from Google Sheets):
+- `team_members`, `assignments`, `work_type_summary`
+- `ehr_platform_summary`, `key_highlights`, `dashboard_metrics`
+- `initiatives` and all related tables (metrics, financial_impact, performance_data, projections, stories)
 
-1. **Google Sheets → Supabase** (Auto-synced):
-   - `team_members` - Team member information
-   - `assignments` - Individual work assignments
-   - `initiatives` - Initiative details and metadata
-   - `dashboard_metrics` - Pre-calculated workload metrics
-   - All other initiative-related tables
+**User-Generated** (created in app):
+- `effort_logs` - Weekly time tracking
+- `governance_requests` - SCI consultation requests
 
-2. **User-Generated Data** (Created in app):
-   - `effort_logs` - Weekly time tracking (NOT in Google Sheets)
-
-**IMPORTANT**: The dashboard reads from Supabase tables, NOT from CSV/Excel files. Any CSV references in docs are legacy and should be ignored.
+**IMPORTANT**: Dashboard reads from Supabase, NOT from CSV/Excel files. CSV references are legacy.
 
 ---
 
-## Project Overview
+## Application Features
 
-This application provides comprehensive visibility into team member portfolios, work distributions, and the financial/operational impact of clinical informatics initiatives across the health system.
+### 1. Dashboard
 
-### Key Features
+**Two Views:**
 
-- **Team Overview Dashboard**: High-level metrics showing team size, active assignments, revenue impact, and efficiency gains
-- **Team Member Portfolios**: Individual views showing work type distribution, EHR platform assignments, and key highlights
-- **Initiative Tracking**: Detailed tracking of major initiatives with financial impact, performance data, projections, and success stories
-- **Data Management**: Forms for creating and editing initiatives with metrics, financial data, and performance information
-- **Effort Tracking**: Weekly time logging for capacity management and workload visibility
-  - **Bulk Effort Entry**: Table view showing all initiatives with inline editing
-  - **Skip Checkbox**: Mark initiatives as "no work this week" to document zero effort
-  - **Misc. Assignments**: Create ad-hoc General Support tasks on-the-fly
-  - **Quick Reassignment**: Reassign initiatives to other SCIs directly from effort table
-  - **Delete Functionality**: Permanently remove initiatives (soft delete with status change)
+#### Overview Mode
+- Team-level metrics: 409 initiatives, $276M+ revenue impact
+- Active assignments breakdown
+- Revenue and efficiency gains
+- Top performing initiatives
+
+#### Team Mode
+- Individual team member portfolios
+- Work type distribution (pie chart)
+- EHR platform assignments
+- Key highlights per team member
+- Categorized initiative lists by work type
+
+**Categories:**
+- System Initiatives (blue)
+- System Projects (purple)
+- SCI Supported Tickets and Projects (orange)
+- Governance (purple)
+- Other (gray)
+
+### 2. SCI Requests (Governance Portal)
+
+**Purpose**: Intake and workflow management for new SCI consultation requests
+
+**Workflow:**
+```
+1. Requestor submits consultation request
+   ↓ (status: Draft)
+2. Requestor finalizes submission
+   ↓ (status: Ready for Review)
+3. SCI Lead reviews
+   ↓ (status: Needs Refinement OR Approved)
+4. If approved, convert to initiative
+   ↓ (status: Converted to Initiative)
+```
+
+**Features:**
+- Comprehensive intake form (requestor info, business justification, expected outcomes)
+- SCI assignment workflow
+- Impact estimation (users, revenue, time savings, timeline)
+- One-click conversion to formal initiative
+- Tracks conversion link between request and initiative
+
+### 3. Browse Initiatives
+
+**Purpose**: Searchable, filterable library of all initiatives
+
+**Features:**
+- **5 categories**: System Initiatives, System Projects, SCI Supported Tickets/Projects, Governance, Other
+- **Search** by initiative name, owner, sponsor
+- **Filter tabs**: All, Active, Completed
+- **Collapsible categories** with count badges
+- **Initiative cards** with full details (metrics, financial impact, success stories)
+
+**Initiative Card Sections:**
+- Basic info (owner, status, type, dates)
+- Metrics (baseline → current → target with improvement %)
+- Financial impact (actual revenue, projections, methodology)
+- Performance data (users deployed, adoption rate, outcomes)
+- Scaling projections (scenarios, ROI calculations)
+- Success stories (challenge, approach, outcome)
+
+### 4. My Effort (Time Tracking)
+
+**Purpose**: Weekly effort logging for capacity management
+
+**Features:**
+
+#### Bulk Effort Entry Table
+- Table view showing all active/planning initiatives
+- Inline editing: hours, effort size (XS-XXL), notes
+- **Skip checkbox**: Mark "no work this week" (saves 0 hours with note)
+- **Add Misc. Assignment**: Create ad-hoc General Support tasks on-the-fly
+- **Copy Last Week**: Auto-fill effort from previous week
+- **Reassign button**: Transfer initiative ownership to another SCI
+- **Delete button**: Remove initiative (soft delete, status → "Deleted")
+- **Batch save**: Save all modified entries at once
+
+#### Effort Sizes
+- XS = 1.5 hours
+- S = 4 hours
+- M = 8 hours (default)
+- L = 13 hours
+- XL = 18 hours
+- XXL = 25 hours
+
+#### Weekly Summary
+- Total hours logged
+- Hours by effort size
+- Hours by work type
+- Effort sparklines (trending)
+
+### 5. Workload Analytics
+
+**Purpose**: Capacity utilization and workload trends
+
+**Features:**
+- Individual workload trends (past 12 weeks)
+- Capacity utilization percentage
+- Effort distribution by size
+- Hours by work type
+- Team member selector for filtering
 
 ---
 
-## 🚀 DATA POPULATION INSTRUCTIONS
+## Status Field Standardization
 
-### Current Status
+**Consistent across all views:**
 
-**Marty's data has been completed as a pilot:**
-- 7 total initiatives populated (3 completed, 4 active)
-- Initiatives categorized by work type
-- All new fields (Role, EHRs Impacted, Service Line) implemented
-- Process documented and tested
+- **Not Started** - Initiative planned but work hasn't begun
+- **In Progress** - Active work happening
+- **On Hold** - Temporarily paused
+- **Completed** - Work finished successfully
+- **Cancelled** - Initiative discontinued
 
-### Remaining SCI Team Members
-
-**CSV files in `documents/` folder for 15 additional team members:**
-- Ashley, Brooke, Dawn, Jason, Josh, Kim, Lisa, Marisa, Matt, Melissa, Robin, Sherry, Trudy, Van, Yvette
-
-### Data Population Strategy
-
-**DO NOT duplicate work_type_summary counts!**
-
-The current system has two data types:
-1. **work_type_summary** - Aggregate counts (e.g., "Josh has 47 assignments")
-2. **initiatives** - Detailed project tracking with metrics, financials, stories
-
-**Key Principle:** When adding initiatives, DO NOT increase the total_assignments count. Initiatives are a "drill-down" into existing assignments.
-
-### Step-by-Step Process for Each SCI
-
-#### 1. Review CSV File
-For each team member (e.g., Josh):
-- Read `documents/SCI Assignments Tracker - [Name].csv`
-- Identify 3-7 highest-impact assignments that should become detailed initiatives
-
-#### 2. Selection Criteria for Initiatives
-
-**Create initiatives for:**
-- ✅ Projects with defined go-live dates
-- ✅ System-wide initiatives (multi-market impact)
-- ✅ Work with measurable outcomes (revenue, time savings, users)
-- ✅ Assignments with clinical sponsor/governance oversight
-- ✅ Significant work effort (M, L, XL size)
-- ✅ Completed work worth showcasing
-
-**DO NOT create initiatives for:**
-- ❌ Routine governance meeting attendance
-- ❌ Epic Gold CAT facilitation (unless major deliverable)
-- ❌ Standard support/consulting work
-- ❌ Minor optimization requests
-- ❌ Weekly/monthly recurring meetings
-
-#### 3. Data Mapping from CSV to Form
-
-| CSV Column | Form Field | Notes |
-|------------|------------|-------|
-| SCI | Team Member | Select from dropdown |
-| SCI | Owner | Same as team member name |
-| Assignment | Initiative Name | Clean up formatting |
-| Work Type | Type | Direct map |
-| Status | Status | Direct map |
-| Role | Role | Primary/Co-Owner/Secondary/Support |
-| EHR/s Impacted | EHRs Impacted | All/Epic/Cerner/Altera |
-| Service Line | Service Line | Ambulatory, Pharmacy, etc. |
-| Projected Go-Live Date | End Date | If available |
-| Assignment Date | Start Date | If available |
-| Sponsor | Clinical Sponsor Name | Parse name |
-| Short Description | Story - Challenge | Use for context |
-| Comments/Details | Story - Approach/Outcome | Rich context here |
-
-#### 4. Fields That Require Additional Research
-
-These fields are NOT in CSV - leave blank or research:
-- Clinical Sponsor Title
-- Governance Bodies (may be in comments)
-- Key Collaborators (may be in description)
-- Financial Impact (all fields)
-- Metrics (baseline/current/target values)
-- Performance Data (users deployed, adoption rate)
-- Projections (scaling scenarios)
-
-#### 5. Example Workflow for Josh
-
-Josh has 47 total assignments. Recommended 5-7 initiatives:
-
-**High Priority (Create These):**
-1. C5 Titrations of Medications Workgroup (System Initiative, go-live 6/3/25)
-2. Alaris Pumps Standardization Project (Project, weekly meetings)
-3. Standardizing Medication Charging (Epic Gold, XL effort, system-wide)
-4. Heparin Drip Calculator Standardization (Epic Gold, design phase)
-5. Epic Upgrade Nova Note Review - Willow Inpatient (Epic Upgrades, completed)
-
-**Keep as work_type_summary (Don't Create):**
-- All 8 SCrPT governance meetings
-- Epic Gold CAT participation
-- Regional support meetings
-
-**Result:** Josh still shows 47 total assignments, but now has 5-7 detailed initiatives
-
-#### 6. Creating Initiatives
-
-**Option A: Use the UI** (Recommended for refinement)
-1. Go to http://localhost:5175
-2. Click "Add Data"
-3. Fill out form for each initiative
-4. Use only data from CSV (don't invent)
-5. Leave unknown fields blank
-
-**Option B: Create Scripts** (Recommended for bulk)
-1. Use `populate-marty-initiatives.ts` as template
-2. Create similar script for each team member
-3. Map CSV data to initiative fields
-4. Run script: `npx tsx populate-[name]-initiatives.ts`
-
-### Team Member Priority Order
-
-**Start with team members who have:**
-1. Highest assignment counts (more visible impact)
-2. Clear project work (easier to identify initiatives)
-3. Completed work to showcase
-
-**Suggested Order:**
-1. ✅ Marty (COMPLETED - 19 assignments → 7 initiatives)
-2. Josh (47 assignments - pharmacy/Epic Gold focus)
-3. Van (31 assignments)
-4. Dawn (30 assignments)
-5. Lisa (27 assignments)
-6. Trudy (25 assignments)
-7. Sherry (23 assignments)
-8. Continue with remaining team members...
-
-### Quality Over Quantity
-
-**Better to have:**
-- 50-100 well-documented initiatives
-- Complete information from CSV
-- Clear impact stories
-
-**Than:**
-- 500 half-empty initiative records
-- Missing critical data
-- Duplicated work_type_summary counts
-
-### Example Scripts Directory
-
-Reference these for guidance:
-- `populate-marty-initiatives.ts` - Marty's active initiatives
-- `add-completed-initiatives.ts` - Marty's completed initiatives
-
-### Data Integrity Checks
-
-After populating each team member:
-
-**Verify:**
-1. ✅ total_assignments count UNCHANGED
-2. ✅ work_type_summary counts UNCHANGED
-3. ✅ 3-7 new initiatives created
-4. ✅ Initiatives show in Team view, categorized by work type
-5. ✅ All data comes from CSV (no invented information)
-
-### Documentation References
-
-See `documents/` folder:
-- **DATA_POPULATION_ANALYSIS.md** - Comprehensive analysis and strategy
-- **MARTY_INITIATIVES_PLAN.md** - Example of selection process
-- **ACTION_CHECKLIST.md** - Step-by-step actions
-- **COMPLETED_CHANGES_SUMMARY.md** - Overview of all changes
+**Applied to:**
+- Dashboard filtering (Active tab shows: Not Started, In Progress)
+- Browse Initiatives filtering
+- Effort tracking (only shows active statuses)
+- Initiative cards and badges
 
 ---
 
 ## Tech Stack
 
-- **Frontend**: React 18 with TypeScript
-- **Build Tool**: Vite
-- **Styling**: Tailwind CSS
-- **Data Visualization**: Recharts
-- **Backend/Database**: Supabase
-- **Icons**: Lucide React
+### Frontend
+- **React 18** - UI framework with hooks
+- **TypeScript** - Type safety and IntelliSense
+- **Vite** - Build tool with HMR (Hot Module Replacement)
+- **Tailwind CSS** - Utility-first styling
+- **Recharts** - Data visualization (charts, sparklines)
+- **Lucide React** - Icon library
+
+### Backend/Database
+- **Supabase** - PostgreSQL database
+- **Supabase Client** - Real-time API and authentication
+- **Row Level Security (RLS)** - Table-level access control
+
+### Development Tools
+- **ESLint** - Code linting
+- **TypeScript Compiler** - Type checking
+- **npm** - Package management
+
+---
 
 ## Project Structure
 
 ```
-src/
-├── App.tsx                              # Main application component with routing and views
-├── main.tsx                             # Application entry point
-├── index.css                           # Global styles
-├── components/
-│   ├── CompletionIndicator.tsx         # Visual indicator for completion percentages
-│   ├── InitiativeCard.tsx              # Initiative display card with metrics
-│   ├── InitiativeSubmissionForm.tsx    # Form for creating/editing initiatives
-│   ├── InitiativesView.tsx             # List view of all initiatives
-│   ├── BulkEffortEntry.tsx             # Bulk effort logging table with inline editing
-│   ├── PersonalWorkloadDashboard.tsx   # Effort tracking dashboard with staff selector
-│   ├── ReassignModal.tsx               # Modal for quick initiative reassignment
-│   ├── EffortLogModal.tsx              # Modal for individual effort logging
-│   └── EffortSparkline.tsx             # Mini timeline for effort trends
-└── lib/
-    ├── supabase.ts                     # Supabase client and type definitions
-    ├── completionUtils.ts              # Utilities for completion calculations
-    └── effortUtils.ts                  # Effort tracking calculations and utilities
-supabase/
-└── migrations/
-    ├── 20250114000000_create_effort_logs_table.sql    # Effort tracking schema
-    └── 20250115000000_update_initiatives_rls.sql      # RLS policies for CRUD operations
+/
+├── src/                              # Application source code
+│   ├── App.tsx                      # Main app with routing and data fetching
+│   ├── main.tsx                     # Entry point
+│   ├── index.css                    # Global styles
+│   ├── components/                  # React components
+│   │   ├── BulkEffortEntry.tsx     # Bulk effort logging table
+│   │   ├── CompletionIndicator.tsx # Progress indicators
+│   │   ├── EffortLogModal.tsx      # Individual effort entry
+│   │   ├── EffortSparkline.tsx     # Effort trend visualization
+│   │   ├── GovernanceRequestDetail.tsx     # SCI request detail view
+│   │   ├── GovernanceRequestForm.tsx       # SCI request intake form
+│   │   ├── GovernanceRequestsList.tsx      # All SCI requests
+│   │   ├── InitiativeCard.tsx              # Initiative display card
+│   │   ├── InitiativeSubmissionForm.tsx    # Create/edit initiatives
+│   │   ├── InitiativesTableView.tsx        # Categorized initiative table
+│   │   ├── InitiativesView.tsx             # Browse initiatives view
+│   │   ├── PersonalWorkloadDashboard.tsx   # Effort tracking dashboard
+│   │   ├── ReassignModal.tsx               # Initiative reassignment
+│   │   └── SCIRequestsCard.tsx             # Governance requests widget
+│   ├── lib/                         # Utilities and helpers
+│   │   ├── supabase.ts             # Supabase client setup
+│   │   ├── completionUtils.ts      # Completion calculations
+│   │   ├── effortUtils.ts          # Effort tracking utilities
+│   │   └── governanceConversion.ts # Convert requests to initiatives
+│   └── audit-page.tsx              # Data audit and stats page
+│
+├── supabase/
+│   └── migrations/                 # Database schema migrations (12 files)
+│
+├── documents/                      # Business documentation
+│   ├── SCI_HERO_DASHBOARD_BUSINESS_CASE.md
+│   ├── SCI Value metrics.pdf
+│   └── SCI Workload Tracker - New System (3).xlsx
+│
+├── docs/                          # Technical documentation
+│   ├── database/                  # Database docs
+│   ├── architecture/              # Architecture docs
+│   └── deployment/                # Setup and deployment guides
+│
+├── archive/                       # Historical development artifacts
+│   ├── scripts/                  # Archived development scripts
+│   └── documentation/            # Historical implementation notes
+│
+├── vite.config.ts                # Vite configuration
+├── tsconfig.json                 # TypeScript configuration
+├── package.json                  # Dependencies and scripts
+├── README.md                     # Project overview
+└── CLAUDE.md                     # This file - developer guide
 ```
+
+---
 
 ## Database Schema
 
-The application uses Supabase with the following main tables:
+### Core Tables
 
-### Core Tables (Synced from Google Sheets)
-- `team_members`: Core team member information
-- `assignments`: Individual work assignments per team member
-- `dashboard_metrics`: Pre-calculated workload and capacity metrics
-- `work_type_summary`: Work type distribution per team member (AGGREGATE COUNTS - DO NOT DUPLICATE)
-- `ehr_platform_summary`: EHR platform assignments
-- `key_highlights`: Key achievements and highlights
+#### Team & Assignments (Synced from Google Sheets)
+- `team_members` - Team member profiles
+- `assignments` - Individual work assignments
+- `work_type_summary` - **Aggregate counts** (DO NOT duplicate when adding initiatives!)
+- `ehr_platform_summary` - EHR coverage
+- `key_highlights` - Notable achievements
+- `dashboard_metrics` - Pre-calculated team metrics
 
-### Initiative Tables (Synced from Google Sheets)
-- `initiatives`: Main initiative records with new fields:
-  - `role` (TEXT) - Primary/Co-Owner/Secondary/Support
-  - `ehrs_impacted` (TEXT) - All/Epic/Cerner/Altera
-  - `service_line` (TEXT) - Ambulatory, Pharmacy, Nursing, etc.
-- `initiative_metrics`: Performance metrics for initiatives
-- `initiative_financial_impact`: Financial data and revenue impact
-- `initiative_performance_data`: Operational performance metrics
-- `initiative_projections`: Future projections and goals
-- `initiative_stories`: Success stories and testimonials
+#### Initiatives (Synced from Google Sheets)
+- `initiatives` - Core initiative tracking
+  - Basic: owner_name, initiative_name, type, status
+  - Classification: **role**, **ehrs_impacted**, **service_line** (new fields)
+  - Timeline: start_date, end_date, phase, work_effort
+  - Collaboration: clinical_sponsor, key_collaborators, governance_bodies
+  - Meta: is_draft, completion_percentage, section_last_updated
+- `initiative_metrics` - Performance metrics (baseline, current, target)
+- `initiative_financial_impact` - Revenue, cost savings, calculations
+- `initiative_performance_data` - Users, adoption, outcomes
+- `initiative_projections` - Scaling scenarios and ROI
+- `initiative_stories` - Success stories (challenge, approach, outcome)
 
-### Effort Tracking Tables (User-Generated)
-- `effort_logs`: Weekly time tracking per initiative
+#### Governance Portal (User-Generated)
+- `governance_requests` - SCI consultation intake
+  - Requestor info, business justification, expected outcomes
+  - SCI assignment and review workflow
+  - Status progression (Draft → Ready for Review → Approved → Converted)
+  - Conversion tracking (links to created initiative)
+
+#### Effort Tracking (User-Generated)
+- `effort_logs` - Weekly time tracking per initiative
   - One log per initiative per team member per week
-  - Tracks hours_spent, effort_size (XS-XXL), and notes
-  - NOT synced from Google Sheets - created by users in the app
-- Views: `weekly_effort_summary`, `initiative_effort_trends`
+  - Fields: hours_spent, effort_size, notes
+  - Used for capacity management
+
+See `/docs/database/SCHEMA_OVERVIEW.md` for complete schema documentation.
+
+---
+
+## Key Workflows
+
+### Creating a New Initiative
+
+**Via Form:**
+1. Dashboard → Browse Initiatives → "Add Initiative" button
+2. Fill out multi-step form:
+   - Basic Information (owner, name, type, status, role, EHRs, service line)
+   - Governance & Collaboration
+   - Metrics & KPIs
+   - Financial Impact
+   - Performance Data
+   - Future Projections
+   - Success Stories
+3. Save as draft OR publish
+4. Initiative appears in Browse Initiatives and Team views
+
+**Via Governance Request Conversion:**
+1. SCI Requests → Select approved request
+2. Click "Convert to Initiative"
+3. App creates initiative with request data pre-filled
+4. Request marked as "Converted" with link to new initiative
+
+### Logging Weekly Effort
+
+1. My Effort → Select week
+2. Table shows all active/planning initiatives
+3. For each initiative:
+   - Enter hours OR select effort size
+   - Add notes if needed
+   - OR check "Skip" for no work
+4. Click "Save Changes" (batch save)
+5. Data flows to effort_logs table
+6. Workload analytics updated automatically
+
+### Reassigning an Initiative
+
+1. My Effort → Find initiative in table
+2. Click purple reassign icon (👥) next to owner name
+3. Modal opens:
+   - Select new owner from dropdown
+   - Select role (Owner/Co-Owner/Secondary/Support)
+4. Click "Reassign"
+5. Initiative moves to new owner's list
+6. Work type counts recalculate for both users
+
+### Deleting an Initiative
+
+1. My Effort → Find initiative in table
+2. Click X button
+3. Confirm deletion dialog
+4. Initiative status changed to "Deleted" (soft delete)
+5. Initiative removed from all active views
+6. **Note**: Not restored by Google Sheets sync
+
+---
+
+## Color Scheme (CommonSpirit Brand)
+
+- **Primary**: `#9B2F6A` (Magenta)
+- **System Initiatives**: `#00A1E0` (Blue)
+- **Governance**: `#6F47D0` (Purple)
+- **Projects**: `#9C5C9D` (Purple)
+- **General Support**: `#F58025` (Orange)
+- **Text**: `#565658` (Dark Gray)
+
+---
 
 ## Development
 
-### Prerequisites
-
-- Node.js (v18+)
-- npm or yarn
-- Supabase account with configured project
-
 ### Setup
 
-1. Install dependencies:
+1. Clone repository
+2. Install dependencies: `npm install`
+3. Create `.env` file with Supabase credentials:
+   ```
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+4. Start dev server: `npm run dev`
+5. Open http://localhost:5173
+
+See `/docs/deployment/SETUP.md` for detailed setup instructions.
+
+### Available Scripts
+
 ```bash
-npm install
+npm run dev       # Start dev server with HMR
+npm run build     # Build for production
+npm run preview   # Preview production build
+npm run lint      # Run ESLint
+npm run typecheck # TypeScript type checking
 ```
 
-2. Configure environment variables:
-Create a `.env` file with your Supabase credentials:
-```
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-```
+### Key Development Files
 
-3. Run development server:
-```bash
-npm run dev
-```
+- **State Management**: App.tsx (main data fetching and state)
+- **Supabase Client**: src/lib/supabase.ts
+- **Type Definitions**: Defined in supabase.ts (InitiativeWithDetails, TeamMemberWithDetails)
+- **Routing**: All in App.tsx (no react-router, just conditional rendering)
 
-4. Build for production:
+---
+
+## Deployment
+
+### Production Build
+
 ```bash
 npm run build
 ```
 
-### Available Scripts
+Output in `/dist/` folder ready for static hosting.
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-- `npm run typecheck` - Run TypeScript type checking
+### Database Migrations
 
-## Key Metrics Tracked
+All migrations are in `/supabase/migrations/` (12 timestamped SQL files).
 
-### Team Metrics
-- Total assignments per team member
-- Work type distribution (Epic Gold, System Initiatives, Governance, Projects, etc.)
-- EHR platform coverage (Epic, Cerner, etc.)
-- Revenue impact
+**To apply to new environment:**
+```bash
+supabase migration up
+```
 
-### Initiative Metrics
-- Financial impact (revenue generated, cost savings)
-- Operational efficiency (time savings, workdays saved)
-- Patient impact (encounters, screenings, visits)
-- Regional performance data
-- Future projections
+Or run manually in Supabase SQL Editor in chronological order.
 
-## Color Scheme
+See `/docs/database/MIGRATION_HISTORY.md` for details on each migration.
 
-The application uses CommonSpirit Health brand colors:
-- Primary: `#9B2F6A` (Magenta)
-- System Initiatives: `#00A1E0` (Blue)
-- Governance: `#6F47D0` (Purple)
-- Projects: `#9C5C9D` (Purple)
-- General Support: `#F58025` (Orange)
-- Text: `#565658` (Dark Gray)
+---
 
-## Key Components
+## Data Management Best Practices
 
-### App.tsx
-Main application component managing:
-- View routing (Overview, Team, Initiatives, Add Data)
-- Data fetching from Supabase
-- State management for team members and initiatives
-- Navigation and layout
-- **NEW**: Team view with categorized initiatives by work type
+### Adding New Initiatives
 
-### InitiativeCard.tsx
-Displays initiative details with:
-- Completion indicators
-- Financial impact metrics
-- Performance data
-- Timeline information
-- Edit functionality
+**DO:**
+- ✅ Use the initiative submission form in the UI
+- ✅ Fill out as many sections as possible (aim for >85% completion)
+- ✅ Add metrics with baseline, current, and target values
+- ✅ Document financial impact with calculation methodology
+- ✅ Include success stories when available
 
-### InitiativeSubmissionForm.tsx
-Multi-step form for managing initiatives:
-- Basic information (name, owner, type, status, role, EHRs, service line)
-- Governance & collaboration
-- Metrics and KPIs
-- Financial impact data
-- Performance metrics
-- Future projections
-- Success stories
+**DON'T:**
+- ❌ Duplicate work_type_summary counts (initiatives are drill-downs, not new assignments)
+- ❌ Create initiatives for routine meetings or governance attendance
+- ❌ Leave initiatives as drafts long-term (complete or delete)
 
-## Form Fields Reference
+### Status Transitions
 
-### Basic Information Section
-- Team Member (dropdown - optional)
-- Role (dropdown - optional): Primary/Co-Owner/Secondary/Support
-- Owner (text - required)
-- Initiative Name (text - required)
-- Type (dropdown - required): System Initiative/Project/Epic Gold/Governance/General Support/Policy
-- Status (dropdown - required): Planning/Active/Scaling/Completed/On Hold
-- EHRs Impacted (dropdown - optional): All/Epic/Cerner/Altera/Epic and Cerner
-- Service Line (text - optional): e.g., Ambulatory, Pharmacy, Nursing
-- Start Date (date - optional)
-- End Date (date - optional)
-- Timeframe Display (text - optional)
+**Standard Flow:**
+```
+Not Started → In Progress → Completed
+```
 
-### All Other Sections
-See `InitiativeSubmissionForm.tsx` for complete field list
+**Valid Transitions:**
+- Not Started → In Progress
+- Not Started → On Hold
+- In Progress → On Hold
+- In Progress → Completed
+- In Progress → Cancelled
+- On Hold → In Progress
+- On Hold → Cancelled
 
-## Effort Tracking Features
+---
 
-### Bulk Effort Entry Table
-**Location**: My Effort → Log Effort tab
+## Troubleshooting
 
-**Features:**
-- **Table Columns**: Skip | Initiative | Owner | Type | Hours | Size | Note | Remove
-- **Inline Editing**: Edit hours, select effort sizes (XS-XXL), add notes directly in table
-- **Skip Checkbox**: Mark initiatives as "no work this week" (saves 0 hours with note)
-- **Owner Column**: Shows current owner with reassign button
-- **Reassign Button**: Purple icon (👥) opens modal to reassign initiative to another SCI
-- **Remove Button**: X icon permanently deletes initiative (changes status to "Deleted")
-- **Add Misc. Assignment**: Purple button creates ad-hoc General Support tasks
-- **Copy Last Week**: Auto-fills effort data from previous week
-- **Save Changes**: Batch saves all modified entries
+### Issue: Initiatives Not Showing
 
-**Effort Sizes:**
-- XS = 1.5 hours (Extra Small)
-- S = 4 hours (Small)
-- M = 8 hours (Medium)
-- L = 13 hours (Large)
-- XL = 18 hours (Extra Large)
-- XXL = 25 hours (Double XL)
+**Check:**
+1. Status filter - Only "Active" statuses show by default
+2. Team member filter - May be filtered to specific SCI
+3. Type filter - Initiative may be in different category
+4. Search term - May be filtering results
 
-### Misc. Assignments
-**Purpose**: Create quick one-off tasks without formal initiative setup
+### Issue: Edit Form Not Populating
 
-**Workflow:**
-1. Click "Add Misc. Assignment" → Row appears at top
-2. Enter assignment name in purple-highlighted field
-3. Log hours/size/notes as normal
-4. Click Save → Creates initiative with type "General Support"
-5. Appears in future effort tracking and Team views
+**Root Cause**: Data not being fetched with full relations
 
-**Characteristics:**
-- Purple-highlighted editable name field
-- Type: General Support
-- Status: Active
-- Owner: Current user
-- Can be reassigned or deleted like any initiative
+**Solution**: Ensure initiatives are fetched WITH related data:
+```typescript
+const initiatives = await fetchInitiativesWithDetails(); // Includes metrics, financial, etc.
+```
 
-### Quick Reassignment
-**Purpose**: Transfer initiative ownership between SCIs
+BulkEffortEntry.tsx now fetches all related tables (fixed in recent update).
 
-**Workflow:**
-1. Click purple reassign icon (👥) next to owner name
-2. Modal opens showing:
-   - Initiative details for context
-   - Current owner
-   - New owner dropdown (filters out current owner)
-   - Role selector (Owner/Co-Owner/Secondary/Support)
-3. Select new owner and role
-4. Click "Reassign"
-5. Initiative disappears from current user's list
-6. Initiative appears in new owner's list
-7. Work type counts recalculate for both users
+### Issue: Effort Logs Not Saving
 
-**Database Updates:**
-- `owner_name` → New owner's name
-- `team_member_id` → New owner's ID
-- `role` → Selected role
-- `updated_at` → Current timestamp
+**Check:**
+1. Week selected (can't log for future weeks)
+2. Hours entered or effort size selected
+3. Initiative is Active/Planning status
+4. Browser console for Supabase errors
 
-### Delete Functionality
-**Purpose**: Permanently remove initiatives from database
+---
 
-**Workflow:**
-1. Click X button on any row
-2. Confirm deletion dialog: "This will permanently delete the initiative and all associated data"
-3. On confirm:
-   - Initiative status changed to "Deleted" (soft delete)
-   - Initiative removed from UI
-   - No longer appears in effort tracking (only Active/Planning shown)
-4. Deletion persists (not restored by Google Sheets sync)
+## Architecture Documentation
 
-**Technical Implementation:**
-- Soft delete: Changes `status` to "Deleted" instead of hard delete
-- Prevents Google Sheets sync from restoring deleted items
-- Effort tracking filters only show Active/Planning/Scaling initiatives
-- Can be reversed by manually changing status back in database
+For deeper technical understanding:
 
-### Role Field Update
-**Change**: Replaced "Primary" with "Owner" throughout the application
+- **Data Flow**: `/docs/architecture/DATA_FLOW.md`
+- **Database Schema**: `/docs/database/SCHEMA_OVERVIEW.md`
+- **Migration History**: `/docs/database/MIGRATION_HISTORY.md`
+- **Setup Guide**: `/docs/deployment/SETUP.md`
 
-**Updated Locations:**
-- Initiative form dropdown
-- Reassignment modal
-- Database `role` field values
+---
 
-**Valid Role Options:**
-- Owner (was "Primary")
-- Co-Owner
-- Secondary
-- Support
+## Historical Context
+
+### Archive Folder
+
+`/archive/` contains development artifacts:
+- 30 TypeScript scripts (data population, validation, audit)
+- 12 ad-hoc SQL migrations (manually applied during development)
+- 30 markdown files (implementation notes, progress tracking)
+
+These are preserved for audit purposes but are not needed for operation.
+
+See `/archive/README.md` for complete inventory.
+
+---
 
 ## Notes
 
-- The application is designed for internal use by CommonSpirit Health's System Clinical Informatics team
-- All financial and operational data is retrieved from Supabase in real-time
-- The dashboard supports both aggregate and individual team member views
-- **CRITICAL**: Do not duplicate work_type_summary counts when adding initiatives - initiatives are drill-downs, not new assignments
-- Supabase credentials are stored in `.env` file (not committed to repository)
-- CSV source files in `documents/` folder contain raw assignment data for all team members
-- Use Marty's completed work as reference model for quality and approach
+- Application designed for internal use by CommonSpirit Health's System Clinical Informatics team
+- All financial and operational data retrieved from Supabase in real-time
+- Dashboard supports both aggregate (Overview) and individual (Team) views
+- Supabase credentials stored in `.env` (not committed to repository)
+- **Status standardization** completed: all views use Not Started/In Progress/On Hold/Completed/Cancelled
+- **CRITICAL**: Do not duplicate work_type_summary counts - initiatives are drill-downs, not new assignments
