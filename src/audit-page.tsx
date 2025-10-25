@@ -201,7 +201,7 @@ export function AuditPage() {
           </div>
           <div>
             <div className="text-3xl font-bold text-green-600">
-              {results.initiatives.filter(i => ['Planning', 'Active', 'Scaling'].includes(i.status)).length}
+              {results.initiatives.filter(i => ['Not Started', 'In Progress'].includes(i.status)).length}
             </div>
             <div className="text-sm text-green-800">Active Initiatives</div>
           </div>

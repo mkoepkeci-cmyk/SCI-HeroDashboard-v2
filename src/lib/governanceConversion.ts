@@ -18,7 +18,7 @@ import { supabase, GovernanceRequest, Initiative, TeamMember } from './supabase'
  * - owner_name, team_member_id (the assigned SCI)
  * - initiative_name (from governance request title)
  * - type: 'Governance'
- * - status: 'Planning' (will change to Active in Phase 2)
+ * - status: 'Not Started' (will change to In Progress in Phase 2)
  * - governance_request_id (link back)
  * - clinical_sponsor_name (basic info)
  */
@@ -61,7 +61,7 @@ export async function createInitiativeForAssignedRequest(
         owner_name: assignedSciName,
         initiative_name: govRequest.title,
         type: 'System Initiative',  // System Initiative work type
-        status: 'Planning',  // Will become Active in Phase 2
+        status: 'Not Started',  // Will become In Progress in Phase 2
         role: 'Owner',
         team_member_id: assignedSciId,
         governance_request_id: govRequest.id,  // Link back to governance request
@@ -122,7 +122,7 @@ export async function createInitiativeForAssignedRequest(
  * - key_collaborators
  * - financial_impact data
  * - start_date, end_date
- * - status: 'Active' (changes from Planning)
+ * - status: 'In Progress' (changes from Not Started)
  *
  * Also creates:
  * - initiative_stories record (challenge, outcome)
@@ -161,7 +161,7 @@ export async function populateInitiativeDetails(
       .from('initiatives')
       .update({
         // Status and Phase defaults
-        status: 'Active',  // Change from Planning to Active when Ready for Governance
+        status: 'In Progress',  // Change from Not Started to In Progress when Ready for Governance
         phase: 'Discovery/Define',  // Default phase for new governance initiatives
 
         // Ensure SCI is set as owner (in case it wasn't set in Phase 1)
@@ -326,7 +326,7 @@ export interface ConversionResult {
  *
  * Process:
  * 1. Fetch the governance request
- * 2. Create a new initiative (type: Governance, status: Planning)
+ * 2. Create a new initiative (type: Governance, status: Not Started)
  * 3. Pre-populate initiative with data from governance request
  * 4. Link the two records together
  * 5. Update governance request status to "In Progress"
@@ -373,7 +373,7 @@ export async function convertGovernanceRequestToInitiative(
         owner_name: params.assignedSciName,
         initiative_name: `${govRequest.title} - Governance Prep`,  // Indicate it's prep work
         type: 'Governance',  // Special type for governance prep
-        status: 'Planning',  // Starts in planning phase
+        status: 'Not Started',  // Starts in not started phase
         phase: 'Governance Preparation',
         work_effort: params.workEffort,
         role: 'Owner',  // Assigned SCI is the owner
@@ -564,7 +564,7 @@ export async function approveGovernanceRequest(
       const { error: initiativeError } = await supabase
         .from('initiatives')
         .update({
-          status: 'Active',  // Change from Planning to Active
+          status: 'In Progress',  // Change from Not Started to In Progress
           type: 'System Initiative',  // Change from Governance to System Initiative
           phase: 'Implementation',
           initiative_name: govRequest.title,  // Remove "- Governance Prep" suffix

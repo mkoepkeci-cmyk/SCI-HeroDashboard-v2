@@ -36,95 +36,6 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
   const [isDraft, setIsDraft] = useState(false);
   const isEditing = !!editingInitiative;
 
-  useEffect(() => {
-    const fetchTeamMembers = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('team_members')
-          .select('*')
-          .order('name', { ascending: true });
-
-        if (error) throw error;
-        setTeamMembers(data || []);
-      } catch (err) {
-        console.error('Error fetching team members:', err);
-      } finally {
-        setLoadingMembers(false);
-      }
-    };
-
-    fetchTeamMembers();
-
-    if (editingInitiative) {
-      setFormData({
-        teamMemberId: editingInitiative.team_member_id || '',
-        role: editingInitiative.role || '',
-        ownerName: editingInitiative.owner_name,
-        initiativeName: editingInitiative.initiative_name,
-        type: editingInitiative.type,
-        status: editingInitiative.status,
-        phase: (editingInitiative as any).phase || '',
-        workEffort: (editingInitiative as any).work_effort || '',
-        ehrsImpacted: editingInitiative.ehrs_impacted || '',
-        serviceLine: editingInitiative.service_line || '',
-        startDate: editingInitiative.start_date || '',
-        endDate: editingInitiative.end_date || '',
-        timeframeDisplay: editingInitiative.timeframe_display || '',
-        clinicalSponsorName: editingInitiative.clinical_sponsor_name || '',
-        clinicalSponsorTitle: editingInitiative.clinical_sponsor_title || '',
-        governanceBodies: editingInitiative.governance_bodies?.join(', ') || '',
-        keyCollaborators: editingInitiative.key_collaborators?.join(', ') || '',
-        actualRevenue: editingInitiative.financial_impact?.actual_revenue?.toString() || '',
-        actualTimeframe: editingInitiative.financial_impact?.actual_timeframe || '',
-        measurementStartDate: editingInitiative.financial_impact?.measurement_start_date || '',
-        measurementEndDate: editingInitiative.financial_impact?.measurement_end_date || '',
-        projectedAnnual: editingInitiative.financial_impact?.projected_annual?.toString() || '',
-        projectionBasis: editingInitiative.financial_impact?.projection_basis || '',
-        calculationMethodology: editingInitiative.financial_impact?.calculation_methodology || '',
-        keyAssumptions: editingInitiative.financial_impact?.key_assumptions?.join('\\n') || '',
-        usersDeployed: editingInitiative.performance_data?.users_deployed?.toString() || '',
-        totalPotentialUsers: editingInitiative.performance_data?.total_potential_users?.toString() || '',
-        primaryOutcome: editingInitiative.performance_data?.primary_outcome || '',
-        performanceMeasurementMethod: editingInitiative.performance_data?.measurement_method || '',
-        sampleSize: editingInitiative.performance_data?.sample_size || '',
-        measurementPeriod: editingInitiative.performance_data?.measurement_period || '',
-        annualImpactCalculated: editingInitiative.performance_data?.annual_impact_calculated || '',
-        calculationFormula: editingInitiative.performance_data?.calculation_formula || '',
-        projectionScenario: editingInitiative.projections?.scenario_description || '',
-        projectedUsers: editingInitiative.projections?.projected_users?.toString() || '',
-        percentOfOrganization: editingInitiative.projections?.percent_of_organization?.toString() || '',
-        projectedTimeSavings: editingInitiative.projections?.projected_time_savings || '',
-        projectedDollarValue: editingInitiative.projections?.projected_dollar_value || '',
-        revenueImpact: editingInitiative.projections?.revenue_impact || '',
-        projectionCalculationMethod: editingInitiative.projections?.calculation_method || '',
-        projectionAssumptions: editingInitiative.projections?.assumptions?.join('\\n') || '',
-        sensitivityNotes: editingInitiative.projections?.sensitivity_notes || '',
-        additionalBenefits: editingInitiative.projections?.additional_benefits || '',
-        challenge: editingInitiative.story?.challenge || '',
-        approach: editingInitiative.story?.approach || '',
-        outcome: editingInitiative.story?.outcome || '',
-        collaborationDetail: editingInitiative.story?.collaboration_detail || ''
-      });
-
-      if (editingInitiative.metrics && editingInitiative.metrics.length > 0) {
-        setMetrics(editingInitiative.metrics.map(m => ({
-          metricName: m.metric_name,
-          metricType: m.metric_type,
-          unit: m.unit,
-          baselineValue: m.baseline_value?.toString() || '',
-          baselineDate: m.baseline_date || '',
-          currentValue: m.current_value?.toString() || '',
-          measurementDate: m.measurement_date || '',
-          targetValue: m.target_value?.toString() || '',
-          improvement: m.improvement || '',
-          measurementMethod: m.measurement_method || ''
-        })));
-      }
-
-      setIsDraft(editingInitiative.is_draft);
-    }
-  }, [editingInitiative]);
-
   const [formData, setFormData] = useState({
     teamMemberId: '',
     role: '',
@@ -197,6 +108,100 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
     teamMemberName: '',
     role: ''
   }]);
+
+  useEffect(() => {
+    const fetchTeamMembers = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('team_members')
+          .select('*')
+          .order('name', { ascending: true });
+
+        if (error) throw error;
+        setTeamMembers(data || []);
+      } catch (err) {
+        console.error('Error fetching team members:', err);
+      } finally {
+        setLoadingMembers(false);
+      }
+    };
+
+    fetchTeamMembers();
+
+    console.log('🔍 InitiativeSubmissionForm useEffect - editingInitiative:', editingInitiative);
+    if (editingInitiative) {
+      console.log('📊 Metrics data:', editingInitiative.metrics);
+      console.log('💰 Financial data:', editingInitiative.financial_impact);
+      console.log('📈 Performance data:', editingInitiative.performance_data);
+
+      setFormData({
+        teamMemberId: editingInitiative.team_member_id || '',
+        role: editingInitiative.role || '',
+        ownerName: editingInitiative.owner_name,
+        initiativeName: editingInitiative.initiative_name,
+        type: editingInitiative.type,
+        status: editingInitiative.status,
+        phase: (editingInitiative as any).phase || '',
+        workEffort: (editingInitiative as any).work_effort || '',
+        ehrsImpacted: editingInitiative.ehrs_impacted || '',
+        serviceLine: editingInitiative.service_line || '',
+        startDate: editingInitiative.start_date || '',
+        endDate: editingInitiative.end_date || '',
+        timeframeDisplay: editingInitiative.timeframe_display || '',
+        clinicalSponsorName: editingInitiative.clinical_sponsor_name || '',
+        clinicalSponsorTitle: editingInitiative.clinical_sponsor_title || '',
+        governanceBodies: editingInitiative.governance_bodies?.join(', ') || '',
+        keyCollaborators: editingInitiative.key_collaborators?.join(', ') || '',
+        actualRevenue: editingInitiative.financial_impact?.actual_revenue?.toString() || '',
+        actualTimeframe: editingInitiative.financial_impact?.actual_timeframe || '',
+        measurementStartDate: editingInitiative.financial_impact?.measurement_start_date || '',
+        measurementEndDate: editingInitiative.financial_impact?.measurement_end_date || '',
+        projectedAnnual: editingInitiative.financial_impact?.projected_annual?.toString() || '',
+        projectionBasis: editingInitiative.financial_impact?.projection_basis || '',
+        calculationMethodology: editingInitiative.financial_impact?.calculation_methodology || '',
+        keyAssumptions: editingInitiative.financial_impact?.key_assumptions?.join('\\n') || '',
+        usersDeployed: editingInitiative.performance_data?.users_deployed?.toString() || '',
+        totalPotentialUsers: editingInitiative.performance_data?.total_potential_users?.toString() || '',
+        primaryOutcome: editingInitiative.performance_data?.primary_outcome || '',
+        performanceMeasurementMethod: editingInitiative.performance_data?.measurement_method || '',
+        sampleSize: editingInitiative.performance_data?.sample_size || '',
+        measurementPeriod: editingInitiative.performance_data?.measurement_period || '',
+        annualImpactCalculated: editingInitiative.performance_data?.annual_impact_calculated || '',
+        calculationFormula: editingInitiative.performance_data?.calculation_formula || '',
+        projectionScenario: editingInitiative.projections?.scenario_description || '',
+        projectedUsers: editingInitiative.projections?.projected_users?.toString() || '',
+        percentOfOrganization: editingInitiative.projections?.percent_of_organization?.toString() || '',
+        projectedTimeSavings: editingInitiative.projections?.projected_time_savings || '',
+        projectedDollarValue: editingInitiative.projections?.projected_dollar_value || '',
+        revenueImpact: editingInitiative.projections?.revenue_impact || '',
+        projectionCalculationMethod: editingInitiative.projections?.calculation_method || '',
+        projectionAssumptions: editingInitiative.projections?.assumptions?.join('\\n') || '',
+        sensitivityNotes: editingInitiative.projections?.sensitivity_notes || '',
+        additionalBenefits: editingInitiative.projections?.additional_benefits || '',
+        challenge: editingInitiative.story?.challenge || '',
+        approach: editingInitiative.story?.approach || '',
+        outcome: editingInitiative.story?.outcome || '',
+        collaborationDetail: editingInitiative.story?.collaboration_detail || ''
+      });
+
+      if (editingInitiative.metrics && editingInitiative.metrics.length > 0) {
+        setMetrics(editingInitiative.metrics.map(m => ({
+          metricName: m.metric_name,
+          metricType: m.metric_type,
+          unit: m.unit,
+          baselineValue: m.baseline_value?.toString() || '',
+          baselineDate: m.baseline_date || '',
+          currentValue: m.current_value?.toString() || '',
+          measurementDate: m.measurement_date || '',
+          targetValue: m.target_value?.toString() || '',
+          improvement: m.improvement || '',
+          measurementMethod: m.measurement_method || ''
+        })));
+      }
+
+      setIsDraft(editingInitiative.is_draft);
+    }
+  }, [editingInitiative]);
 
   const addMetric = () => {
     setMetrics([...metrics, {
@@ -628,9 +633,11 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
                 onChange={e => setFormData({ ...formData, status: e.target.value })}
               >
                 <option value="">Select Status</option>
+                <option>Not Started</option>
                 <option>In Progress</option>
-                <option>Complete</option>
                 <option>On Hold</option>
+                <option>Completed</option>
+                <option>Cancelled</option>
               </select>
             </div>
             <div>
@@ -1275,3 +1282,4 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
     </div>
   );
 };
+ 

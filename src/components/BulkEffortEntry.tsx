@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Clock, Save, Copy, User, X, UserPlus, Edit } from 'lucide-react';
+import { Clock, Save, Copy, User, X, UserPlus, Edit, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase, InitiativeWithDetails, EffortLog, EFFORT_SIZES, EffortSize, TeamMember } from '../lib/supabase';
 import { getWeekStartDate, formatWeekRange, getEffortSizeFromHours } from '../lib/effortUtils';
 import ReassignModal from './ReassignModal';
@@ -39,6 +39,8 @@ export default function BulkEffortEntry({
   const [lastWeekData, setLastWeekData] = useState<EffortLog[]>([]);
   const [allTeamMembers, setAllTeamMembers] = useState<TeamMember[]>([]);
   const [reassigningInitiative, setReassigningInitiative] = useState<InitiativeWithDetails | null>(null);
+  const [showCompleted, setShowCompleted] = useState(false); // State for collapsed completed section
+  const [completedInitiatives, setCompletedInitiatives] = useState<InitiativeWithDetails[]>([]); // Store completed initiatives
 
   useEffect(() => {
     loadData();
@@ -85,8 +87,51 @@ export default function BulkEffortEntry({
         throw initError;
       }
 
-      const allInitiatives = fetchedInitiatives || [];
-      console.log('- Fetched initiatives:', allInitiatives.length);
+      // Fetch related data for initiatives (metrics, financial, performance, projections, stories)
+      console.log('- Fetching related data (metrics, financial, performance, projections, stories)...');
+
+      const { data: metrics, error: metricsError } = await supabase
+        .from('initiative_metrics')
+        .select('*')
+        .order('display_order', { ascending: true });
+
+      if (metricsError) throw metricsError;
+
+      const { data: financialImpact, error: financialError } = await supabase
+        .from('initiative_financial_impact')
+        .select('*');
+
+      if (financialError) throw financialError;
+
+      const { data: performanceData, error: performanceError } = await supabase
+        .from('initiative_performance_data')
+        .select('*');
+
+      if (performanceError) throw performanceError;
+
+      const { data: projections, error: projectionsError } = await supabase
+        .from('initiative_projections')
+        .select('*');
+
+      if (projectionsError) throw projectionsError;
+
+      const { data: stories, error: storiesError } = await supabase
+        .from('initiative_stories')
+        .select('*');
+
+      if (storiesError) throw storiesError;
+
+      // Join initiatives with their related data
+      const allInitiatives: InitiativeWithDetails[] = (fetchedInitiatives || []).map((initiative) => ({
+        ...initiative,
+        metrics: (metrics || []).filter((m) => m.initiative_id === initiative.id),
+        financial_impact: (financialImpact || []).find((f) => f.initiative_id === initiative.id),
+        performance_data: (performanceData || []).find((p) => p.initiative_id === initiative.id),
+        projections: (projections || []).find((p) => p.initiative_id === initiative.id),
+        story: (stories || []).find((s) => s.initiative_id === initiative.id),
+      }));
+
+      console.log('- Fetched initiatives with details:', allInitiatives.length);
 
       // Load existing logs for selected week
       const { data: currentLogs, error: currentError } = await supabase
@@ -118,10 +163,8 @@ export default function BulkEffortEntry({
       // Governance requests (Draft, Ready for Review, Needs Refinement) show in SCIRequestsCard above
       let filteredInitiatives = allInitiatives.filter(
         i => (
-          i.status === 'Active' ||
-          i.status === 'In Progress' ||
-          i.status === 'Planning' ||
-          i.status === 'Scaling'
+          i.status === 'Active' || i.status === 'Planning' || i.status === 'Scaling' ||
+          i.status === 'Not Started' || i.status === 'In Progress'
         )
       );
 
@@ -154,6 +197,22 @@ export default function BulkEffortEntry({
         // Same priority level - sort by name
         return (a.initiative_name || '').localeCompare(b.initiative_name || '');
       });
+
+      // Also filter completed initiatives for the collapsed section
+      let completedInits = allInitiatives.filter(i => i.status === 'Completed');
+
+      // Filter completed by team member if specified
+      if (teamMemberName) {
+        completedInits = completedInits.filter(
+          i => i.owner_name === teamMemberName || i.team_member_id === teamMemberId
+        );
+      }
+
+      // Sort completed by name
+      completedInits.sort((a, b) => (a.initiative_name || '').localeCompare(b.initiative_name || ''));
+
+      // Set completed initiatives state
+      setCompletedInitiatives(completedInits);
 
       const newEntries: InitiativeEffortEntry[] = filteredInitiatives.map(initiative => {
         const existingLog = (currentLogs || []).find(log => log.initiative_id === initiative.id);
@@ -650,6 +709,73 @@ export default function BulkEffortEntry({
           </table>
         </div>
       </div>
+
+      {/* Completed Initiatives Section (Collapsed) */}
+      {completedInitiatives.length > 0 && (
+        <div className="mt-6">
+          <button
+            onClick={() => setShowCompleted(!showCompleted)}
+            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              {showCompleted ? <ChevronUp className="w-5 h-5 text-gray-600" /> : <ChevronDown className="w-5 h-5 text-gray-600" />}
+              <span className="font-semibold text-gray-700">Completed Initiatives</span>
+              <span className="text-sm text-gray-500">({completedInitiatives.length})</span>
+            </div>
+            <span className="text-xs text-gray-500">Click to {showCompleted ? 'collapse' : 'expand'}</span>
+          </button>
+
+          {showCompleted && (
+            <div className="mt-3 bg-white border border-gray-200 rounded-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Initiative</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Type</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Service Line</th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Edit</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {completedInitiatives.map((initiative) => (
+                      <tr key={initiative.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-4 py-3">
+                          <div className="flex flex-col">
+                            <span className="font-medium text-gray-900">{initiative.initiative_name}</span>
+                            {initiative.timeframe_display && (
+                              <span className="text-xs text-gray-500 mt-1">{initiative.timeframe_display}</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
+                            {initiative.type}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="text-sm text-gray-600">{initiative.service_line || '—'}</span>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          {onEditInitiative && (
+                            <button
+                              onClick={() => onEditInitiative(initiative)}
+                              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-colors p-1 rounded"
+                              title="Edit initiative details"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Reassign Modal */}
       {reassigningInitiative && (
