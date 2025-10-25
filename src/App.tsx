@@ -2125,6 +2125,25 @@ function App() {
                 teamMembers: teamMembers.map(tm => ({
                   name: tm.name,
                   totalAssignments: tm.total_assignments,
+                  // Capacity data from dashboard_metrics
+                  capacityUtilization: tm.dashboard_metrics?.capacity_utilization,
+                  capacityUtilizationPercent: tm.dashboard_metrics?.capacity_utilization ?
+                    Math.round(tm.dashboard_metrics.capacity_utilization * 100) : null,
+                  capacityStatus: tm.dashboard_metrics?.capacity_status,
+                  activeAssignments: tm.dashboard_metrics?.active_assignments,
+                  activeHoursPerWeek: tm.dashboard_metrics?.active_hours_per_week,
+                  availableHours: tm.dashboard_metrics?.available_hours,
+                  // Work type breakdown
+                  workTypes: tm.workTypes,
+                  // Assignments
+                  assignments: tm.assignments?.map(a => ({
+                    name: a.assignment_name,
+                    workType: a.work_type,
+                    status: a.status,
+                    workEffort: a.work_effort,
+                    phase: a.phase,
+                    roleType: a.role_type,
+                  })),
                   initiatives: tm.initiatives?.map(i => ({
                     name: i.initiative_name,
                     type: i.type,
