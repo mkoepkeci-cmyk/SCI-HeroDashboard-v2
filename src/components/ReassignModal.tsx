@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, UserCircle, AlertCircle } from 'lucide-react';
 import { supabase, InitiativeWithDetails, TeamMember } from '../lib/supabase';
+import { recalculateDashboardMetrics } from '../lib/workloadCalculator';
 
 interface ReassignModalProps {
   initiative: InitiativeWithDetails;
@@ -41,6 +42,9 @@ export default function ReassignModal({
       return;
     }
 
+    // Get the old owner's team_member_id before reassignment
+    const oldOwnerId = initiative.team_member_id;
+
     try {
       setSaving(true);
       setError(null);
@@ -57,6 +61,31 @@ export default function ReassignModal({
         .eq('id', initiative.id);
 
       if (updateError) throw updateError;
+
+      // Recalculate dashboard_metrics for both the old and new owners
+      // This ensures workload updates immediately in the dashboard
+      console.log('Recalculating dashboard metrics after reassignment...');
+
+      const recalculations = [];
+
+      // Recalculate for new owner
+      recalculations.push(
+        recalculateDashboardMetrics(newOwner.id)
+          .then(() => console.log(`✓ Metrics updated for new owner: ${newOwner.name}`))
+          .catch(err => console.error(`Error recalculating metrics for ${newOwner.name}:`, err))
+      );
+
+      // Recalculate for old owner (if we have their ID)
+      if (oldOwnerId) {
+        recalculations.push(
+          recalculateDashboardMetrics(oldOwnerId)
+            .then(() => console.log(`✓ Metrics updated for old owner`))
+            .catch(err => console.error(`Error recalculating metrics for old owner:`, err))
+        );
+      }
+
+      // Wait for all recalculations to complete
+      await Promise.all(recalculations);
 
       // Success!
       onSuccess();

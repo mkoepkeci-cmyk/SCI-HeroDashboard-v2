@@ -98,6 +98,7 @@ export interface Initiative {
   governance_bodies?: string[];
   team_member_id?: string;
   governance_request_id?: string;  // Link back to governance request (if created from portal)
+  direct_hours_per_week?: number; // For Governance work type: actual hours per week (bypasses formula)
   is_draft: boolean;
   is_active?: boolean;
   completion_status: CompletionStatus;

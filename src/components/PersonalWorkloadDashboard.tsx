@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Clock, TrendingUp, AlertCircle, Calendar, BarChart3, User, List } from 'lucide-react';
+import { Clock, TrendingUp, AlertCircle, Calendar, BarChart3, User, List, Plus } from 'lucide-react';
 import { supabase, InitiativeWithDetails, EffortLog, TeamMember } from '../lib/supabase';
 import {
   getWeekStartDate,
@@ -54,6 +54,7 @@ export default function PersonalWorkloadDashboard({
   const [selectedWeek, setSelectedWeek] = useState(getWeekStartDate());
   const [view, setView] = useState<'summary' | 'entry'>('entry');
   const [editingInitiative, setEditingInitiative] = useState<InitiativeWithDetails | null>(null);
+  const [showAddInitiative, setShowAddInitiative] = useState(false);
 
   const recentWeeks = useMemo(() => getLastNWeeks(8), []);
 
@@ -168,9 +169,9 @@ export default function PersonalWorkloadDashboard({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg p-6">
-        <h2 className="text-2xl font-bold mb-2">Effort Tracking</h2>
-        <p className="text-blue-100">Log your time, manage capacity, and stay balanced</p>
+      <div className="bg-[#9B2F6A] text-white rounded-lg p-6">
+        <h2 className="text-2xl font-bold mb-2">SCI Effort Tracking</h2>
+        <p className="text-white/80">Log your time, manage capacity, and stay balanced</p>
       </div>
 
       {/* Staff Selector + Week Selector + View Toggle */}
@@ -220,7 +221,7 @@ export default function PersonalWorkloadDashboard({
               onClick={() => setView('entry')}
               className={`flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${
                 view === 'entry'
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-[#9B2F6A] text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -231,7 +232,7 @@ export default function PersonalWorkloadDashboard({
               onClick={() => setView('summary')}
               className={`flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${
                 view === 'summary'
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-[#9B2F6A] text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -263,6 +264,7 @@ export default function PersonalWorkloadDashboard({
           selectedWeek={selectedWeek}
           onSave={loadEffortLogs}
           onEditInitiative={(initiative) => setEditingInitiative(initiative)}
+          onAddInitiative={() => setShowAddInitiative(true)}
         />
       ) : (
         <>
@@ -455,6 +457,27 @@ export default function PersonalWorkloadDashboard({
                 }}
               />
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Initiative Modal */}
+      {showAddInitiative && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <InitiativeSubmissionForm
+              onClose={() => {
+                setShowAddInitiative(false);
+              }}
+              onSuccess={async () => {
+                // Refresh data BEFORE closing modal
+                if (onInitiativesRefresh) {
+                  await onInitiativesRefresh();
+                }
+                await loadEffortLogs();
+                setShowAddInitiative(false);
+              }}
+            />
           </div>
         </div>
       )}

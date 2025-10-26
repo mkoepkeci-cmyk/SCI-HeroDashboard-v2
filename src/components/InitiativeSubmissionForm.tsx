@@ -614,14 +614,15 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
                 onChange={e => setFormData({ ...formData, type: e.target.value })}
               >
                 <option value="">Select Type</option>
+                <option>Epic Gold</option>
+                <option>Governance</option>
                 <option>System Initiative</option>
-                <option>System Projects</option>
+                <option>System Project</option>
+                <option>Epic Upgrades</option>
+                <option>General Support</option>
+                <option>Policy/Guidelines</option>
                 <option>Market Project</option>
                 <option>Ticket</option>
-                <option>Epic Gold</option>
-                <option>SCI Consultant Request</option>
-                <option>Policy/Guidelines</option>
-                <option>General Support</option>
               </select>
             </div>
             <div>

@@ -12,6 +12,7 @@ import { GovernancePortalView } from './components/GovernancePortalView';
 import { GovernanceRequestDetail } from './components/GovernanceRequestDetail';
 import { GovernanceRequestForm } from './components/GovernanceRequestForm';
 import { LandingPage } from './components/LandingPage';
+import { WorkloadCalculatorSettings } from './components/WorkloadCalculatorSettings';
 import { calculateWorkload, getCapacityStatus, getCapacityColor, getCapacityEmoji, getCapacityLabel, WORK_EFFORT_HOURS, parseWorkEffort } from './lib/workloadUtils';
 import StaffDetailModal from './components/StaffDetailModal';
 import { LoadBalanceModal } from './components/LoadBalanceModal';
@@ -27,19 +28,23 @@ interface TeamMemberWithDetails extends TeamMember {
 
 function App() {
   // Get initial view from URL hash or default to 'landing'
-  const getInitialView = (): 'landing' | 'dashboard' | 'workload' | 'governance' | 'myEffort' | 'insights' | 'addData' => {
+  const getInitialView = (): 'landing' | 'dashboard' | 'workload' | 'governance' | 'insights' | 'addData' => {
     const hash = window.location.hash.slice(1); // Remove the '#'
     // Support legacy 'overview' and 'team' hashes by mapping to 'dashboard'
     if (hash === 'overview' || hash === 'team') {
       return 'dashboard';
     }
-    if (['landing', 'dashboard', 'workload', 'governance', 'myEffort', 'insights', 'addData'].includes(hash)) {
-      return hash as 'landing' | 'dashboard' | 'workload' | 'governance' | 'myEffort' | 'insights' | 'addData';
+    // Map legacy 'myEffort' to 'workload' view
+    if (hash === 'myEffort') {
+      return 'workload';
+    }
+    if (['landing', 'dashboard', 'workload', 'governance', 'insights', 'addData'].includes(hash)) {
+      return hash as 'landing' | 'dashboard' | 'workload' | 'governance' | 'insights' | 'addData';
     }
     return 'landing';
   };
 
-  const [activeView, setActiveView] = useState<'landing' | 'dashboard' | 'workload' | 'governance' | 'myEffort' | 'insights' | 'addData'>(getInitialView());
+  const [activeView, setActiveView] = useState<'landing' | 'dashboard' | 'workload' | 'governance' | 'insights' | 'addData'>(getInitialView());
   const [dashboardSubView, setDashboardSubView] = useState<'overview' | 'team'>('overview'); // Toggle between overview and team
   const [selectedMember, setSelectedMember] = useState<TeamMemberWithDetails | null>(null);
   const [teamMembers, setTeamMembers] = useState<TeamMemberWithDetails[]>([]);
@@ -243,16 +248,14 @@ function App() {
   const getWorkTypeColor = (type: string): string => {
     const colors: { [key: string]: string } = {
       'Epic Gold': '#9B2F6A',
-      'System Initiative': '#00A1E0',
-      'System Projects': '#00A1E0',
       'Governance': '#6F47D0',
+      'System Initiative': '#00A1E0',
+      'System Project': '#00A1E0',
+      'Epic Upgrades': '#00A1E0',
+      'General Support': '#F58025',
+      'Policy/Guidelines': '#6F47D0',
       'Market Project': '#9C5C9D',
       'Ticket': '#F58025',
-      'General Support': '#F58025',
-      'Project': '#9C5C9D',
-      'Policy/ Guideline': '#6F47D0',
-      'Epic Governance': '#6F47D0',
-      'Epic Upgrades': '#00A1E0',
       'Uncategorized': '#565658',
     };
     return colors[type] || '#565658';
@@ -1105,14 +1108,15 @@ function App() {
   };
 
   const WorkloadView = () => {
+    const [workloadSubView, setWorkloadSubView] = useState<'sci' | 'team' | 'calculator'>('sci');
     const [alertsExpanded, setAlertsExpanded] = useState(false);
     const [teamDashboardExpanded, setTeamDashboardExpanded] = useState(false);
     const [selectedMemberForDetail, setSelectedMemberForDetail] = useState<TeamMemberWithDetails | null>(null);
     const [selectedMember, setSelectedMember] = useState<TeamMemberWithDetails | null>(null);
-    const [sortBy, setSortBy] = useState<'name' | 'capacity' | 'hours' | 'quality'>('capacity');
+    const [sortBy, setSortBy] = useState<'name' | 'capacity' | 'hours' | 'quality'>('name');
     const [showDataQuality, setShowDataQuality] = useState(true);
     const [expandedWarnings, setExpandedWarnings] = useState<Set<string>>(new Set());
-    const [cardMetricView, setCardMetricView] = useState<'capacity' | 'worktype' | 'effort' | 'quality'>('capacity');
+    const [cardMetricView, setCardMetricView] = useState<'alpha' | 'capacity' | 'worktype' | 'effort' | 'quality'>('alpha');
     const [loadBalanceFrom, setLoadBalanceFrom] = useState<TeamMemberWithDetails | null>(null);
 
     // Find and show the selected initiative from governance portal
@@ -1261,50 +1265,93 @@ function App() {
 
     return (
       <div className="space-y-3">
-        {/* Compact Header with Team Stats */}
-        <div className="bg-[#9B2F6A] rounded-lg p-4 text-white shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-bold">Team Workload Analysis</h2>
-              <p className="text-[10px] text-white/90">{teamMembers.length} SCIs • {totalActiveHours.toFixed(1)}h/week active</p>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold">{(avgUtilization * 100).toFixed(0)}%</div>
-                <div className="text-[10px] text-white/90">Avg Capacity</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">{overCapacity + nearCapacity}</div>
-                <div className="text-[10px] text-white/90">At/Over</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">{(avgDataQuality * 100).toFixed(0)}%</div>
-                <div className="text-[10px] text-white/90">Data Quality</div>
-              </div>
-            </div>
-          </div>
+        {/* Sub-Tab Navigation */}
+        <div className="bg-white border rounded-lg flex gap-2 p-1">
+          <button
+            onClick={() => setWorkloadSubView('sci')}
+            className={`flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+              workloadSubView === 'sci'
+                ? 'bg-[#9B2F6A] text-white shadow-md'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            SCI View
+          </button>
+          <button
+            onClick={() => setWorkloadSubView('team')}
+            className={`flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+              workloadSubView === 'team'
+                ? 'bg-[#9B2F6A] text-white shadow-md'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            Team View
+          </button>
+          <button
+            onClick={() => setWorkloadSubView('calculator')}
+            className={`flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+              workloadSubView === 'calculator'
+                ? 'bg-[#9B2F6A] text-white shadow-md'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            ⚙️ Calculator Settings
+          </button>
         </div>
+
+        {/* Conditional Content Based on Sub-View */}
+        {workloadSubView === 'calculator' ? (
+          <WorkloadCalculatorSettings />
+        ) : workloadSubView === 'sci' ? (
+          <PersonalWorkloadDashboard
+            teamMember={currentUser}
+            allTeamMembers={teamMembers}
+            initiatives={teamMembers.flatMap(m => m.initiatives || [])}
+            onTeamMemberChange={setCurrentUser}
+            onInitiativesRefresh={fetchTeamData}
+          />
+        ) : (
+          <>
+            {/* Compact Header with Team Stats */}
+            <div className="bg-[#9B2F6A] rounded-lg p-6 text-white shadow-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold mb-2">SCI Workload Analysis</h2>
+                  <p className="text-white/80">{teamMembers.length} SCIs • {totalActiveHours.toFixed(1)}h/week active</p>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">{(avgUtilization * 100).toFixed(0)}%</div>
+                    <div className="text-[10px] text-white/90">Avg Capacity</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">{overCapacity + nearCapacity}</div>
+                    <div className="text-[10px] text-white/90">At/Over</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">{(avgDataQuality * 100).toFixed(0)}%</div>
+                    <div className="text-[10px] text-white/90">Data Quality</div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
         {/* Controls */}
         <div className="flex items-center justify-between bg-white border rounded-lg p-2">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">Sort:</span>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="border rounded px-2 py-1 text-xs"
-              >
-                <option value="capacity">Capacity %</option>
-                <option value="hours">Hours/Week</option>
-                <option value="quality">Data Quality</option>
-                <option value="name">Name</option>
-              </select>
-            </div>
-            <div className="h-4 w-px bg-gray-300"></div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">Card View:</span>
+              <span className="text-sm font-medium text-gray-700">Filter View:</span>
               <div className="flex gap-1">
+                <button
+                  onClick={() => setCardMetricView('alpha')}
+                  className={`px-3 py-1 text-xs font-medium rounded transition-all ${
+                    cardMetricView === 'alpha'
+                      ? 'bg-[#9B2F6A] text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Alpha
+                </button>
                 <button
                   onClick={() => setCardMetricView('capacity')}
                   className={`px-3 py-1 text-xs font-medium rounded transition-all ${
@@ -1385,6 +1432,20 @@ function App() {
 
               {/* Key Metrics - Dynamic based on cardMetricView */}
               <div className="space-y-0.5 text-[10px] leading-tight">
+                {cardMetricView === 'alpha' && (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Capacity</span>
+                      <span
+                        className="font-bold"
+                        style={{ color: getCapacityColor(capacityStatus) }}
+                      >
+                        {Math.round((member.dashboard_metrics?.capacity_utilization || 0) * 100)}%
+                      </span>
+                    </div>
+                  </>
+                )}
+
                 {cardMetricView === 'capacity' && (
                   <>
                     <div className="flex justify-between">
@@ -1407,7 +1468,7 @@ function App() {
                         e.stopPropagation();
                         setLoadBalanceFrom(member);
                       }}
-                      className="mt-1 w-full text-[9px] py-1 px-1 bg-gradient-to-r from-[#9B2F6A] to-[#6F47D0] text-white rounded hover:opacity-90 flex items-center justify-center gap-0.5"
+                      className="mt-1 w-full text-[9px] py-1 px-1 bg-[#9B2F6A] text-white rounded hover:bg-[#8B2858] flex items-center justify-center gap-0.5"
                     >
                       ⚖️ Load Balance
                     </button>
@@ -1981,6 +2042,8 @@ function App() {
             onClose={() => setLoadBalanceFrom(null)}
           />
         )}
+          </>
+        )}
       </div>
     );
   };
@@ -2017,7 +2080,7 @@ function App() {
                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
                   activeView === 'dashboard'
                     ? 'bg-[#9B2F6A] text-white shadow-md'
-                    : 'bg-gray-100 text-[#565658] hover:bg-gray-200'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
                 Dashboard
@@ -2026,34 +2089,21 @@ function App() {
                 onClick={() => setActiveView('governance')}
                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1 ${
                   activeView === 'governance'
-                    ? 'bg-[#6F47D0] text-white shadow-md'
-                    : 'bg-[#6F47D0]/10 text-[#6F47D0] hover:bg-[#6F47D0]/20'
+                    ? 'bg-[#9B2F6A] text-white shadow-md'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                SCI Requests
-              </button>
-              <button
-                onClick={() => setActiveView('myEffort')}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1 ${
-                  activeView === 'myEffort'
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-                }`}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                My Effort
+                System Intake
               </button>
               <button
                 onClick={() => setActiveView('workload')}
                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1 ${
                   activeView === 'workload'
-                    ? 'bg-[#F58025] text-white shadow-md'
-                    : 'bg-gray-100 text-[#565658] hover:bg-gray-200'
+                    ? 'bg-[#9B2F6A] text-white shadow-md'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
                 <TrendingUp size={16} />
@@ -2063,26 +2113,12 @@ function App() {
                 onClick={() => setActiveView('insights')}
                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1 ${
                   activeView === 'insights'
-                    ? 'bg-gradient-to-r from-[#9B2F6A] to-[#6F47D0] text-white shadow-md'
-                    : 'bg-gradient-to-r from-[#9B2F6A]/10 to-[#6F47D0]/10 text-[#6F47D0] hover:from-[#9B2F6A]/20 hover:to-[#6F47D0]/20'
+                    ? 'bg-[#9B2F6A] text-white shadow-md'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
                 <Sparkles size={16} />
                 AI Insights
-              </button>
-              <button
-                onClick={() => {
-                  setEditingInitiative(null);
-                  setActiveView('addData');
-                }}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1 ${
-                  activeView === 'addData'
-                    ? 'bg-[#00A1E0] text-white shadow-md'
-                    : 'bg-[#00A1E0]/10 text-[#00A1E0] hover:bg-[#00A1E0]/20'
-                }`}
-              >
-                <Plus size={16} />
-                Add Data
               </button>
             </div>
           </div>
@@ -2166,14 +2202,6 @@ function App() {
               />
             )}
           </>
-        ) : activeView === 'myEffort' ? (
-          <PersonalWorkloadDashboard
-            teamMember={currentUser}
-            allTeamMembers={teamMembers}
-            initiatives={teamMembers.flatMap(m => m.initiatives || [])}
-            onTeamMemberChange={setCurrentUser}
-            onInitiativesRefresh={fetchTeamData}
-          />
         ) : activeView === 'insights' ? (
           <div className="h-[calc(100vh-12rem)] bg-white rounded-lg shadow-sm">
             <InsightsChat
@@ -2207,20 +2235,6 @@ function App() {
               }, null, 2)}
             />
           </div>
-        ) : activeView === 'addData' ? (
-          <InitiativeSubmissionForm
-            editingInitiative={editingInitiative || undefined}
-            onClose={() => {
-              setEditingInitiative(null);
-              setActiveView('overview');
-            }}
-            onSuccess={async () => {
-              // Refresh data BEFORE closing/navigating to ensure updates are visible
-              await fetchTeamData();
-              setEditingInitiative(null);
-              setActiveView('overview');
-            }}
-          />
         ) : null}
       </main>
 

@@ -58,7 +58,7 @@ export const SCIRequestsCard = ({ teamMemberId, onRequestClick }: SCIRequestsCar
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <FileText className="w-5 h-5 text-purple-600" />
-          <h3 className="text-base font-bold text-purple-900">SCI Consultant Requests</h3>
+          <h3 className="text-base font-bold text-purple-900">Assigned System Requests</h3>
         </div>
         <div className="flex items-center gap-2">
           {readyForReviewCount > 0 && (
@@ -118,12 +118,12 @@ export const SCIRequestsCard = ({ teamMemberId, onRequestClick }: SCIRequestsCar
       <div className="mt-3 pt-3 border-t border-purple-200">
         <button
           onClick={() => {
-            // Navigate to governance portal filtered to this SCI's requests
+            // Navigate to System Intake portal filtered to this SCI's requests
             window.location.hash = 'governance';
           }}
           className="text-purple-600 hover:text-purple-700 font-medium text-sm hover:underline"
         >
-          View All in Governance Portal →
+          View All in System Intake Portal →
         </button>
       </div>
     </div>

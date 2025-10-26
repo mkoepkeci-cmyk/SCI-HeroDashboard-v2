@@ -11,6 +11,7 @@ interface BulkEffortEntryProps {
   selectedWeek: string;
   onSave: () => void;
   onEditInitiative?: (initiative: InitiativeWithDetails) => void; // Callback to open edit form
+  onAddInitiative?: () => void; // Callback to open add initiative form
 }
 
 interface InitiativeEffortEntry {
@@ -32,6 +33,7 @@ export default function BulkEffortEntry({
   selectedWeek,
   onSave,
   onEditInitiative,
+  onAddInitiative,
 }: BulkEffortEntryProps) {
   const [entries, setEntries] = useState<InitiativeEffortEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,6 +43,22 @@ export default function BulkEffortEntry({
   const [reassigningInitiative, setReassigningInitiative] = useState<InitiativeWithDetails | null>(null);
   const [showCompleted, setShowCompleted] = useState(false); // State for collapsed completed section
   const [completedInitiatives, setCompletedInitiatives] = useState<InitiativeWithDetails[]>([]); // Store completed initiatives
+
+  // Initialize with all work types collapsed by default
+  const [collapsedWorkTypes, setCollapsedWorkTypes] = useState<Set<string>>(
+    new Set([
+      'Governance',
+      'Policy/Guidelines',
+      'System Project',
+      'Market Project',
+      'System Initiative',
+      'Ticket',
+      'General Support',
+      'Epic Gold',
+      'Epic Upgrades',
+      'Uncategorized'
+    ])
+  );
 
   useEffect(() => {
     loadData();
@@ -237,6 +255,85 @@ export default function BulkEffortEntry({
     } finally {
       setLoading(false);
     }
+  };
+
+  // Helper function to get work type color
+  const getWorkTypeColor = (type: string): string => {
+    const colors: { [key: string]: string } = {
+      'Epic Gold': '#9B2F6A',
+      'Governance': '#6F47D0',
+      'System Initiative': '#00A1E0',
+      'System Project': '#00A1E0',
+      'Epic Upgrades': '#00A1E0',
+      'General Support': '#F58025',
+      'Policy/Guidelines': '#6F47D0',
+      'Market Project': '#9C5C9D',
+      'Ticket': '#F58025',
+      'Uncategorized': '#565658',
+    };
+    return colors[type] || '#565658';
+  };
+
+  // Toggle work type section collapse
+  const toggleWorkTypeSection = (workType: string) => {
+    setCollapsedWorkTypes(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(workType)) {
+        newSet.delete(workType);
+      } else {
+        newSet.add(workType);
+      }
+      return newSet;
+    });
+  };
+
+  // Group entries by work type
+  const groupEntriesByWorkType = () => {
+    const grouped: { [key: string]: InitiativeEffortEntry[] } = {};
+    entries.forEach(entry => {
+      const workType = entry.initiative.type || 'Uncategorized';
+      if (!grouped[workType]) {
+        grouped[workType] = [];
+      }
+      grouped[workType].push(entry);
+    });
+
+    // Custom sort order for work types
+    const workTypeOrder = [
+      'Governance',
+      'Policy/Guidelines',
+      'System Project',
+      'Market Project',
+      'System Initiative',
+      'Ticket',
+      'General Support',
+      'Epic Gold',
+      'Epic Upgrades',
+      'Uncategorized'
+    ];
+
+    // Sort work types by custom order
+    return Object.keys(grouped).sort((a, b) => {
+      const indexA = workTypeOrder.indexOf(a);
+      const indexB = workTypeOrder.indexOf(b);
+
+      // If both are in the order list, sort by their position
+      if (indexA !== -1 && indexB !== -1) {
+        return indexA - indexB;
+      }
+
+      // If only A is in the list, it comes first
+      if (indexA !== -1) return -1;
+
+      // If only B is in the list, it comes first
+      if (indexB !== -1) return 1;
+
+      // If neither is in the list, sort alphabetically
+      return a.localeCompare(b);
+    }).reduce((acc, key) => {
+      acc[key] = grouped[key];
+      return acc;
+    }, {} as { [key: string]: InitiativeEffortEntry[] });
   };
 
   const handleHoursChange = (index: number, value: string) => {
@@ -545,9 +642,19 @@ export default function BulkEffortEntry({
           </div>
 
           <div className="flex items-center gap-2">
+            {onAddInitiative && (
+              <button
+                onClick={onAddInitiative}
+                className="px-4 py-2 bg-[#9B2F6A] text-white rounded-lg hover:bg-[#8B2858] transition-colors flex items-center gap-2"
+                title="Add a new initiative to your workload"
+              >
+                <span className="text-lg">+</span>
+                Add Initiative
+              </button>
+            )}
             <button
               onClick={handleAddMiscAssignment}
-              className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
             >
               <span className="text-lg">+</span>
               Add Misc. Assignment
@@ -564,7 +671,7 @@ export default function BulkEffortEntry({
             <button
               onClick={handleSaveAll}
               disabled={saving || changedCount === 0}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-4 py-2 bg-[#9B2F6A] text-white rounded-lg hover:bg-[#8B2858] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               <Save className="w-4 h-4" />
               {saving ? 'Saving...' : `Save ${changedCount > 0 ? `(${changedCount})` : 'All'}`}
@@ -591,120 +698,168 @@ export default function BulkEffortEntry({
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {entries.map((entry, index) => {
-                return (
-                  <tr key={entry.initiative.id} className={entry.hasChanges ? 'bg-blue-50/50' : ''}>
-                      <td className="px-4 py-3 text-center">
-                    <input
-                      type="checkbox"
-                      checked={entry.skipped}
-                      onChange={() => handleSkipToggle(index)}
-                      className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 cursor-pointer"
-                      title="Skip this week - mark as no work"
-                    />
-                  </td>
-                  <td className="px-4 py-3">
-                    {entry.isMiscAssignment ? (
-                      <input
-                        type="text"
-                        value={entry.miscAssignmentName || ''}
-                        onChange={(e) => handleMiscAssignmentNameChange(index, e.target.value)}
-                        placeholder="Enter assignment name..."
-                        className="w-full px-2 py-1 font-medium text-sm border border-purple-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-purple-50"
-                      />
-                    ) : (
-                      <>
-                        <div className="font-medium text-sm text-gray-900">{entry.initiative.initiative_name}</div>
-                        {entry.initiative.service_line && (
-                          <div className="text-xs text-gray-500">{entry.initiative.service_line}</div>
-                        )}
-                      </>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs text-gray-700 truncate flex-1">
-                        {entry.initiative.owner_name || teamMemberName}
-                      </span>
-                      {!entry.isMiscAssignment && (
+              {(() => {
+                const groupedEntries = groupEntriesByWorkType();
+                const allRows: JSX.Element[] = [];
+
+                Object.entries(groupedEntries).forEach(([workType, workTypeEntries]) => {
+                  const isCollapsed = collapsedWorkTypes.has(workType);
+                  const color = getWorkTypeColor(workType);
+
+                  // Add section header row
+                  allRows.push(
+                    <tr key={`header-${workType}`} className="bg-gray-50">
+                      <td colSpan={9} className="px-4 py-2">
                         <button
-                          onClick={() => setReassigningInitiative(entry.initiative)}
-                          className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 p-1 rounded transition-colors"
-                          title="Reassign to another SCI"
+                          onClick={() => toggleWorkTypeSection(workType)}
+                          className="w-full flex items-center gap-3 text-left hover:bg-gray-100 transition-colors rounded px-2 py-1"
                         >
-                          <UserPlus className="w-3.5 h-3.5" />
+                          {isCollapsed ? (
+                            <ChevronDown className="w-5 h-5 text-gray-600 flex-shrink-0" />
+                          ) : (
+                            <ChevronUp className="w-5 h-5 text-gray-600 flex-shrink-0" />
+                          )}
+                          <div
+                            className="w-1 h-6 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: color }}
+                          />
+                          <span className="font-semibold text-gray-800">{workType}</span>
+                          <span
+                            className="text-sm px-2 py-0.5 rounded-full font-medium"
+                            style={{
+                              backgroundColor: `${color}20`,
+                              color: color
+                            }}
+                          >
+                            {workTypeEntries.length}
+                          </span>
                         </button>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="text-xs text-gray-600">{entry.initiative.type}</span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <input
-                      type="number"
-                      value={entry.hours || ''}
-                      onChange={(e) => handleHoursChange(index, e.target.value)}
-                      placeholder="0"
-                      step="0.5"
-                      min="0"
-                      max="168"
-                      className="w-20 px-2 py-1 text-center border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-1">
-                      {EFFORT_SIZES.map((size) => (
-                        <button
-                          key={size.size}
-                          onClick={() => handleSizeClick(index, size.size)}
-                          className={`px-2 py-1 text-xs font-semibold rounded transition-colors ${
-                            entry.effortSize === size.size
-                              ? 'text-white'
-                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                          }`}
-                          style={{
-                            backgroundColor: entry.effortSize === size.size ? size.color : undefined,
-                          }}
-                          title={`${size.label} - ${size.hours}h`}
-                        >
-                          {size.size}
-                        </button>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <input
-                      type="text"
-                      value={entry.note}
-                      onChange={(e) => handleNoteChange(index, e.target.value)}
-                      placeholder="Optional note..."
-                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    {!entry.isMiscAssignment && onEditInitiative && (
-                      <button
-                        onClick={() => onEditInitiative(entry.initiative)}
-                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-colors p-1 rounded"
-                        title="Edit initiative details"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <button
-                      onClick={() => handleRemoveInitiative(index)}
-                      className="text-gray-400 hover:text-red-600 transition-colors p-1 rounded hover:bg-red-50"
-                      title="Remove from list"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </td>
+                      </td>
+                    </tr>
+                  );
+
+                  // Add initiative rows if section is not collapsed
+                  if (!isCollapsed) {
+                    workTypeEntries.forEach((entry) => {
+                      const index = entries.findIndex(e => e.initiative.id === entry.initiative.id);
+                      allRows.push(
+                        <tr key={entry.initiative.id} className={entry.hasChanges ? 'bg-blue-50/50' : ''}>
+                          <td className="px-4 py-3 text-center">
+                            <input
+                              type="checkbox"
+                              checked={entry.skipped}
+                              onChange={() => handleSkipToggle(index)}
+                              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 cursor-pointer"
+                              title="Skip this week - mark as no work"
+                            />
+                          </td>
+                          <td className="px-4 py-3">
+                            {entry.isMiscAssignment ? (
+                              <input
+                                type="text"
+                                value={entry.miscAssignmentName || ''}
+                                onChange={(e) => handleMiscAssignmentNameChange(index, e.target.value)}
+                                placeholder="Enter assignment name..."
+                                className="w-full px-2 py-1 font-medium text-sm border border-purple-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-purple-50"
+                              />
+                            ) : (
+                              <>
+                                <div className="font-medium text-sm text-gray-900">{entry.initiative.initiative_name}</div>
+                                {entry.initiative.service_line && (
+                                  <div className="text-xs text-gray-500">{entry.initiative.service_line}</div>
+                                )}
+                              </>
+                            )}
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs text-gray-700 truncate flex-1">
+                                {entry.initiative.owner_name || teamMemberName}
+                              </span>
+                              {!entry.isMiscAssignment && (
+                                <button
+                                  onClick={() => setReassigningInitiative(entry.initiative)}
+                                  className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 p-1 rounded transition-colors"
+                                  title="Reassign to another SCI"
+                                >
+                                  <UserPlus className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="text-xs text-gray-600">{entry.initiative.type}</span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <input
+                              type="number"
+                              value={entry.hours || ''}
+                              onChange={(e) => handleHoursChange(index, e.target.value)}
+                              placeholder="0"
+                              step="0.5"
+                              min="0"
+                              max="168"
+                              className="w-20 px-2 py-1 text-center border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex gap-1">
+                              {EFFORT_SIZES.map((size) => (
+                                <button
+                                  key={size.size}
+                                  onClick={() => handleSizeClick(index, size.size)}
+                                  className={`px-2 py-1 text-xs font-semibold rounded transition-colors ${
+                                    entry.effortSize === size.size
+                                      ? 'text-white'
+                                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                  }`}
+                                  style={{
+                                    backgroundColor: entry.effortSize === size.size ? size.color : undefined,
+                                  }}
+                                  title={`${size.label} - ${size.hours}h`}
+                                >
+                                  {size.size}
+                                </button>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <input
+                              type="text"
+                              value={entry.note}
+                              onChange={(e) => handleNoteChange(index, e.target.value)}
+                              placeholder="Optional note..."
+                              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            {!entry.isMiscAssignment && onEditInitiative && (
+                              <button
+                                onClick={() => onEditInitiative(entry.initiative)}
+                                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-colors p-1 rounded"
+                                title="Edit initiative details"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <button
+                              onClick={() => handleRemoveInitiative(index)}
+                              className="text-gray-400 hover:text-red-600 transition-colors p-1 rounded hover:bg-red-50"
+                              title="Remove from list"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </td>
                 </tr>
-              );
-              })}
+                      );
+                    });
+                  }
+                });
+
+                return allRows;
+              })()}
             </tbody>
           </table>
         </div>
