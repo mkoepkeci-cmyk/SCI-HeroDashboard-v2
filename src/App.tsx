@@ -864,15 +864,32 @@ function App() {
             </div>
             <div className="text-xs">
               <div className="flex justify-between">
-                <span className="text-gray-600">Assignments</span>
-                <span className="font-semibold">{member.total_assignments}</span>
+                <span className="text-gray-600">Initiatives</span>
+                <span className="font-semibold">
+                  {(member.initiatives || []).filter(i => i.status !== 'Deleted').length}
+                </span>
               </div>
-              {member.revenue_impact && (
-                <div className="flex justify-between mt-0.5">
-                  <span className="text-gray-600">Impact</span>
-                  <span className="font-semibold text-green-600">{member.revenue_impact}</span>
-                </div>
-              )}
+              {(() => {
+                // Calculate total revenue dynamically from member's initiatives
+                const totalRevenue = (member.initiatives || [])
+                  .filter(i => i.status !== 'Deleted')
+                  .reduce((sum, i) => sum + (i.financial_impact?.projected_annual || 0), 0);
+
+                const formatCurrency = (value: number) => {
+                  if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
+                  if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
+                  return `$${value.toFixed(0)}`;
+                };
+
+                if (totalRevenue === 0) return null;
+
+                return (
+                  <div className="flex justify-between mt-0.5">
+                    <span className="text-gray-600">Impact</span>
+                    <span className="font-semibold text-green-600">{formatCurrency(totalRevenue)}</span>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         ))}
