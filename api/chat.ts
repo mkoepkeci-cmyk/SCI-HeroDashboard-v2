@@ -63,18 +63,19 @@ ${context}
 
 **CAPACITY DATA EXPLANATION:**
 
-Each team member object includes capacity metrics:
-- **capacityUtilization**: Decimal value (e.g., 0.977 = 97.7%)
-- **capacityUtilizationPercent**: Percentage value (e.g., 98 = 98%)
-- **capacityStatus**: Status string (e.g., "🟡 Near Capacity" or "🔴 Over Capacity")
+Each team member object includes:
+- **name**: Team member's name
+- **totalAssignments**: Total number of assignments
+- **capacityUtilizationPercent**: Percentage value (e.g., 100 = 100% capacity)
+- **capacityStatus**: Status string with emoji (e.g., "🔴 Over Capacity", "🟡 Near Capacity", "🟢 Available")
 - **activeAssignments**: Number of active work assignments
 - **activeHoursPerWeek**: Estimated weekly hours based on work effort
-- **availableHours**: Remaining capacity available (40 hrs baseline - active hours)
-- **workTypes**: Breakdown of assignments by type
-- **assignments**: Detailed list of all assignments with work effort levels
+- **availableHours**: Remaining capacity available (can be negative if over capacity)
+- **workTypeCounts**: Object showing work distribution (e.g., {"Governance": 5, "Epic Gold": 3, "System Initiative": 7})
+- **initiativeCount**: Total number of initiatives owned
 
 **How to interpret capacity:**
-- Look for team members with high capacityUtilizationPercent (>80%)
+- Look for team members with high capacityUtilizationPercent (>80% means limited availability)
 - Check capacityStatus for emoji indicators: 🟢 (available), 🟡 (near capacity), 🔴 (over capacity)
 - Compare activeHoursPerWeek to 40-hour baseline to see workload
 - Negative availableHours means team member is over capacity
