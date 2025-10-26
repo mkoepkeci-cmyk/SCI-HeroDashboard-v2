@@ -76,29 +76,38 @@ export default function StaffDetailModal({ member, onClose }: StaffDetailModalPr
 
   // Debug logging
   console.log('StaffDetailModal - member:', member.name);
-  console.log('StaffDetailModal - assignments count:', member.assignments?.length || 0);
-  console.log('StaffDetailModal - sample assignment:', member.assignments?.[0]);
+  console.log('StaffDetailModal - total assignments:', member.assignments?.length || 0);
 
-  // Filter to ACTIVE assignments only
-  const activeStatuses = ['Active', 'Planning', 'Not Started', 'In Progress'];
+  // Log status breakdown
+  const statusCounts = (member.assignments || []).reduce((acc, a) => {
+    const status = a.status || 'NULL';
+    acc[status] = (acc[status] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  console.log('StaffDetailModal - status breakdown:', statusCounts);
+
+  // Filter to ACTIVE assignments only (including Unknown status to catch incomplete data)
+  const activeStatuses = ['Active', 'Planning', 'Not Started', 'In Progress', 'Unknown'];
   const activeAssignments = (member.assignments || []).filter(a =>
     a.status && activeStatuses.includes(a.status)
   );
 
-  // Calculate work type breakdown (ACTIVE assignments only)
-  const workTypeBreakdown = activeAssignments.reduce((acc, assignment) => {
-    const type = assignment.work_type || 'Unknown';
-    const hours = getWorkEffortHours(assignment.work_effort);
+  // Calculate work type breakdown (ACTIVE assignments only, excluding Unknown)
+  const workTypeBreakdown = activeAssignments
+    .filter(a => a.work_type && a.work_type !== 'Unknown')
+    .reduce((acc, assignment) => {
+      const type = assignment.work_type;
+      const hours = getWorkEffortHours(assignment.work_effort);
 
-    if (!acc[type]) {
-      acc[type] = { name: type, count: 0, hours: 0 };
-    }
-    acc[type].count++;
-    if (hours > 0) {
-      acc[type].hours += hours;
-    }
-    return acc;
-  }, {} as Record<string, { name: string; count: number; hours: number }>);
+      if (!acc[type]) {
+        acc[type] = { name: type, count: 0, hours: 0 };
+      }
+      acc[type].count++;
+      if (hours > 0) {
+        acc[type].hours += hours;
+      }
+      return acc;
+    }, {} as Record<string, { name: string; count: number; hours: number }>);
 
   const workTypeData = Object.values(workTypeBreakdown)
     .sort((a, b) => b.hours - a.hours);
@@ -140,11 +149,13 @@ export default function StaffDetailModal({ member, onClose }: StaffDetailModalPr
   const missingEffort = totalAssignments - hasEffort;
 
   // Check for all missing data types (only for ACTIVE assignments)
+  // Check for both NULL and "Unknown" values in critical fields
   const assignmentsWithMissingData = activeAssignments.map(assignment => {
     const missingFields: string[] = [];
-    if (!assignment.work_effort) missingFields.push('Work Effort');
-    if (!assignment.phase) missingFields.push('Phase');
-    if (!assignment.role_type) missingFields.push('Role Type');
+    if (!assignment.work_type || assignment.work_type === 'Unknown') missingFields.push('Work Type');
+    if (!assignment.work_effort || assignment.work_effort === 'Unknown') missingFields.push('Work Effort');
+    if (!assignment.phase || assignment.phase === 'Unknown') missingFields.push('Phase');
+    if (!assignment.role_type || assignment.role_type === 'Unknown') missingFields.push('Role Type');
 
     return {
       assignment,
@@ -154,6 +165,16 @@ export default function StaffDetailModal({ member, onClose }: StaffDetailModalPr
 
   const totalMissingDataCount = assignmentsWithMissingData.length;
   const completionRate = totalAssignments > 0 ? ((totalAssignments - totalMissingDataCount) / totalAssignments) * 100 : 100;
+
+  // Debug: Log missing data for this member
+  console.log('StaffDetailModal - active assignments:', totalAssignments);
+  console.log('StaffDetailModal - assignments with missing data:', totalMissingDataCount);
+  if (totalMissingDataCount > 0) {
+    console.log('StaffDetailModal - missing data details:', assignmentsWithMissingData.map(a => ({
+      name: a.assignment.assignment_name,
+      missing: a.missingFields
+    })));
+  }
 
   // Use dashboard_metrics for accurate capacity data (matches Workload tab)
   const totalHours = member.dashboard_metrics?.active_hours_per_week || 0;
