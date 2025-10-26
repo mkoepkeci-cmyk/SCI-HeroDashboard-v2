@@ -79,8 +79,14 @@ export default function StaffDetailModal({ member, onClose }: StaffDetailModalPr
   console.log('StaffDetailModal - assignments count:', member.assignments?.length || 0);
   console.log('StaffDetailModal - sample assignment:', member.assignments?.[0]);
 
-  // Calculate work type breakdown
-  const workTypeBreakdown = (member.assignments || []).reduce((acc, assignment) => {
+  // Filter to ACTIVE assignments only
+  const activeStatuses = ['Active', 'Planning', 'Not Started', 'In Progress'];
+  const activeAssignments = (member.assignments || []).filter(a =>
+    a.status && activeStatuses.includes(a.status)
+  );
+
+  // Calculate work type breakdown (ACTIVE assignments only)
+  const workTypeBreakdown = activeAssignments.reduce((acc, assignment) => {
     const type = assignment.work_type || 'Unknown';
     const hours = getWorkEffortHours(assignment.work_effort);
 
@@ -97,8 +103,8 @@ export default function StaffDetailModal({ member, onClose }: StaffDetailModalPr
   const workTypeData = Object.values(workTypeBreakdown)
     .sort((a, b) => b.hours - a.hours);
 
-  // Calculate work effort breakdown
-  const workEffortBreakdown = (member.assignments || []).reduce((acc, assignment) => {
+  // Calculate work effort breakdown (ACTIVE assignments only)
+  const workEffortBreakdown = activeAssignments.reduce((acc, assignment) => {
     const code = parseWorkEffort(assignment.work_effort) || 'Unknown';
     const hours = getWorkEffortHours(assignment.work_effort);
 
@@ -114,7 +120,7 @@ export default function StaffDetailModal({ member, onClose }: StaffDetailModalPr
     .filter(effort => workEffortBreakdown[effort])
     .map(effort => workEffortBreakdown[effort]);
 
-  // Calculate status breakdown
+  // Calculate status breakdown (ALL assignments to show complete picture)
   const statusBreakdown = (member.assignments || []).reduce((acc, assignment) => {
     const status = assignment.status || 'Unknown';
     if (!acc[status]) {
@@ -128,12 +134,13 @@ export default function StaffDetailModal({ member, onClose }: StaffDetailModalPr
     .sort((a, b) => b.count - a.count);
 
   // Calculate data quality - check ALL fields
-  const totalAssignments = member.assignments?.length || 0;
-  const hasEffort = (member.assignments || []).filter(a => a.work_effort).length;
+  // Use ACTIVE assignments only (already filtered at top of component)
+  const totalAssignments = activeAssignments.length;
+  const hasEffort = activeAssignments.filter(a => a.work_effort).length;
   const missingEffort = totalAssignments - hasEffort;
 
-  // Check for all missing data types
-  const assignmentsWithMissingData = (member.assignments || []).map(assignment => {
+  // Check for all missing data types (only for ACTIVE assignments)
+  const assignmentsWithMissingData = activeAssignments.map(assignment => {
     const missingFields: string[] = [];
     if (!assignment.work_effort) missingFields.push('Work Effort');
     if (!assignment.phase) missingFields.push('Phase');
@@ -164,7 +171,7 @@ export default function StaffDetailModal({ member, onClose }: StaffDetailModalPr
             <div className="flex items-center gap-6 text-sm">
               <div className="flex items-center gap-2">
                 <Briefcase className="w-4 h-4" />
-                <span>{totalAssignments} Total Assignments</span>
+                <span>{totalAssignments} Active Assignments</span>
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4" />
@@ -172,7 +179,7 @@ export default function StaffDetailModal({ member, onClose }: StaffDetailModalPr
               </div>
               <div className="flex items-center gap-2">
                 <Target className="w-4 h-4" />
-                <span>{capacityPercentage.toFixed(0)}% Capacity</span>
+                <span>{capacityPercentage}% Capacity</span>
               </div>
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4" />
@@ -401,7 +408,7 @@ export default function StaffDetailModal({ member, onClose }: StaffDetailModalPr
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-medium text-gray-700">Weekly Capacity</span>
                     <span className="text-2xl font-bold text-gray-900">
-                      {capacityPercentage.toFixed(0)}%
+                      {capacityPercentage}%
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
