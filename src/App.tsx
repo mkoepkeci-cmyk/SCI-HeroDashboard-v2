@@ -1933,7 +1933,8 @@ function App() {
           <StaffDetailModal
             member={{
               ...selectedMemberForDetail,
-              capacity_warnings: selectedMemberForDetail.dashboard_metrics?.capacity_status || undefined
+              capacity_warnings: selectedMemberForDetail.dashboard_metrics?.capacity_status || undefined,
+              dashboard_metrics: selectedMemberForDetail.dashboard_metrics || undefined,
             }}
             onClose={() => setSelectedMemberForDetail(null)}
           />

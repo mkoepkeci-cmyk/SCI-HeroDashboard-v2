@@ -10,6 +10,10 @@ interface StaffDetailModalProps {
   member: TeamMember & {
     assignments: Assignment[];
     capacity_warnings?: string;
+    dashboard_metrics?: {
+      active_hours_per_week: number;
+      capacity_utilization: number;
+    };
   };
   onClose: () => void;
 }
@@ -144,12 +148,11 @@ export default function StaffDetailModal({ member, onClose }: StaffDetailModalPr
   const totalMissingDataCount = assignmentsWithMissingData.length;
   const completionRate = totalAssignments > 0 ? ((totalAssignments - totalMissingDataCount) / totalAssignments) * 100 : 100;
 
-  // Calculate total hours
-  const totalHours = (member.assignments || []).reduce((sum, a) => {
-    return sum + getWorkEffortHours(a.work_effort);
-  }, 0);
-
-  const capacityPercentage = member.available_hours ? (totalHours / member.available_hours) * 100 : 0;
+  // Use dashboard_metrics for accurate capacity data (matches Workload tab)
+  const totalHours = member.dashboard_metrics?.active_hours_per_week || 0;
+  const capacityPercentage = member.dashboard_metrics?.capacity_utilization
+    ? Math.round(member.dashboard_metrics.capacity_utilization * 100)
+    : 0;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
