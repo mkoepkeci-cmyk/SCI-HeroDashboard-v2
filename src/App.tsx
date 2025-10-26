@@ -14,6 +14,7 @@ import { GovernanceRequestForm } from './components/GovernanceRequestForm';
 import { LandingPage } from './components/LandingPage';
 import { calculateWorkload, getCapacityStatus, getCapacityColor, getCapacityEmoji, getCapacityLabel, WORK_EFFORT_HOURS, parseWorkEffort } from './lib/workloadUtils';
 import StaffDetailModal from './components/StaffDetailModal';
+import { LoadBalanceModal } from './components/LoadBalanceModal';
 
 interface TeamMemberWithDetails extends TeamMember {
   workTypes: { [key: string]: number };
@@ -1095,6 +1096,7 @@ function App() {
     const [showDataQuality, setShowDataQuality] = useState(true);
     const [expandedWarnings, setExpandedWarnings] = useState<Set<string>>(new Set());
     const [cardMetricView, setCardMetricView] = useState<'capacity' | 'worktype' | 'effort' | 'quality'>('capacity');
+    const [loadBalanceFrom, setLoadBalanceFrom] = useState<TeamMemberWithDetails | null>(null);
 
     // Find and show the selected initiative from governance portal
     const selectedInitiative = selectedInitiativeId
@@ -1381,6 +1383,17 @@ function App() {
                       <span className="text-gray-600">Hours</span>
                       <span className="font-semibold">{workload.totalMax.toFixed(1)}h</span>
                     </div>
+
+                    {/* Load Balance button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setLoadBalanceFrom(member);
+                      }}
+                      className="mt-1 w-full text-[9px] py-1 px-1 bg-gradient-to-r from-[#9B2F6A] to-[#6F47D0] text-white rounded hover:opacity-90 flex items-center justify-center gap-0.5"
+                    >
+                      ⚖️ Load Balance
+                    </button>
                   </>
                 )}
 
@@ -1923,6 +1936,31 @@ function App() {
               capacity_warnings: selectedMemberForDetail.dashboard_metrics?.capacity_status || undefined
             }}
             onClose={() => setSelectedMemberForDetail(null)}
+          />
+        )}
+
+        {/* Load Balance Modal */}
+        {loadBalanceFrom && (
+          <LoadBalanceModal
+            fromMember={{
+              id: loadBalanceFrom.id,
+              name: loadBalanceFrom.name,
+              capacity_utilization: loadBalanceFrom.dashboard_metrics?.capacity_utilization || 0,
+              active_hours_per_week: loadBalanceFrom.dashboard_metrics?.active_hours_per_week || 0,
+              available_hours: loadBalanceFrom.dashboard_metrics?.available_hours || 0,
+              workTypes: loadBalanceFrom.workTypes,
+              assignments: loadBalanceFrom.assignments || [],
+            }}
+            allMembers={teamMembers.map(tm => ({
+              id: tm.id,
+              name: tm.name,
+              capacity_utilization: tm.dashboard_metrics?.capacity_utilization || 0,
+              active_hours_per_week: tm.dashboard_metrics?.active_hours_per_week || 0,
+              available_hours: tm.dashboard_metrics?.available_hours || 0,
+              workTypes: tm.workTypes,
+              assignments: tm.assignments || [],
+            }))}
+            onClose={() => setLoadBalanceFrom(null)}
           />
         )}
       </div>
