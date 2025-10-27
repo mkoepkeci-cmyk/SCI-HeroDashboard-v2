@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { supabase, TeamMember, Manager, TEAM_MEMBER_ROLES, SPECIALTIES, getTeamMemberDisplayName, getManagerDisplayName } from '../lib/supabase';
-import { Users, Edit, Trash2, Plus, X, Save, Eye } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { supabase, TeamMember, Manager, TEAM_MEMBER_ROLES, getTeamMemberDisplayName, getManagerDisplayName } from '../lib/supabase';
+import { Users, Edit, Trash2, Plus, X, Save } from 'lucide-react';
 
 interface TeamManagementPanelProps {
   teamMembers: TeamMember[];
@@ -13,6 +13,7 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const editFormRef = useRef<HTMLDivElement>(null);
 
   // Form state
   const [formData, setFormData] = useState<{
@@ -20,20 +21,57 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
     last_name: string;
     role: string;
     specialty: string[];
+    is_active: boolean;
   }>({
     first_name: '',
     last_name: '',
     role: 'System CI',
     specialty: [],
+    is_active: true,
   });
 
+  // Scroll to edit form when it opens
+  useEffect(() => {
+    if ((editingMember || isAddingNew) && editFormRef.current) {
+      editFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [editingMember, isAddingNew]);
+
   const handleEdit = (member: TeamMember) => {
+    console.log('[TeamManagementPanel] handleEdit - member data:', member);
+    console.log('[TeamManagementPanel] handleEdit - specialty field:', member.specialty);
+    console.log('[TeamManagementPanel] handleEdit - specialty type:', typeof member.specialty);
+
+    // Parse specialty - it could be an array, JSON string, or null
+    let specialtyArray: string[] = [];
+    if (member.specialty) {
+      if (Array.isArray(member.specialty)) {
+        specialtyArray = member.specialty;
+      } else if (typeof member.specialty === 'string') {
+        try {
+          const parsed = JSON.parse(member.specialty);
+          if (Array.isArray(parsed)) {
+            specialtyArray = parsed;
+          } else {
+            // Single string value
+            specialtyArray = [member.specialty];
+          }
+        } catch (e) {
+          // If parse fails, treat as single item
+          specialtyArray = [member.specialty];
+        }
+      }
+    }
+
+    console.log('[TeamManagementPanel] handleEdit - parsed specialty array:', specialtyArray);
+
     setEditingMember(member);
     setFormData({
       first_name: member.first_name || '',
       last_name: member.last_name || '',
       role: member.role,
-      specialty: Array.isArray(member.specialty) ? member.specialty : [],
+      specialty: specialtyArray,
+      is_active: member.is_active !== undefined ? member.is_active : true,
     });
     setIsAddingNew(false);
   };
@@ -45,6 +83,7 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
       last_name: '',
       role: 'System CI',
       specialty: [],
+      is_active: true,
     });
     setIsAddingNew(true);
   };
@@ -57,6 +96,7 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
       last_name: '',
       role: 'System CI',
       specialty: [],
+      is_active: true,
     });
     setError(null);
   };
@@ -70,44 +110,62 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
       return;
     }
 
+    console.log('[TeamManagementPanel] Saving team member with specialty:', formData.specialty);
+
     setSaving(true);
 
     try {
       if (isAddingNew) {
         // Create new team member
+        const insertData = {
+          first_name: formData.first_name.trim(),
+          last_name: formData.last_name.trim(),
+          name: `${formData.first_name.trim()} ${formData.last_name.trim()}`.trim(),
+          role: formData.role,
+          specialty: formData.specialty.length > 0 ? formData.specialty : null,
+          is_active: formData.is_active,
+          total_assignments: 0,
+        };
+        console.log('[TeamManagementPanel] Inserting:', insertData);
+
         const { error: insertError } = await supabase
           .from('team_members')
-          .insert({
-            first_name: formData.first_name.trim(),
-            last_name: formData.last_name.trim(),
-            name: `${formData.first_name.trim()} ${formData.last_name.trim()}`.trim(),
-            role: formData.role,
-            specialty: formData.specialty.length > 0 ? formData.specialty : null,
-            total_assignments: 0,
-          });
+          .insert(insertData);
 
         if (insertError) throw insertError;
       } else if (editingMember) {
         // Update existing team member
-        const { error: updateError } = await supabase
+        const updateData = {
+          first_name: formData.first_name.trim(),
+          last_name: formData.last_name.trim(),
+          name: `${formData.first_name.trim()} ${formData.last_name.trim()}`.trim(),
+          role: formData.role,
+          specialty: formData.specialty.length > 0 ? formData.specialty : null,
+          is_active: formData.is_active,
+          updated_at: new Date().toISOString(),
+        };
+        console.log('[TeamManagementPanel] Updating member', editingMember.id, 'with:', updateData);
+
+        const { data: updatedMember, error: updateError } = await supabase
           .from('team_members')
-          .update({
-            first_name: formData.first_name.trim(),
-            last_name: formData.last_name.trim(),
-            name: `${formData.first_name.trim()} ${formData.last_name.trim()}`.trim(),
-            role: formData.role,
-            specialty: formData.specialty.length > 0 ? formData.specialty : null,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', editingMember.id);
+          .update(updateData)
+          .eq('id', editingMember.id)
+          .select()
+          .single();
 
         if (updateError) throw updateError;
+        console.log('[TeamManagementPanel] Update successful');
+        console.log('[TeamManagementPanel] Updated member returned from DB:', updatedMember);
+        console.log('[TeamManagementPanel] Specialty in DB response:', updatedMember?.specialty);
       }
+
+      // Small delay to ensure DB commit completes before refresh
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       onTeamMemberUpdate();
       handleCancel();
     } catch (err) {
-      console.error('Error saving team member:', err);
+      console.error('[TeamManagementPanel] Error saving team member:', err);
       setError(err instanceof Error ? err.message : 'Failed to save team member');
     } finally {
       setSaving(false);
@@ -135,24 +193,27 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
   };
 
   const toggleSpecialty = (specialty: string) => {
-    setFormData(prev => ({
-      ...prev,
-      specialty: prev.specialty.includes(specialty)
+    console.log('[TeamManagementPanel] toggleSpecialty called with:', specialty);
+    console.log('[TeamManagementPanel] Current specialty array:', formData.specialty);
+
+    setFormData(prev => {
+      const newSpecialty = prev.specialty.includes(specialty)
         ? prev.specialty.filter(s => s !== specialty)
-        : [...prev.specialty, specialty],
-    }));
+        : [...prev.specialty, specialty];
+
+      console.log('[TeamManagementPanel] New specialty array:', newSpecialty);
+
+      return {
+        ...prev,
+        specialty: newSpecialty,
+      };
+    });
   };
 
   const getManagerName = (managerId?: string) => {
     if (!managerId) return 'Unassigned';
     const manager = managers.find(m => m.id === managerId);
     return manager ? getManagerDisplayName(manager) : 'Unknown';
-  };
-
-  const getInitiativeCount = (memberId: string) => {
-    // This would need to be passed as a prop or fetched
-    // For now, return placeholder
-    return 0;
   };
 
   return (
@@ -184,7 +245,7 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
 
       {/* Edit/Add Form */}
       {(editingMember || isAddingNew) && (
-        <div className="bg-white border-2 border-[#9B2F6A] rounded-lg p-6 space-y-4">
+        <div ref={editFormRef} className="bg-white border-2 border-[#9B2F6A] rounded-lg p-6 space-y-4">
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-lg font-semibold text-gray-900">
               {isAddingNew ? 'Add New Team Member' : `Edit ${getTeamMemberDisplayName(editingMember!)}`}
@@ -239,6 +300,21 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
               </select>
             </div>
 
+            {/* Active/Inactive Status */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Status *
+              </label>
+              <select
+                value={formData.is_active ? 'active' : 'inactive'}
+                onChange={(e) => setFormData(prev => ({ ...prev, is_active: e.target.value === 'active' }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9B2F6A] focus:border-transparent"
+              >
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+
             {/* Manager (Read-only with link) */}
             {editingMember && (
               <div>
@@ -253,24 +329,40 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
             )}
           </div>
 
-          {/* Specialty Multi-Select */}
+          {/* Service Lines Multi-Select */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Service Lines / Specialties
+              Service Lines
+              <span className="text-xs text-gray-500 ml-2 font-normal">
+                (Select service lines this team member supports - does not create initiatives)
+              </span>
             </label>
             <div className="grid grid-cols-3 gap-2 max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50">
-              {SPECIALTIES.map(specialty => (
+              {[
+                'Ambulatory',
+                'Pharmacy',
+                'Nursing',
+                'Pharmacy & Oncology',
+                'Cardiology',
+                'Emergency Department',
+                'Inpatient',
+                'Perioperative',
+                'Laboratory',
+                'Radiology',
+                'Revenue Cycle',
+                'Other'
+              ].map(serviceLine => (
                 <label
-                  key={specialty}
+                  key={serviceLine}
                   className="flex items-center gap-2 text-sm text-gray-700 hover:bg-white px-2 py-1 rounded cursor-pointer"
                 >
                   <input
                     type="checkbox"
-                    checked={formData.specialty.includes(specialty)}
-                    onChange={() => toggleSpecialty(specialty)}
+                    checked={formData.specialty.includes(serviceLine)}
+                    onChange={() => toggleSpecialty(serviceLine)}
                     className="rounded border-gray-300 text-[#9B2F6A] focus:ring-[#9B2F6A]"
                   />
-                  {specialty}
+                  {serviceLine}
                 </label>
               ))}
             </div>
@@ -316,10 +408,10 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
                 Service Lines
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Manager
+                Status
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Initiatives
+                Manager
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
@@ -348,32 +440,58 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-900">
-                      {member.specialty && Array.isArray(member.specialty) && member.specialty.length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
-                          {member.specialty.slice(0, 2).map(s => (
-                            <span key={s} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
-                              {s}
-                            </span>
-                          ))}
-                          {member.specialty.length > 2 && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
-                              +{member.specialty.length - 2} more
-                            </span>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-gray-400 text-xs">None assigned</span>
-                      )}
+                      {(() => {
+                        // Parse specialty field - it may be a JSON string instead of array
+                        let specialtyArray: string[] = [];
+                        if (member.specialty) {
+                          if (Array.isArray(member.specialty)) {
+                            specialtyArray = member.specialty;
+                          } else if (typeof member.specialty === 'string') {
+                            try {
+                              const parsed = JSON.parse(member.specialty);
+                              if (Array.isArray(parsed)) {
+                                specialtyArray = parsed;
+                              }
+                            } catch (e) {
+                              // If parse fails, treat as single item
+                              specialtyArray = [member.specialty];
+                            }
+                          }
+                        }
+
+                        if (specialtyArray.length > 0) {
+                          return (
+                            <div className="flex flex-wrap gap-1">
+                              {specialtyArray.slice(0, 2).map(s => (
+                                <span key={s} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
+                                  {s}
+                                </span>
+                              ))}
+                              {specialtyArray.length > 2 && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
+                                  +{specialtyArray.length - 2} more
+                                </span>
+                              )}
+                            </div>
+                          );
+                        } else {
+                          return <span className="text-gray-400 text-xs">None assigned</span>;
+                        }
+                      })()}
                     </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      member.is_active
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {member.is_active ? 'Active' : 'Inactive'}
+                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
                       {getManagerName(member.manager_id)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {getInitiativeCount(member.id)}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -391,12 +509,6 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
                         title="Delete team member"
                       >
                         <Trash2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        className="p-1.5 text-purple-600 hover:bg-purple-50 rounded transition-colors"
-                        title="View capacity"
-                      >
-                        <Eye className="w-4 h-4" />
                       </button>
                     </div>
                   </td>

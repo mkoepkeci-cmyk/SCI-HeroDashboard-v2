@@ -27,6 +27,7 @@ export interface TeamMember {
   manager_id?: string;       // NEW: Reference to manager
   role: string;
   specialty?: string[];      // CHANGED: Now array for multi-select
+  is_active?: boolean;       // NEW: Whether team member is active
   total_assignments: number;
   revenue_impact?: string;
   created_at: string;
