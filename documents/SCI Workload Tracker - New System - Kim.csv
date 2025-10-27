@@ -1,0 +1,99 @@
+SCI,Assignment ,Short Description,Role,Work Effort,Expander >15 hrs,Work Type,EHR/s Impacted,Status,Phase,System Projected Go-Live Date,Sponsor,Service Line,Assignment Date,Comments/Details,,,,Role Multiplier,Work Type Weight,Phase Weight,Base Hrs/Wk,Active Hrs/Wk,Active,Missing Data
+Kim,Periops: Perioperative Steering Committee,"Standing meeting. Was being run by Brian...he's gone, haven't had one since. Holding for a new VP",Owner,S - 1-2 hrs/wk,,System Initiative,All,On Hold,,,,"Surgery, Anesthesia, Transplant",,,,,,1,1,0,1.5,0,No,⚠️ Missing Phase
+Kim,Periops: Procedure/Case Level bi-weekly,specific to 3rd part IMO and procedure/case level requests and discussion. This a is a process that was oput into place years and eons ago by CB. I have been working on a new process that will include IMO.,Owner,S - 1-2 hrs/wk,,System Initiative,Cerner,In Progress,,,,"Surgery, Anesthesia, Transplant",,,,,,1,1,0,1.5,0,Yes,⚠️ Missing Phase
+Kim,Periops: Commonspirit Health ERAS Committee,"Standing meeting, occurs quarterly on last Friday of some month. Very little involvement as it conlicted with the anesthesia work specific to Recovery",Owner,S - 1-2 hrs/wk,,System Initiative,All,In Progress,Design,,,"Surgery, Anesthesia, Transplant",,,,,,1,1,1,1.5,1.5,Yes,✓ Complete
+Kim,Periops: EHR Prioritization,Bi-weekly call. Cancelled since Brian left. No replacement known,Owner,S - 1-2 hrs/wk,,System Initiative,All,In Progress,,,,"Surgery, Anesthesia, Transplant",,,,,,1,1,0,1.5,0,Yes,⚠️ Missing Phase
+Kim,Periops: 2024 Invite CommonSpirit Health Perioperative Service Council,"Standing meeting, continuing on without Brian",Owner,S - 1-2 hrs/wk,,System Initiative,All,In Progress,,,,"Surgery, Anesthesia, Transplant",,,,,,1,1,0,1.5,0,Yes,⚠️ Missing Phase
+Kim,Periops: Perioperative EHR (POEHR),"Quarterly meeting that I have to discus any new issues in Oracle/Cerner, witth the periop CI's and OR directors or their proxy",Owner,S - 1-2 hrs/wk,,Ticket,All,In Progress,Design,,,"Surgery, Anesthesia, Transplant",,,,,,1,1,1,1.5,1.5,Yes,✓ Complete
+Kim,"Periops: IMO (3rd party, procedures)",Lisa Fetter's IMO meeting. Gets cancelled most of the time,Owner,XS - Less than 1 hr/wk,,,Cerner,In Progress,,,,"Surgery, Anesthesia, Transplant",,,,,,1,0,0,0.5,0,Yes,⚠️ Missing Work Type
+Kim,RCIM weekly review of tickets (Rev cycle),"Rev Cycle review of requests, I represent the clinical informatics and workflow side of the meeting",Owner,XS - Less than 1 hr/wk,,,Cerner,In Progress,Design,,,Other,,,,,,1,0,1,0.5,0,Yes,⚠️ Missing Work Type
+Kim,RCIM weekly governance voting,"Rev Cycle, vote on the requests we reviewed earlier in the week",Owner,S - 1-2 hrs/wk,,Market Project,Cerner,In Progress,Build,,,Other,,,,,,1,0.5,1,1.5,0.75,Yes,✓ Complete
+Kim,Lab Council,Quarterly Lab Council,Owner,XS - Less than 1 hr/wk,,,,,,,,,,,,,,1,0,0,0.5,0,No,⚠️ Missing Work Type
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+Kim,Bedside Procedures (multiple ALM's),"will be a long term effort, have now gone live in the two pilot sites for A-lines, will be starting on 'Bladder Scans' next month with the two pilot sites. NOTE: per Adam, each new bedside procedure will need a seperate ticket. ",Owner,XL - More than 10 hrs/wk,,,Cerner,In Progress,,,,Other,,,,,,1,0,0,15,0,Yes,⚠️ Missing Work Type
+Kim,NPO orders to accommodate Anesthesia Fasting Guidelines (2645),"ongoing, was 'given' to me. Not making a lot of progress",Owner,XS - Less than 1 hr/wk,,,Cerner,In Progress,,,,Nursing,,,,,,1,0,0,0.5,0,Yes,⚠️ Missing Work Type
+Kim,Endoscopy and Lithotripsy Procedural documentation update (2849),might need System Project consideration -,Owner,S - 1-2 hrs/wk,,,Cerner,In Progress,,,,"Surgery, Anesthesia, Transplant",,,,,,1,0,0,1.5,0,Yes,⚠️ Missing Work Type
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A

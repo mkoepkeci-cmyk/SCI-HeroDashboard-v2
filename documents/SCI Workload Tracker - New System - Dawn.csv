@@ -1,0 +1,99 @@
+SCI,Assignment ,Short Description,Role,Work Effort,Expander >15 hrs,Work Type,EHR/s Impacted,Status,Phase,System Projected Go-Live Date,Sponsor,Service Line,Assignment Date,Comments/Details,,,,Role Multiplier,Work Type Weight,Phase Weight,Base Hrs/Wk,Active Hrs/Wk,Active,Missing Data
+Dawn,IRIS Reporting Team Requests,,Owner,S - 1-2 hrs/wk,,System Initiative,Epic,Complete,Design,,,Other,,,,,,1,1,1,1.5,0,No,✓ Complete
+Dawn,Cross Market Flu Group 24-25 Season,SCI support ,Owner,S - 1-2 hrs/wk,,System Initiative,Cerner,Complete,Discovery/Define,,,Other,,,,,,1,1,0.3,1.5,0,No,✓ Complete
+Dawn,ASR Reports,,Owner,M - 2-5 hrs/wk,,System Initiative,All,In Progress,Discovery/Define,,,Nursing,,,,,,1,1,0.3,3.5,1.05,Yes,✓ Complete
+Dawn,EHR Optimization and Maintenance EHR Governance,SCI Support,Owner,M - 2-5 hrs/wk,,System Initiative,All,In Progress,Did we Deliver,,,Other,,Transitioning to BI team next couple of months-sunsetting Tableau by end of Oct 2024; BI team consumed with Eoic Gold and needs my assistance with data updates,,,,1,1,0.25,3.5,0.875,Yes,✓ Complete
+Dawn,Sonifi/Ipet Data/Reporting,Currently working with Digital Innovations and BI team to establish replacement dashboard until Sonifi upgrade is complete with Sonifi Tableau dashboards ,Support,S - 1-2 hrs/wk,,General Support,Cerner,In Progress,Design,,,Other,,Ongoing,,,,0.25,1,1,1.5,0.375,Yes,✓ Complete
+Dawn,CCC CMU Central Telemetry DH PRM 1014091; PRJ0011116,SCI secondary support ,Support,XS - Less than 1 hr/wk,,System Initiative,Cerner,In Progress,Design,,,Acute Institute &  Cardiology,2023,ECISA live; CareB scheduled release TBD,,,,0.25,1,1,0.5,0.125,Yes,✓ Complete
+Dawn ,SCI Team Metrics Requests,,Support,S - 1-2 hrs/wk,,System Initiative,Cerner,In Progress,Design,,,Other,2023,CareB live; ECISA soft live-front facing reporting issues; Cerner working on interface issues,,,,0.25,1,1,1.5,0.375,Yes,✓ Complete
+Dawn,Cerner Unified Analytics Dashboards/Reports ,,Support,S - 1-2 hrs/wk,,System Initiative,All,In Progress,Design,,,Acute Institute &  Cardiology,,Ongoing,,,,0.25,1,1,1.5,0.375,Yes,✓ Complete
+Dawn,Governance Support ,,Support,S - 1-2 hrs/wk,,General Support,All,In Progress,Design,,,Other,,Ongoing,,,,0.25,1,1,1.5,0.375,Yes,✓ Complete
+Dawn,Ischemic Stroke Mortality Goal Workgroup,SCI Support; Monthly meetings,Support,S - 1-2 hrs/wk,,System Initiative,Epic,Complete,Design,,,Pharmacy & Oncology,2024-07-24 0:00:00,Completed-replaced with Vaccine Track,,,,0.25,1,1,1.5,0,No,✓ Complete
+Dawn,Vaccine Track,SCI Support; Monthly meetings,Owner,XS - Less than 1 hr/wk,,General Support,Cerner,Complete,Design,,,Other,2024,Spine Registry Report Group,,,,1,1,1,0.5,0,No,✓ Complete
+Dawn ,Epic 7 Day Readmission data,Needed to cross reference and validate current Midas calculation issue ,Support,M - 2-5 hrs/wk,,General Support,All,In Progress,N/A,,,Other,,Ongoing-includes SPM training/reviews,,,,0.25,1,1,3.5,0.875,Yes,✓ Complete
+,Cerner Clinical Decision Support ?,,Support,S - 1-2 hrs/wk,,General Support,Cerner,Complete,Did we Deliver,,,Nursing,,Transitioning iPet to Digital Health-Tableau sunsetting (dashboard) by end of Oct 2024; Working with BI team and Analytics team for replacement dashbpard untiul Sonifi upgrade,,,,0.25,1,0.25,1.5,0,No,✓ Complete
+,Epic Clinical Content and Decision Support ?,,Support,XS - Less than 1 hr/wk,,System Project,All,In Progress,Design,,,Acute Institute &  Cardiology,2022,Central monitoring unit/Tele build-HL7 mappings/master bed list for each facility roll out,,,,0.25,1,1,0.5,0.125,Yes,✓ Complete
+Dawn,Advance Nursing Assessment Strudy Variables,Research team needs timestamped nursing assessments for specific positions/certifications (main ask); some outcome data unable to access,Co-Owner,M - 2-5 hrs/wk,,General Support,All,In Progress,Design,,,Other,,Ongoing,,,,1,1,1,3.5,3.5,Yes,✓ Complete
+Dawn,Newborn Thermoregulation Data automation,automation/dashboard creation,Owner,XS - Less than 1 hr/wk,,System Initiative,Cerner,On Hold,,,,Other,2023,Canned reports/dashboards have missing information due to CSH Cerner build-Cerner reg required for base,,,,1,1,0,0.5,0,No,⚠️ Missing Phase
+Dawn,Age Friendly Documentation,SCI Support,Support,S - 1-2 hrs/wk,,General Support,All,In Progress,,,,Other,,Weekly meetings / emails,,,,0.25,1,0,1.5,0,Yes,⚠️ Missing Phase
+Dawn,In Room Technology,SCI Support,Support,S - 1-2 hrs/wk,,System Initiative,,In Progress,,,,Other,,,,,,0.25,1,0,1.5,0,Yes,⚠️ Missing Phase
+Dawn,Epic Gold Interoperability-CAT,Owner SCI,Support,S - 1-2 hrs/wk,,General Support,Epic,In Progress,,,,Pharmacy & Oncology,,,,,,0.25,1,0,1.5,0,Yes,⚠️ Missing Phase
+Dawn,Virtual Registered Dietitian Subcommittee,SCI Support ,Support,M - 2-5 hrs/wk,,General Support,Epic,Complete,Design,,,Other,2024-12-01 0:00:00,slicer dicer reporting samples provided to validate data,,,,0.25,1,1,3.5,0,No,✓ Complete
+Dawn ,SCI Nova Note Process,,,,,,,,,,,,,,,,,0,0,0,0,0,No,Needs Baseline Information
+Dawn ,Quality Mobility Documentation ,SCI Support,,,,,,,,,,,,,,,,0,0,0,0,0,No,Needs Baseline Information
+Dawn ,Epic Gold Reporting -CAT (Including Epic Gold Quality Reporting) ,Owner SCI,Support,XS - Less than 1 hr/wk,,System Project,All,In Progress,Discovery/Define,,,Nursing,,Assisting to identify data resources for missing variable data in Advance Nursing Assessment study,,,,0.25,1,0.3,0.5,0.0375,Yes,✓ Complete
+Dawn ,Yale Swallow Screen-Mountain ,SCI Support,Support,XS - Less than 1 hr/wk,,Policy/Guidelines,All,Complete,Design,,,OB/NICU,,Work with EBI team to Design automation/drilldown dashboard; phase 1 would be weekly data-goal is to have near real time data for phase 2,,,,0.25,0.5,1,0.5,0,No,✓ Complete
+,,,Owner,S - 1-2 hrs/wk,,System Project,Epic,In Progress,Discovery/Define,,,Care Coordination,2025,Epic packages delayed-estimated Dec 2025 Go Live in CEN; continue weekly meetings/demo from Epic; workflow analysis,,,,1,1,0.3,1.5,0.45,Yes,N/A
+,,,Support,S - 1-2 hrs/wk,,General Support,Epic,In Progress,Discovery/Define,,,Other,2025,,,,,0.25,1,0.3,1.5,0.1125,Yes,N/A
+,,,Owner,S - 1-2 hrs/wk,,Epic Gold,Epic,In Progress,Design,,,Other,2025,Meetings regarding ECLink build variations between waves related to non-provider orders; HIM BB collaboration,,,,1,1,1,1.5,0,,N/A
+,,,Support,S=1-2 hrs/wk,,General Support,Epic,In Progress,Discovery/Define,,,Other,TBD,,,,,0.25,1,0.3,1.5,0,,N/A
+,,,Owner,S=1-2 hrs/wk,,System Project,Epic,In Progress,Did we Deliver,,,Other,,Analysis completed and forwarded to Carrie,,,,1,1,0.25,1.5,0.375,Yes,N/A
+,,,Support,M=2-5 hrs/wk,,System Initiative,All,In Progress,Discovery/Define,,,Other,,,,,,0.25,1,0.3,3.5,0.2625,Yes,N/A
+,,,Owner,M=2-5 hrs/wk,,Epic Gold,Epic,In Progress,Design,,,Other,,,,,,1,1,1,3.5,3.5,Yes,N/A
+,,,Support,S=1-2 hrs/wk,,Policy/Guidelines,Epic,In Progress,Discovery/Define,,,Other,,,,,,0.25,0.5,0.3,1.5,0.05625,Yes,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A

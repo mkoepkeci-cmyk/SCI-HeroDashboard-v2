@@ -1,0 +1,411 @@
+import { useState } from 'react';
+import { supabase, TeamMember, Manager, TEAM_MEMBER_ROLES, SPECIALTIES, getTeamMemberDisplayName, getManagerDisplayName } from '../lib/supabase';
+import { Users, Edit, Trash2, Plus, X, Save, Eye } from 'lucide-react';
+
+interface TeamManagementPanelProps {
+  teamMembers: TeamMember[];
+  managers: Manager[];
+  onTeamMemberUpdate: () => void;
+}
+
+export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate }: TeamManagementPanelProps) {
+  const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
+  const [isAddingNew, setIsAddingNew] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Form state
+  const [formData, setFormData] = useState<{
+    first_name: string;
+    last_name: string;
+    role: string;
+    specialty: string[];
+  }>({
+    first_name: '',
+    last_name: '',
+    role: 'System CI',
+    specialty: [],
+  });
+
+  const handleEdit = (member: TeamMember) => {
+    setEditingMember(member);
+    setFormData({
+      first_name: member.first_name || '',
+      last_name: member.last_name || '',
+      role: member.role,
+      specialty: Array.isArray(member.specialty) ? member.specialty : [],
+    });
+    setIsAddingNew(false);
+  };
+
+  const handleAddNew = () => {
+    setEditingMember(null);
+    setFormData({
+      first_name: '',
+      last_name: '',
+      role: 'System CI',
+      specialty: [],
+    });
+    setIsAddingNew(true);
+  };
+
+  const handleCancel = () => {
+    setEditingMember(null);
+    setIsAddingNew(false);
+    setFormData({
+      first_name: '',
+      last_name: '',
+      role: 'System CI',
+      specialty: [],
+    });
+    setError(null);
+  };
+
+  const handleSave = async () => {
+    setError(null);
+
+    // Validation
+    if (!formData.first_name.trim()) {
+      setError('First name is required');
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+      if (isAddingNew) {
+        // Create new team member
+        const { error: insertError } = await supabase
+          .from('team_members')
+          .insert({
+            first_name: formData.first_name.trim(),
+            last_name: formData.last_name.trim(),
+            name: `${formData.first_name.trim()} ${formData.last_name.trim()}`.trim(),
+            role: formData.role,
+            specialty: formData.specialty.length > 0 ? formData.specialty : null,
+            total_assignments: 0,
+          });
+
+        if (insertError) throw insertError;
+      } else if (editingMember) {
+        // Update existing team member
+        const { error: updateError } = await supabase
+          .from('team_members')
+          .update({
+            first_name: formData.first_name.trim(),
+            last_name: formData.last_name.trim(),
+            name: `${formData.first_name.trim()} ${formData.last_name.trim()}`.trim(),
+            role: formData.role,
+            specialty: formData.specialty.length > 0 ? formData.specialty : null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', editingMember.id);
+
+        if (updateError) throw updateError;
+      }
+
+      onTeamMemberUpdate();
+      handleCancel();
+    } catch (err) {
+      console.error('Error saving team member:', err);
+      setError(err instanceof Error ? err.message : 'Failed to save team member');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (member: TeamMember) => {
+    if (!confirm(`Are you sure you want to delete ${getTeamMemberDisplayName(member)}? This will also delete all their assignments and initiatives.`)) {
+      return;
+    }
+
+    try {
+      const { error: deleteError } = await supabase
+        .from('team_members')
+        .delete()
+        .eq('id', member.id);
+
+      if (deleteError) throw deleteError;
+
+      onTeamMemberUpdate();
+    } catch (err) {
+      console.error('Error deleting team member:', err);
+      alert('Failed to delete team member: ' + (err instanceof Error ? err.message : 'Unknown error'));
+    }
+  };
+
+  const toggleSpecialty = (specialty: string) => {
+    setFormData(prev => ({
+      ...prev,
+      specialty: prev.specialty.includes(specialty)
+        ? prev.specialty.filter(s => s !== specialty)
+        : [...prev.specialty, specialty],
+    }));
+  };
+
+  const getManagerName = (managerId?: string) => {
+    if (!managerId) return 'Unassigned';
+    const manager = managers.find(m => m.id === managerId);
+    return manager ? getManagerDisplayName(manager) : 'Unknown';
+  };
+
+  const getInitiativeCount = (memberId: string) => {
+    // This would need to be passed as a prop or fetched
+    // For now, return placeholder
+    return 0;
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Users className="w-6 h-6 text-[#9B2F6A]" />
+          <div>
+            <h3 className="text-xl font-semibold text-gray-900">Team Members</h3>
+            <p className="text-sm text-gray-600">{teamMembers.length} active team members</p>
+          </div>
+        </div>
+        <button
+          onClick={handleAddNew}
+          className="flex items-center gap-2 px-4 py-2 bg-[#9B2F6A] text-white rounded-lg hover:bg-[#7d2555] transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          Add Team Member
+        </button>
+      </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          {error}
+        </div>
+      )}
+
+      {/* Edit/Add Form */}
+      {(editingMember || isAddingNew) && (
+        <div className="bg-white border-2 border-[#9B2F6A] rounded-lg p-6 space-y-4">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-lg font-semibold text-gray-900">
+              {isAddingNew ? 'Add New Team Member' : `Edit ${getTeamMemberDisplayName(editingMember!)}`}
+            </h4>
+            <button onClick={handleCancel} className="text-gray-400 hover:text-gray-600">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            {/* First Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                First Name *
+              </label>
+              <input
+                type="text"
+                value={formData.first_name}
+                onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9B2F6A] focus:border-transparent"
+                placeholder="First name"
+              />
+            </div>
+
+            {/* Last Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Last Name
+              </label>
+              <input
+                type="text"
+                value={formData.last_name}
+                onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9B2F6A] focus:border-transparent"
+                placeholder="Last name"
+              />
+            </div>
+
+            {/* Role */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Role *
+              </label>
+              <select
+                value={formData.role}
+                onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9B2F6A] focus:border-transparent"
+              >
+                {TEAM_MEMBER_ROLES.map(role => (
+                  <option key={role} value={role}>{role}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Manager (Read-only with link) */}
+            {editingMember && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Manager
+                </label>
+                <div className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-600">
+                  {getManagerName(editingMember.manager_id)}
+                  <span className="text-xs text-gray-500 ml-2">(edit in Managers tab)</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Specialty Multi-Select */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Service Lines / Specialties
+            </label>
+            <div className="grid grid-cols-3 gap-2 max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50">
+              {SPECIALTIES.map(specialty => (
+                <label
+                  key={specialty}
+                  className="flex items-center gap-2 text-sm text-gray-700 hover:bg-white px-2 py-1 rounded cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={formData.specialty.includes(specialty)}
+                    onChange={() => toggleSpecialty(specialty)}
+                    className="rounded border-gray-300 text-[#9B2F6A] focus:ring-[#9B2F6A]"
+                  />
+                  {specialty}
+                </label>
+              ))}
+            </div>
+            {formData.specialty.length > 0 && (
+              <p className="text-xs text-gray-600 mt-1">
+                {formData.specialty.length} selected: {formData.specialty.join(', ')}
+              </p>
+            )}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3 pt-4 border-t">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex items-center gap-2 px-4 py-2 bg-[#9B2F6A] text-white rounded-lg hover:bg-[#7d2555] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Save className="w-4 h-4" />
+              {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+            <button
+              onClick={handleCancel}
+              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Team Members Table */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Name
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Role
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Service Lines
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Manager
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Initiatives
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {teamMembers.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                  No team members found. Click "Add Team Member" to create one.
+                </td>
+              </tr>
+            ) : (
+              teamMembers.map(member => (
+                <tr key={member.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">
+                      {getTeamMemberDisplayName(member)}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {member.role}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-900">
+                      {member.specialty && Array.isArray(member.specialty) && member.specialty.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {member.specialty.slice(0, 2).map(s => (
+                            <span key={s} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
+                              {s}
+                            </span>
+                          ))}
+                          {member.specialty.length > 2 && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
+                              +{member.specialty.length - 2} more
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 text-xs">None assigned</span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">
+                      {getManagerName(member.manager_id)}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">
+                      {getInitiativeCount(member.id)}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleEdit(member)}
+                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                        title="Edit team member"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(member)}
+                        className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                        title="Delete team member"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        className="p-1.5 text-purple-600 hover:bg-purple-50 rounded transition-colors"
+                        title="View capacity"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,99 @@
+SCI,Assignment ,Short Description,Role,Work Effort,Expander >15 hrs,Work Type,EHR/s Impacted,Status,Phase,System Projected Go-Live Date,Sponsor,Service Line,Assignment Date,Comments/Details,,,,Role Multiplier,Work Type Weight,Phase Weight,Base Hrs/Wk,Active Hrs/Wk,Active,Missing Data
+Trudy,Candida Auris_High Risk Living Situations_Screening,"2nd to Lisa Townsend -TX, back in minor re-design per NPPC",Secondary,XS - Less than 1 hr/wk,,System Initiative,Cerner,In Progress,Did we Deliver,,IP Council,Nursing,,,,,,0.5,1,0.25,0.5,0.0625,Yes,✓ Complete
+Trudy,Clinical Decision Support SME,DH Historian for all things rules.,Owner,M - 2-5 hrs/wk,,General Support,Cerner,In Progress,,,,Other,,,,,,1,1,0,3.5,0,Yes,⚠️ Missing Phase
+Trudy,EPIC Nova Notes,,Support,XS - Less than 1 hr/wk,,Policy/Guidelines,Epic,In Progress,,,,Other,,,,,,0.25,0.5,0,0.5,0,Yes,⚠️ Missing Phase
+Trudy,Gilead Focus System Project,"Automates screening for HIV, HCV, and Syphilis in the ED.  Major barriers due to lab of LIS engagement causing build and testing delays. ",Support,S - 1-2 hrs/wk,,System Initiative,Cerner,In Progress,Discovery/Define,,,Other,2016,System Project defining the next regions to roll out too.,,,,0.25,1,0.3,1.5,0.1125,Yes,✓ Complete
+Trudy,Governance Support,,Support,XS - Less than 1 hr/wk,,General Support,All,In Progress,,,,Other,,,,,,0.25,1,0,0.5,0,Yes,⚠️ Missing Phase
+Trudy,Infection Prevention Council Support,,Support,XS - Less than 1 hr/wk,,General Support,All,,,,,Other,2016,,,,,0.25,1,0,0.5,0,No,⚠️ Missing Phase
+Trudy,UPDATE MDRO Tracking Rules for Pseudomonas_DH Cerner,,Owner,M - 2-5 hrs/wk,,System Initiative,Cerner,Complete,Did we Deliver,2025-06-10 0:00:00,IP Council,Other,2024-08-29 0:00:00,,,,,1,1,0.25,3.5,0,No,✓ Complete
+Trudy,Palliative Care Department Support,,Support,XS - Less than 1 hr/wk,,Policy/Guidelines,All,,,,,Nursing,,,,,,0.25,0.5,0,0.5,0,No,⚠️ Missing Phase
+Trudy,Pastoral and Spiritual Care Department Support,,Support,XS - Less than 1 hr/wk,,Policy/Guidelines,All,,,,,Other,,,,,,0.25,0.5,0,0.5,0,No,⚠️ Missing Phase
+Trudy,Theology and Ethics Department Support,,Support,XS - Less than 1 hr/wk,,Policy/Guidelines,All,,,,,Other,,,,,,0.25,0.5,0,0.5,0,No,⚠️ Missing Phase
+Trudy,TheraDoc System Project for Infection Control,Third Party application for Infection Prevention survelliance,Support,XS - Less than 1 hr/wk,,System Project,All,In Progress,Did we Deliver,Most sites live,IP Council,Other,,,,,,0.25,1,0.25,0.5,0.03125,Yes,✓ Complete
+Trudy,Wound Care Council Support/HAPI Policy Implementation,,Support,XS - Less than 1 hr/wk,,General Support,All,,,,,Nursing,,,,,,0.25,1,0,0.5,0,No,⚠️ Missing Phase
+Trudy,Wound Care Orders Optimization,Bring orders in line with the HAPI Policy,Owner,M - 2-5 hrs/wk,,Policy/Guidelines,Cerner,Complete,Did we Deliver,2025-05-13 0:00:00,"Lauren Bulin, Sys VP Clinical Excellence Nursing Operations",Nursing,2024-07-16 0:00:00,,,,,1,0.5,0.25,3.5,0,No,✓ Complete
+Trudy,DH_HAPI Documentation/Nutrition Alerts Optimizations,Optimizing alerts to Nutrionist to be more specific,Owner,S - 1-2 hrs/wk,,Policy/Guidelines,Cerner,In Progress,Discovery/Define,,"Lauren Bulin, Sys VP Clinical Excellence Nursing Operations",Nursing,2024-07-29 0:00:00,In review by Periscope,,,,1,0.5,0.3,1.5,0.225,Yes,✓ Complete
+Trudy,Care Management Department Support,,Support,S - 1-2 hrs/wk,,General Support,All,,,,,Care Coordination,,,,,,0.25,1,0,1.5,0,No,⚠️ Missing Phase
+Trudy,Prevent Backdating Patient Status Orders,,Owner,S - 1-2 hrs/wk,,System Initiative,Cerner,In Progress,Discovery/Define,,"System Care Coordination/System Compliance, Diane Pirak",Care Coordination,,In review by Periscope,,,,1,1,0.3,1.5,0.45,Yes,✓ Complete
+Trudy,Mandatory Patient Notifications,,Owner,S - 1-2 hrs/wk,,System Initiative,All,Complete,Discovery/Define,,"Regina Mudd, System Director II Post Acute Care Coordination",Care Coordination,,In review by Periscope,,,,1,1,0.3,1.5,0,No,✓ Complete
+Trudy,PRJ0157704 SWD_BNI_TransformativeMed_CORES,3rd party software implementation for SJHMC BNI only. ,Support,XS - Less than 1 hr/wk,,System Project,Cerner,Complete,,,SJHMC-BNI,Other,,,,,,0.25,1,0,0.5,0,No,⚠️ Missing Phase
+Trudy,WICI-Create flagging of patients for MEWT on OB Tracking Boards,,Owner,XS - Less than 1 hr/wk,,System Initiative,Cerner,On Hold,Design,,WICI,OB/NICU,,Ticket is 5 years old.  WICI has been asked to consider dismall.  Technically very complex.,,,,1,1,1,0.5,0,No,✓ Complete
+Trudy,WICI-Oxytocin Pre Use and In Use Checklist Optimization to support WICI oxytocin administration guideline updates,,Owner,S - 1-2 hrs/wk,,System Initiative,Cerner,In Progress,Did we Deliver,,WICI,OB/NICU,,Need Change Comnunication to get a Target Release date assigned.,,,,1,1,0.25,1.5,0.375,Yes,✓ Complete
+Trudy,WICI-Oxytocin EFW/Pelvimetry Order Optimization (includes Epic Pre Use Checklist Edit),,Owner,S - 1-2 hrs/wk,,System Initiative,All,In Progress,Did we Deliver,,WICI,OB/NICU,,"In Cerner, waiting for a Build Resource. Not sure of EPIC Status?",,,,1,1,0.25,1.5,0.375,Yes,✓ Complete
+Trudy,WICI- O HQIP - Add DAST-10 to Stork,,Owner,S - 1-2 hrs/wk,,System Initiative,All,Complete,Discovery/Define,,WICI,OB/NICU,,"In Cerner: needs design approval, In  EPIC: built for Gold",,,,1,1,0.3,1.5,0,No,✓ Complete
+Trudy,WICI -Updates to BFHI Breastfeeding report to reflect current CSH breastfeeding/baby centric best practice,,Owner,M - 2-5 hrs/wk,,System Initiative,Epic,In Progress,Did we Deliver,,WICI,OB/NICU,,"Design session to begin May, 2025",,,,1,1,0.25,3.5,0.875,Yes,✓ Complete
+Trudy,WICI-Update OB Hemmorhage Multiphase Powerplan to support current algorithm,,Owner,XS - Less than 1 hr/wk,,System Initiative,All,In Progress,Discovery/Define,,WICI,OB/NICU,,"Waiting for Scope Priorization, Diedre is working on it.",,,,1,1,0.3,0.5,0.15,Yes,✓ Complete
+Trudy,WICI- mplement Cerner Standard Content OB Hemorrhage Risk Screening tool,,Owner,L - 5-10 hrs/wk,,System Initiative,Cerner,In Progress,Design,,WICI,OB/NICU,,Complex System Project with over 40 components.  Defining design and writing a testing check-list.  Still needs WICI Leadership approval to move forward.,,,,1,1,1,7.5,7.5,Yes,✓ Complete
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A

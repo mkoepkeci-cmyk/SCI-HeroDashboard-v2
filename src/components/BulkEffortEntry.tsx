@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Clock, Save, Copy, User, X, UserPlus, Edit, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase, InitiativeWithDetails, EffortLog, EFFORT_SIZES, EffortSize, TeamMember } from '../lib/supabase';
 import { getWeekStartDate, formatWeekRange, getEffortSizeFromHours } from '../lib/effortUtils';
+import { recalculateDashboardMetrics } from '../lib/workloadCalculator';
 import ReassignModal from './ReassignModal';
 
 interface BulkEffortEntryProps {
@@ -43,10 +44,35 @@ export default function BulkEffortEntry({
   const [reassigningInitiative, setReassigningInitiative] = useState<InitiativeWithDetails | null>(null);
   const [showCompleted, setShowCompleted] = useState(false); // State for collapsed completed section
   const [completedInitiatives, setCompletedInitiatives] = useState<InitiativeWithDetails[]>([]); // Store completed initiatives
+  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
 
-  // Initialize with all work types collapsed by default
-  const [collapsedWorkTypes, setCollapsedWorkTypes] = useState<Set<string>>(
-    new Set([
+  // Capacity calculation state
+  const [plannedHours, setPlannedHours] = useState<number>(0);
+  const [actualHours, setActualHours] = useState<number>(0);
+  const [configWeights, setConfigWeights] = useState<{
+    effortSizes: Record<string, number>;
+    roleWeights: Record<string, number>;
+    typeWeights: Record<string, number>;
+    phaseWeights: Record<string, number>;
+  }>({
+    effortSizes: {},
+    roleWeights: {},
+    typeWeights: {},
+    phaseWeights: {},
+  });
+
+  // Initialize collapsed work types from localStorage or use defaults
+  const [collapsedWorkTypes, setCollapsedWorkTypes] = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem('bulkEffortEntry_collapsedWorkTypes');
+      if (saved) {
+        return new Set(JSON.parse(saved));
+      }
+    } catch (error) {
+      console.warn('Failed to load collapsed work types from localStorage:', error);
+    }
+    // Default: all work types collapsed
+    return new Set([
       'Governance',
       'Policy/Guidelines',
       'System Project',
@@ -57,13 +83,57 @@ export default function BulkEffortEntry({
       'Epic Gold',
       'Epic Upgrades',
       'Uncategorized'
-    ])
-  );
+    ]);
+  });
+
+  // Persist collapsed work types to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('bulkEffortEntry_collapsedWorkTypes', JSON.stringify(Array.from(collapsedWorkTypes)));
+    } catch (error) {
+      console.warn('Failed to save collapsed work types to localStorage:', error);
+    }
+  }, [collapsedWorkTypes]);
 
   useEffect(() => {
+    loadConfigWeights();
     loadData();
     loadTeamMembers();
   }, [teamMemberId, initiatives, selectedWeek]);
+
+  // Load calculator config weights
+  const loadConfigWeights = async () => {
+    try {
+      const { data: config, error } = await supabase
+        .from('workload_calculator_config')
+        .select('*');
+
+      if (error) throw error;
+
+      const sizes: Record<string, number> = {};
+      const roles: Record<string, number> = {};
+      const types: Record<string, number> = {};
+      const phases: Record<string, number> = {};
+
+      (config || []).forEach(c => {
+        const value = parseFloat(c.value);
+        if (c.config_type === 'effort_size') sizes[c.key] = value;
+        if (c.config_type === 'role_weight') roles[c.key] = value;
+        if (c.config_type === 'work_type_weight') types[c.key] = value;
+        if (c.config_type === 'phase_weight') phases[c.key] = value;
+      });
+
+      setConfigWeights({
+        effortSizes: sizes,
+        roleWeights: roles,
+        typeWeights: types,
+        phaseWeights: phases,
+      });
+    } catch (err) {
+      console.error('Error loading workload calculator config:', err);
+    }
+  };
+
 
   const loadTeamMembers = async () => {
     try {
@@ -160,6 +230,18 @@ export default function BulkEffortEntry({
 
       if (currentError) throw currentError;
 
+      // Get the most recent updated_at timestamp for this week
+      if (currentLogs && currentLogs.length > 0) {
+        const mostRecent = currentLogs.reduce((latest, log) => {
+          const logTime = new Date(log.updated_at).getTime();
+          const latestTime = new Date(latest.updated_at).getTime();
+          return logTime > latestTime ? log : latest;
+        });
+        setLastSavedAt(mostRecent.updated_at);
+      } else {
+        setLastSavedAt(null);
+      }
+
       // Load last week's logs for copying
       const lastWeek = new Date(selectedWeek);
       lastWeek.setDate(lastWeek.getDate() - 7);
@@ -234,17 +316,36 @@ export default function BulkEffortEntry({
 
       const newEntries: InitiativeEffortEntry[] = filteredInitiatives.map(initiative => {
         const existingLog = (currentLogs || []).find(log => log.initiative_id === initiative.id);
-        const hours = existingLog?.hours_spent || 0;
-        // Check if note indicates this was skipped (0 hours with a note saying "No work")
-        const isSkipped = existingLog && hours === 0 && existingLog.note?.toLowerCase().includes('no work');
+
+        // If there's an existing log, use its values
+        if (existingLog) {
+          const hours = existingLog.hours_spent || 0;
+          const isSkipped = hours === 0 && existingLog.note?.toLowerCase().includes('no work');
+
+          return {
+            initiative,
+            hours,
+            effortSize: existingLog.effort_size,
+            note: existingLog.note || '',
+            skipped: isSkipped || false,
+            existingLog,
+            hasChanges: false,
+          };
+        }
+
+        // No existing log - pre-populate from initiative's work_effort
+        const workEffort = initiative.work_effort as EffortSize | null;
+        const effortSizeDetails = workEffort ? EFFORT_SIZES.find(e => e.size === workEffort) : null;
+        const prePopulatedHours = effortSizeDetails?.hours || 0;
+        const prePopulatedSize = workEffort || 'M';  // Default to Medium if no work_effort set
 
         return {
           initiative,
-          hours,
-          effortSize: existingLog?.effort_size || getEffortSizeFromHours(hours),
-          note: existingLog?.note || '',
-          skipped: isSkipped || false,
-          existingLog,
+          hours: prePopulatedHours,
+          effortSize: prePopulatedSize,
+          note: '',
+          skipped: false,
+          existingLog: undefined,
           hasChanges: false,
         };
       });
@@ -273,6 +374,49 @@ export default function BulkEffortEntry({
     };
     return colors[type] || '#565658';
   };
+
+  // Calculate capacity (planned hours only - actual comes from entries)
+  const calculateCapacity = () => {
+    if (!teamMemberId) return;
+
+    // Calculate planned hours from active initiatives
+    let planned = 0;
+    entries.forEach(entry => {
+      if (entry.isMiscAssignment) return;
+
+      const init = entry.initiative;
+      const hasRole = init.role && init.role !== 'Unknown';
+      const hasEffort = init.work_effort && init.work_effort !== 'Unknown';
+      const hasType = init.type && init.type !== 'Unknown';
+      const hasPhase = init.phase && init.phase !== 'Unknown';
+      const isGovernance = init.type === 'Governance';
+
+      // Skip if missing required data
+      if (!hasRole || !hasEffort || !hasType || (!hasPhase && !isGovernance)) {
+        return;
+      }
+
+      const baseHours = init.work_effort ? (configWeights.effortSizes[init.work_effort] || 0) : 0;
+      const roleWeight = init.role ? (configWeights.roleWeights[init.role] || 1) : 1;
+      const typeWeight = init.type ? (configWeights.typeWeights[init.type] || 1) : 1;
+      const phaseWeight = configWeights.phaseWeights[init.phase || 'N/A'] || 1;
+
+      planned += baseHours * roleWeight * typeWeight * phaseWeight;
+    });
+
+    setPlannedHours(planned);
+
+    // Actual hours = sum of entry.hours (which are loaded from saved effort_logs)
+    const actual = entries.reduce((sum, entry) => sum + entry.hours, 0);
+    setActualHours(actual);
+  };
+
+  // Recalculate capacity when entries or config changes
+  useEffect(() => {
+    if (entries.length > 0 && Object.keys(configWeights.effortSizes).length > 0) {
+      calculateCapacity();
+    }
+  }, [entries, configWeights, teamMemberId]);
 
   // Toggle work type section collapse
   const toggleWorkTypeSection = (workType: string) => {
@@ -477,6 +621,18 @@ export default function BulkEffortEntry({
       team_member_id: teamMemberId || '',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      metrics: [],
+      is_draft: false,
+      completion_status: {
+        basic: true,
+        governance: false,
+        metrics: false,
+        financial: false,
+        performance: false,
+        projections: false,
+        story: false,
+      },
+      completion_percentage: 100,
     };
 
     const newEntry: InitiativeEffortEntry = {
@@ -514,13 +670,12 @@ export default function BulkEffortEntry({
     try {
       setSaving(true);
 
-      // Include entries with changes AND either hours > 0 OR skipped OR is misc assignment with name
+      // Save ALL entries that have data (not just entries with hasChanges=true)
+      // This ensures all hours get saved, even if the page was reloaded after initial entry
       const changedEntries = entries.filter(e =>
-        e.hasChanges && (
-          e.hours > 0 ||
-          e.skipped ||
-          (e.isMiscAssignment && e.miscAssignmentName?.trim())
-        )
+        e.hours > 0 ||
+        e.skipped ||
+        (e.isMiscAssignment && e.miscAssignmentName?.trim())
       );
 
       for (const entry of changedEntries) {
@@ -555,7 +710,7 @@ export default function BulkEffortEntry({
         const logData = {
           initiative_id: initiativeId,
           team_member_id: teamMemberId,
-          week_start_date: selectedWeek,
+          week_start_date: selectedWeek, // Save to the week user is viewing/editing
           hours_spent: entry.hours,
           effort_size: entry.effortSize,
           note: entry.note.trim() || null,
@@ -574,6 +729,17 @@ export default function BulkEffortEntry({
           const { error } = await supabase.from('effort_logs').insert([logData]);
 
           if (error) throw error;
+        }
+      }
+
+      // Recalculate dashboard metrics to update capacity
+      if (teamMemberId) {
+        try {
+          await recalculateDashboardMetrics(teamMemberId);
+          console.log('✓ Dashboard metrics recalculated after effort save');
+        } catch (metricsError) {
+          console.error('Warning: Failed to recalculate dashboard metrics:', metricsError);
+          // Don't fail the whole save if metrics recalculation fails
         }
       }
 
@@ -624,6 +790,10 @@ export default function BulkEffortEntry({
     )
   ).length;
 
+  // Calculate capacity metrics
+  const plannedCapacityPct = Math.round((plannedHours / 40) * 100);
+  const variance = actualHours - plannedHours;
+
   return (
     <div className="space-y-4">
       {/* Header with actions */}
@@ -631,8 +801,23 @@ export default function BulkEffortEntry({
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-4">
             <div>
-              <div className="text-2xl font-bold text-gray-900">{totalHours} hrs</div>
-              <div className="text-sm text-gray-600">Total for week</div>
+              <div className="text-lg font-semibold text-gray-700">
+                Planned: {plannedHours.toFixed(1)} hrs/wk ({plannedCapacityPct}%)
+              </div>
+              <div className="text-2xl font-bold text-gray-900">
+                Actual: {actualHours.toFixed(1)} hrs
+              </div>
+              <div className="text-sm text-gray-600">
+                Variance: {variance > 0 ? '+' : ''}{variance.toFixed(1)} hrs {variance > 0 ? 'over' : variance < 0 ? 'under' : 'on'} estimate
+              </div>
+              {lastSavedAt && (
+                <div className="text-xs text-gray-500 mt-1">
+                  Last saved: {new Date(lastSavedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} at {new Date(lastSavedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                </div>
+              )}
+              <div className="text-xs text-gray-500 mt-1">
+                Today is: {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+              </div>
             </div>
             <div className="h-12 w-px bg-gray-300"></div>
             <div>
@@ -690,8 +875,8 @@ export default function BulkEffortEntry({
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Initiative</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase w-32">Owner</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Type</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase">Hours</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Size</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase">Actual Hours</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Actual Size</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Note</th>
                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase w-10">Edit</th>
                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase w-10"></th>
@@ -764,7 +949,38 @@ export default function BulkEffortEntry({
                               />
                             ) : (
                               <>
-                                <div className="font-medium text-sm text-gray-900">{entry.initiative.initiative_name}</div>
+                                <div className="font-medium text-sm text-gray-900 flex items-center gap-2">
+                                  {(() => {
+                                    // Check if initiative is missing required data for capacity calculation
+                                    const hasRole = entry.initiative.role && entry.initiative.role !== 'Unknown';
+                                    const hasEffort = entry.initiative.work_effort && entry.initiative.work_effort !== 'Unknown';
+                                    const hasType = entry.initiative.type && entry.initiative.type !== 'Unknown';
+                                    const hasPhase = entry.initiative.phase && entry.initiative.phase !== 'Unknown';
+                                    const isGovernance = entry.initiative.type === 'Governance';
+
+                                    // Missing data if any required field is missing (Governance doesn't require phase)
+                                    const isMissingData = !hasRole || !hasEffort || !hasType || (!hasPhase && !isGovernance);
+
+                                    if (isMissingData) {
+                                      const missingFields = [];
+                                      if (!hasRole) missingFields.push('role');
+                                      if (!hasEffort) missingFields.push('work effort');
+                                      if (!hasType) missingFields.push('type');
+                                      if (!hasPhase && !isGovernance) missingFields.push('phase');
+
+                                      return (
+                                        <span
+                                          className="text-amber-500 font-bold flex-shrink-0"
+                                          title={`Missing data: ${missingFields.join(', ')}. Cannot calculate capacity.`}
+                                        >
+                                          !
+                                        </span>
+                                      );
+                                    }
+                                    return null;
+                                  })()}
+                                  <span>{entry.initiative.initiative_name}</span>
+                                </div>
                                 {entry.initiative.service_line && (
                                   <div className="text-xs text-gray-500">{entry.initiative.service_line}</div>
                                 )}
@@ -803,24 +1019,36 @@ export default function BulkEffortEntry({
                             />
                           </td>
                           <td className="px-4 py-3">
-                            <div className="flex gap-1">
-                              {EFFORT_SIZES.map((size) => (
-                                <button
-                                  key={size.size}
-                                  onClick={() => handleSizeClick(index, size.size)}
-                                  className={`px-2 py-1 text-xs font-semibold rounded transition-colors ${
-                                    entry.effortSize === size.size
-                                      ? 'text-white'
-                                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                  }`}
-                                  style={{
-                                    backgroundColor: entry.effortSize === size.size ? size.color : undefined,
-                                  }}
-                                  title={`${size.label} - ${size.hours}h`}
-                                >
-                                  {size.size}
-                                </button>
-                              ))}
+                            <div className="flex flex-col gap-1">
+                              {/* Show estimated work effort from initiative */}
+                              {entry.initiative.work_effort && (
+                                <div className="text-xs text-gray-500 flex items-center gap-1">
+                                  <span title="Estimated weekly effort from initiative planning">📊 Est: {entry.initiative.work_effort}</span>
+                                  <span className="text-gray-400">
+                                    ({EFFORT_SIZES.find(e => e.size === entry.initiative.work_effort)?.hours || 0}h/wk)
+                                  </span>
+                                </div>
+                              )}
+                              {/* Actual effort size buttons for this week */}
+                              <div className="flex gap-1">
+                                {EFFORT_SIZES.map((size) => (
+                                  <button
+                                    key={size.size}
+                                    onClick={() => handleSizeClick(index, size.size)}
+                                    className={`px-2 py-1 text-xs font-semibold rounded transition-colors ${
+                                      entry.effortSize === size.size
+                                        ? 'text-white'
+                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    }`}
+                                    style={{
+                                      backgroundColor: entry.effortSize === size.size ? size.color : undefined,
+                                    }}
+                                    title={`${size.label} - ${size.hours}h`}
+                                  >
+                                    {size.size}
+                                  </button>
+                                ))}
+                              </div>
                             </div>
                           </td>
                           <td className="px-4 py-3">
@@ -861,6 +1089,19 @@ export default function BulkEffortEntry({
                 return allRows;
               })()}
             </tbody>
+            <tfoot>
+              <tr className="bg-gray-50 border-t-2 border-gray-300">
+                <td colSpan={3} className="px-4 py-3 text-right font-bold text-gray-900">
+                  Total Hours (unsaved):
+                </td>
+                <td className="px-4 py-3 text-center">
+                  <span className="text-xl font-bold text-[#9B2F6A]">{totalHours.toFixed(1)}</span>
+                </td>
+                <td colSpan={3} className="px-4 py-3 text-sm text-gray-600">
+                  This total updates as you enter hours above
+                </td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </div>

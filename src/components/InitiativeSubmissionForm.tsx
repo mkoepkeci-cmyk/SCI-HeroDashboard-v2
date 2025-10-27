@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { AlertCircle, Plus, X, Save } from 'lucide-react';
 import { supabase, TeamMember, InitiativeWithDetails } from '../lib/supabase';
 import { CompletionIndicator } from './CompletionIndicator';
+import { recalculateDashboardMetrics } from '../lib/workloadCalculator';
 
 interface Metric {
   metricName: string;
@@ -455,6 +456,17 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
         if (storyError) throw storyError;
       }
 
+      // Recalculate dashboard metrics if team member is assigned
+      if (initiative.team_member_id) {
+        try {
+          await recalculateDashboardMetrics(initiative.team_member_id);
+          console.log('✓ Dashboard metrics recalculated for team member');
+        } catch (metricsError) {
+          console.error('Warning: Failed to recalculate dashboard metrics:', metricsError);
+          // Don't fail the whole save if metrics recalculation fails
+        }
+      }
+
       if (onSuccess) onSuccess();
       onClose();
     } catch (err: any) {
@@ -663,7 +675,7 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold mb-1">Work Effort</label>
+              <label className="block text-sm font-semibold mb-1">Estimated Work Effort (Planning)</label>
               <select
                 className="w-full border rounded px-3 py-2 text-sm"
                 value={formData.workEffort}
@@ -676,6 +688,7 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
                 <option value="L">L - 5-10 hrs/wk</option>
                 <option value="XL">XL - More than 10 hrs/wk</option>
               </select>
+              <p className="text-xs text-gray-500 mt-1">Initial weekly time estimate for capacity planning</p>
             </div>
             <div>
               <label className="block text-sm font-semibold mb-1">EHRs Impacted</label>

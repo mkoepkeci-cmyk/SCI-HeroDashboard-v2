@@ -1,0 +1,115 @@
+SCI,Assignment ,Short Description,Role,Work Effort,Expander >15 hrs,Work Type,EHR/s Impacted,Status,Phase,System Projected Go-Live Date,Sponsor,Service Line,Assignment Date,Comments/Details,,,,Role Multiplier,Work Type Weight,Phase Weight,Base Hrs/Wk,Active Hrs/Wk,Active,Missing Data
+Melissa,"OutPatient in a Bed (OIB)
+Outpatient in a bed","System Care Coordination Driven System Project to update ALL EHR's with a patient status order for ""Outpatient in a Bed (OIB)"".  Current state assessment In Progress to determine which sites may have an existing order and who will need one.  Discussion also in place to remove ""Extended Recovery""",Secondary,S - 1-2 hrs/wk,,System Initiative,All,In Progress,Discovery/Define,,,Other,,,,,,0.5,1,0.3,1.5,0.225,Yes,✓ Complete
+Melissa,"Discharge Milestones System Project- Level Up
+Level Up Discharge - Epic System Project (Shared Folder)",Epic Initiated optimization System Project to utilize the functionality in Epic making Multi Disciplinary Rounds (MDR's) more efficient and effective. Creating patient lists and reports for real time documentation. ,Owner,XS - Less than 1 hr/wk,,System Project,Epic,In Progress,Did we Deliver,,Regina Mudd,Care Coordination,,,,,,1,1,0.25,0.5,0.125,Yes,✓ Complete
+Melissa,"Wellsky/CarePort/Transitions
+Drive",Care Coordination solution to assist with patient transfers to outside facilities. ,Owner,XS - Less than 1 hr/wk,,System Initiative,All,In Progress,Discovery/Define,,,Care Coordination,,,,,,1,1,0.3,0.5,0.15,Yes,✓ Complete
+Melissa,"EPIC - Patient Belongings & Valuables System Policy Task Force
+FETR0081404 Belongings PolicyUpdate","In order to comply with changes in CommonSpirit Policy related to documentation of Valuables and Belongings, changes are required for all EHRs
+Valuables & Belongings CI Dashboard",Owner,S - 1-2 hrs/wk,,Policy/Guidelines,All,In Progress,Design,,Allison Mason,Nursing,,,,,,1,0.5,1,1.5,0.75,Yes,✓ Complete
+Melissa,"Danger to Others
+HTO EHR Requirements ","Working with BH leadership to answer outstanding EHR-related questions prior to placing EHR change request ticket (to be followed by eventual design sessions/coordination, approval, testing, implementation)",Secondary,S - 1-2 hrs/wk,,Policy/Guidelines,All,In Progress,Discovery/Define,,,Nursing,,,,,,0.5,0.5,0.3,1.5,0.1125,Yes,✓ Complete
+Melissa,Epic/Elsevier Care Plan,"System Project Folder 
+May 1 – Push updates and materials into AC environment (internal to EPIC)
+
+May 5 – Ensure all documentation is uploaded to EDS environment (internal to EPIC)
+
+May 19 – Import content into customer environments for validation
+
+CommonSpirit is a prioritized customer for uploading content.",Owner,M - 2-5 hrs/wk,,System Initiative,Epic,In Progress,Discovery/Define,,Allison Mason,Nursing,,,,,,1,1,0.3,3.5,1.05,Yes,✓ Complete
+Melissa,Violence and Human Trafficking Response EHR Support,"SDOH screening and our policy surrounding abuse screening. This effects Epic, Epic Gold, and Cerner.
+Human Trafficking and Response - Education and Resources
+EHR Working Group - Abuse, Neglect, and Violence
+Clinical Informatics and HT Response - CERNER Action Items",Owner,M - 2-5 hrs/wk,,System Initiative,All,In Progress,Discovery/Define,,Holly Gibbs,Other,,,,,,1,1,0.3,3.5,1.05,Yes,✓ Complete
+Melissa,ALM to SPM System Project - UAT testing and Train the Trainer,last week and this week have been very heavy on testing and retesting as well as Train the Trainer sessions,Support,M - 2-5 hrs/wk,,General Support,All,In Progress,Design,,,Other,,,,,,0.25,1,1,3.5,0.875,Yes,✓ Complete
+Melissa,Standardizing Fetal Monitoring System:CPN Perinatal ,Faciltator for standardization of a fetal monitoring system ,Support,S - 1-2 hrs/wk,,General Support,All,In Progress,Discovery/Define,,Mindy Foster,OB/NICU,,System Project,SCI Consultant,,,0.25,1,0.3,1.5,0.1125,Yes,✓ Complete
+Melissa,WICI/NICU,Council particiation for System Team,Support,M - 2-5 hrs/wk,,General Support,All,In Progress,Discovery/Define,,Mindy Foster,OB/NICU,,,SCI Consultant,,,0.25,1,0.3,3.5,0.2625,Yes,✓ Complete
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A

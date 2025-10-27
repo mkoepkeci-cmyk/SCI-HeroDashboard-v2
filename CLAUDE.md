@@ -72,6 +72,129 @@ Once users complete their data cleanup, the Google Sheets sync will be **permane
 
 ---
 
+## ⚡ Capacity Calculation System (CRITICAL - DO NOT MODIFY)
+
+**Status**: ✅ COMPLETED - Working in Production (October 27, 2025)
+
+**Locations**:
+1. **Workload → SCI View** - Individual effort tracking with capacity header
+2. **Workload → Team View** - Manager dashboard with capacity cards
+
+**Purpose**: Real-time capacity management showing planned vs actual workload for individuals and teams
+
+---
+
+### CRITICAL RULES (DO NOT VIOLATE):
+
+1. **ONE FORMULA FOR CAPACITY** - Same calculation in both SCI View and Team View
+2. **NO WEEK FILTERING FOR CAPACITY** - Always use most recent saved data by `updated_at`
+3. **ACTIVE INITIATIVES ONLY** - Filter to: Active, In Progress, Not Started, Planning, Scaling
+4. **REAL DATA ONLY** - No placeholder charts, no fake trends, no static arrays
+
+---
+
+### Capacity Formula (CANONICAL - DO NOT CHANGE):
+
+**Planned Hours Per Week**:
+```
+For each active initiative with complete data:
+  plannedHours += baseHours × roleWeight × typeWeight × phaseWeight
+
+Where:
+  - baseHours = work_effort mapping (XS=0.5, S=1.5, M=3.5, L=7.5, XL=15)
+  - Weights from workload_calculator_config table
+  - Complete data = has role, work_effort, type, and phase (Governance doesn't need phase)
+```
+
+**Actual Hours**:
+```
+actualHours = SUM(hours_spent) from effort_logs
+  WHERE team_member_id = X
+    AND initiative_id IN (active_initiative_ids)
+  ORDER BY updated_at DESC
+  -- Get most recent saved entry per initiative, NO week filtering
+```
+
+**Planned %**: `(plannedHours / 40) × 100`
+**Actual %**: `(actualHours / 40) × 100`
+**Variance**: `actualHours - plannedHours`
+
+**Color Coding**:
+- 🟢 Green (Under): < 60%
+- 🟡 Amber (Near): 60-74%
+- 🟠 Orange (At): 75-84%
+- 🔴 Red (Over): ≥ 85%
+
+---
+
+### 1. Workload → SCI View (BulkEffortEntry.tsx)
+
+**Header Shows**:
+- Planned: 31.5 hrs/wk (79%)
+- Actual: 39.0 hrs (98%)
+- Variance: +7.5 hrs over estimate
+
+**Footer Shows** (live, unsaved):
+- Total Hours (unsaved): Updates as you type
+
+**Data Flow**:
+1. On page load, query effort_logs for most recent saved hours per active initiative
+2. Calculate planned hours from active initiatives with complete data
+3. Display in header
+4. As user types, footer updates with unsaved total
+5. On "Save All", write to effort_logs with updated_at = NOW()
+6. Page reloads, header updates with new saved values
+
+---
+
+### 2. Workload → Team View (TeamCapacityView.tsx)
+
+**Manager Filter Buttons**:
+- **All Teams** (16 SCIs)
+- **Carrie Rodriguez** (her direct reports)
+- **Tiffany Shields-Tettamanti** (her direct reports)
+
+**TeamCapacityCard** (200px wide):
+- Avatar with color = planned capacity color
+- Initiative count badge (top right)
+- Planned: 31.5h (79%) - inline
+- Actual: 39.0h (98%) - inline
+- Variance: +7.5h
+
+**TeamCapacityModal** (opens on card click):
+Shows 6 productivity metrics in 2x3 grid:
+
+**Row 1**:
+1. **Work Type Distribution** (Pie) - System Initiative, Project, Governance, etc.
+2. **Work Effort Distribution** (Bar) - XS, S, M, L, XL, XXL counts
+3. **Phase Distribution** (Bar) - Discovery, Design, Build, Test, Deliver, Steady State
+
+**Row 2**:
+4. **Role Breakdown** (Donut) - Owner, Primary, Co-Owner, Secondary, Support
+5. **Status Health** (Stat cards) - Count by status (Not Started, In Progress, On Hold, etc.)
+6. **Service Line Coverage** (Bar, Top 8) - Service line distribution
+
+**Missing Data Alert**:
+- Only shows if initiatives missing capacity fields (role, work_effort, type, phase)
+- Does NOT check for metrics/baseline data (not needed for capacity)
+
+**Team Metrics Section** (bottom):
+- Total Initiatives (filtered by manager)
+- Revenue Impact (sum of projected_annual)
+- Avg Capacity (average of plannedPct across filtered team)
+
+---
+
+### Dashboard → Team View (App.tsx)
+
+**Different from Workload Team View!**
+- NO manager filters (removed Oct 27, 2025)
+- Shows all 16 SCIs in simple card grid
+- Click card to see team member detail modal
+- Used for general team portfolio overview, not capacity management
+
+---
+
 ## Application Features
 
 ### 1. Dashboard

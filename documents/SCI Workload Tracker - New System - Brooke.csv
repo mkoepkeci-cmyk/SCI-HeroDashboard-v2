@@ -1,0 +1,111 @@
+SCI,Assignment ,Short Description,Role,Work Effort,Expander >15 hrs,Work Type,EHR/s Impacted,Status,Phase,System Projected Go-Live Date,Sponsor,Service Line,Assignment Date,Comments/Details,,,,Role Multiplier,Work Type Weight,Phase Weight,Base Hrs/Wk,Active Hrs/Wk,Active,Missing Data
+Brooke,Epic General Nursing Support,SCI Consultant ,Owner,L - 5-10 hrs/wk,,General Support,Epic,In Progress,N/A,,,Nursing,,,,,,1,1,1,7.5,7.5,Yes,✓ Complete
+Brooke,NPPC SCI Consultant & Support,SCI consultant ,Owner,S - 1-2 hrs/wk,,General Support,All,In Progress,N/A,,"Alison Mason, Tamara Kear ",Nursing,,,,,,1,1,1,1.5,1.5,Yes,✓ Complete
+Brooke,PRM0011081 Centralized CMU Telemetry ,"Next roll-out: St. Luke's Baylor - McNair Campus scheduled for Sept/Oct 2025
+After McNair roll out, will move to 8 facilities in PNW
+",Owner,S - 1-2 hrs/wk,,System Project,Epic,In Progress,Did we Deliver,delivery and Designment process,Holly Kelly,Acute Institute &  Cardiology,,Live: 8 facilities from 4 states being monitored from CareBase,,,,1,1,0.25,1.5,0.375,Yes,✓ Complete
+Brooke,FETR0067305 System Telemetry Policy ,"System policy for Cardiac Monitoring to move toward AHA indications and a new OPA. Supporting Nicole Johnson from MI with historical decisions, info etc. 
+
+
+FETR0067305 Epic Telemetry Design Doc/Current State Review",Secondary,S - 1-2 hrs/wk,,Policy/Guidelines,Epic,In Progress,Design,awaiting approvals,John Morelli/Connie Clemmons Brown,Acute Institute &  Cardiology,,"Approved by Dr. Morelli and Connie Clemmons Brown. Reviewing with broader group September 5th. After final review with market, will move to Nancy Shen to begin building for each market. 
+
+
+",,,,0.5,0.5,1,1.5,0.375,Yes,✓ Complete
+Brooke,FETR0075981 Candida Auris Screening Optimization ,"System optimization request from the Infection Prevention Council. Final desgin approved 6.25.25, waiting for IT resources to start the build (Shawn Powell) 
+
+FETR0075981 Candida auris Design Doc",Owner,M - 2-5 hrs/wk,,System Initiative,Epic,In Progress,Design,Builders picked up ticket,Roy Boukidijan/Becky Leach,Other,2025-04-28 0:00:00,,,,,1,1,1,3.5,3.5,Yes,✓ Complete
+Brooke,FETR0075979  Duplicate LDAs Optimization Request,Optimization request to cleanup duplicate LDAs that were identified after the Vascular Access Policy implementation in Epic. Request is waiting on Epic analyst assignment,Secondary,,,System Initiative,Epic,On Hold,Discovery/Define,,Lauren Bulin,Nursing,,,,,,0.5,1,0.3,0,0,No,⚠️ Missing Size
+Brooke,NPPC: VAS Policy Bundle Kick-off ,,Owner,XS - Less than 1 hr/wk,,System Initiative,Epic,In Progress,Design,,Lauren Bulin,Nursing,,,,,,1,1,1,0.5,0.5,Yes,✓ Complete
+Brooke,CAT Inpatient Nursing - Nova Notes/Upgrade,"Review Nova Notes for Feb 25 Upgrade 
+7.14.25 Build currently taking place ",Owner,,,System Project,Epic,Complete,Did we Deliver,,,Nursing,,,,,,1,1,0.25,0,0,No,⚠️ Missing Size
+Brooke,CAT Care Coordination for Upgrade,"Review Nova Notes for Feb 25 Upgrade 
+7.14.25 Build currently taking place ",Secondary,,,System Project,Epic,Complete,Did we Deliver,,,Care Coordination,5.2.25,,,,,0.5,1,0.25,0,0,No,⚠️ Missing Size
+Brooke,CAT Inpatient Nursing - Gold ,Review Gold Decision's ,Owner,L - 5-10 hrs/wk,,Epic Gold,Epic,In Progress,Design,,,Nursing,6.20.25,,,,,1,1,1,7.5,7.5,Yes,✓ Complete
+Brooke,BMAT - Age Friendly Prelim Research,Gather current state analysis of mobility assessment in Epic markets,Support,,,System Initiative,All,In Progress,Discovery/Define,,Heather Miller,Other,7.29.25,,,,,0.25,1,0.3,0,0,Yes,⚠️ Missing Size
+Brooke,Deep Sedation ,"System Deep Sedation Policy Updated: Crosswalking policy, current state analysis and gap analysis  ",Owner,M - 2-5 hrs/wk,,Policy/Guidelines,All,In Progress,Discovery/Define,Unknown,Amrit Kamboj,Nursing,08.20.25,,,,,1,0.5,0.3,3.5,0.525,Yes,✓ Complete
+Brooke,Wave 2 Go live Education,Review Wae 2 go live education to prepare to support,Owner,M - 2-5 hrs/wk,,General Support,Epic,In Progress,N/A,,,,,,,,,1,1,1,3.5,3.5,Yes,✓ Complete
+Brooke,Preferred Language Drop Down,"What threshold languages are included for Epic Gold and investigating ""unknown"" or ""other"" drop down options funciotnality ",Secondary,,,Epic Gold,Epic,In Progress,Discovery/Define,,Lisa Macri,Other,7.14.25,,,,,0.5,1,0.3,0,0,Yes,⚠️ Missing Size
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A

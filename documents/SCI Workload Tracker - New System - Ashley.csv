@@ -1,0 +1,166 @@
+SCI,Assignment ,Short Description,Role,Work Effort,Expander >15 hrs,Work Type,EHR/s Impacted,Status,Phase,System Projected Go-Live Date,Sponsor,Service Line,Assignment Date,Comments/Details,,,,Role Multiplier,Work Type Weight,Phase Weight,Base Hrs/Wk,Active Hrs/Wk,Active,Missing Data
+Ashley,Xsolis System Project-AI integration for UM XSOLIS,Utilization Management Solution using AI to help determine patient eligabilty and appropriateness for status and reimbursement. ,Secondary,S - 1-2 hrs/wk,,System Initiative,All,In Progress,Design,,Gail Moxley,Care Coordination,,,,,,0.5,1,1,1.5,0.75,Yes,✓ Complete
+Ashley,Readmission System Project 4343,"System Project ALM 4343
+Oracle readmission prevention System Project being implemented in CAREB & ECISA in March 2025. Time consuming- 3-5 meetings a week. 
+Validation Dates: 2 weeks per domain
+
+Week of Feb 17 MOCKB
+
+Week of March 3 MOCKA
+
+Soft Activation: 
+
+Week of Mar 17 (ECISA and CAREB the same week)
+
+Go-Live: 
+
+Week of April 22 CAREB and ECISA 
+",Owner,XL - More than 10 hrs/wk,,System Initiative,Cerner,Complete,Did we Deliver,2025-04-22 0:00:00,"Boomie, Dr. Erickson, Dr. Morelli",Care Coordination,,,,,,1,1,0.25,15,0,No,✓ Complete
+Ashley,Epic/Elsevier Care Plan,"Plan of Care
+
+The Patient’s Plan of Care (POC) requires interprofessional collaboration to align assessments, interventions, and evaluations with patient-centered goals and outcomes.
+Establishing Interprofessional Plan of Care Council (IPCC) for system-wide clinical and operational decision-making.  
+Inaugural kick off council meeting planned for September 24, 2025. 
+Work with IPCC team and Elsevier to manage practice decisions and support clinical adoption.",Secondary,S - 1-2 hrs/wk,,System Initiative,Epic,In Progress,Discovery/Define,2026-05-01 0:00:00,Connie Clemmons-Brown,Nursing,,,,,,0.5,1,0.3,1.5,0.225,Yes,✓ Complete
+Ashley,Critical Care Titration & Block Charting Initiative 3991/CHI 4371,"Titrations of Critical Care (Shared Folder)
+Critical Care Gtt CI Tracking Dashboard 
+
+System-wide policy to standardize IV titrations block charting.
+A System Titrations Policy Toolkit has been released by the C5 Clinical Institute to support this rollout.
+Go-live Timeline:
+South region (TX/TN/KY) Epic sites went live September 6, aligned with the Epic upgrade.
+Other Epic markets are scheduled to go live November 2025 due to upgrade priorities.
+Continued phased go-live timeline may be found here: EHR Go-Live Date Schedule for the Titrations in Continuous Infusion Medications in Critical Care Areas P&P",Owner,XL - More than 10 hrs/wk,,Policy/Guidelines,All,In Progress,Design,"Phased approach:
+EHR Go-Live Date Schedule for the Titrations in Continuous Infusion Medications in Critical Care Areas P&P
+",Brenda Downs,Acute Institute &  Cardiology,,,,,,1,0.5,1,15,7.5,Yes,✓ Complete
+Ashley,ICU Liberation ,"Intake Slide ALM 4139
+
+System-wide updates to the Liberation/ABCDEF Bundle guidelines are underway and will require significant changes across all EHR platforms.
+Market-level crosswalk reviews have been completed.
+Initial EHR intake form submitted by Brenda Downs on February 28, 2025.
+Revised EHR change request submitted on June 18, 2025; currently under intake review by System Clinical Informatics leadership.",Owner,S - 1-2 hrs/wk,,Policy/Guidelines,All,On Hold,Discovery/Define,,Brenda Downs,Acute Institute &  Cardiology,,,,,,1,0.5,0.3,1.5,0,No,✓ Complete
+Ashley,NCEC - Standard Orientation Content Task Force,"Serve in a consultative capacity, supporting all five defined workgroups by addressing informatics/technology-related needs.",Owner,XS - Less than 1 hr/wk,,General Support,All,In Progress,Did we Deliver,Monthly,Tracy Liubakka and Tiffany McCann,Other,,,,,,1,1,0.25,0.5,0.125,Yes,✓ Complete
+Ashley,Med Rec Tasking in Cerner ALM 3713 ,"Design Session #3 occurred on 1/10/2024, during which participants shared feedback from their respective markets on the following topics:
+
+Removing ""reconciliation"" from the medication history task name.
+Removing the task type from Care Compass.
+
+Participants reached voting consensus to move forward with proposed changes. Technical team confirmed sufficient information to implement design changes in a non-prod environment.  
+
+
+Approved by Cerner Optimization Group on 2/6. Build resources assigned. Testing/validation completed for CRDB/A. Go-live occurred March 2025.",Support,XS - Less than 1 hr/wk,,General Support,Cerner,Complete,Did we Deliver,,Central Coast Practice Lead,Other,,,,,,0.25,1,0.25,0.5,0,No,✓ Complete
+Ashley,National Clinical Education Council (NCEC) - SCI Consultant,"NCEC council representative. Monthly initiative update highlighting key System Projects/system initiatives and new policies, timelines, and progress across the enterprise.",Owner,XS - Less than 1 hr/wk,,General Support,All,In Progress,Discovery/Define,Monthly,Tracy Liubakka and Tiffany McCann,Other,,,,,,1,1,0.3,0.5,0.15,Yes,✓ Complete
+Ashley,Oral Kleen System Policy ,"OralKleen System Project Jan2025
+
+System-wide policy and procedure for interventional oral hygiene and infection prevention.
+Documentation and procedural elements of the new policy have been finalized.
+Executive Directors Tammie Kear and Virginia Pendergast will discuss and initial go-live facility site selection with Ron Yolo, RCNO–California Region.
+On 8/28, a meeting was held in partnership with the System Clinical Informaticists to gather intake request information for submission to System Informatics leadership for review.
+System Clinical Informaticists will continue collaborating with the task force to refine EHR requirements in preparation for pilot rollout.",Owner,S - 1-2 hrs/wk,,Policy/Guidelines,All,In Progress,Did we Deliver,,Alison Mason,Nursing,,,,,,1,0.5,0.25,1.5,0.1875,Yes,✓ Complete
+Ashley,UKM/UGM/Kronos Enterprise Roll out,"WFM System Project 2025
+
+IT Enterprise Transition to Kronos Suite (Replacing Clairvia and Teams Scheduling Tools)
+
+On April 25, 2025, a meeting was held with Michelle Gunsher and Boomie to discuss the Clairvia transition to Pro WFM.
+
+Direction was provided to prioritize the Care Value System Team—the Owner user group of Clairvia—for Wave 1 of the transition.
+
+A demo was recommended for this group to facilitate engagement and gather feedback or concerns.
+
+Michelle was also advised to engage Regional/Market Clinical Informatics Leaders to identify local Change Champions to support the transition.
+
+Follow-up meeting held with System Project managers on May 28, 2025 to continue planning and coordination efforts.
+
+Follow-up with Epic related to alignment of Kronos acuity with Epic Gold and building blocks for acuity mapping. Email exchange for initiative and resourcing sent on 9/8.",Owner,L - 5-10 hrs/wk,,System Initiative,All,In Progress,Discovery/Define,2026-05-01 0:00:00,,Other,,,,,,1,1,0.3,7.5,2.25,Yes,✓ Complete
+Ashley,Bridge Human Milk Management,Consulting with WICI leaders and Amrit on current wikki materials.,Owner,XS - Less than 1 hr/wk,,General Support,All,In Progress,Did we Deliver,,Amritpal Kamboj,Other,,,,,,1,1,0.25,0.5,0.125,Yes,✓ Complete
+Ashley,ALM 3546 Sepsis Documentation Updates Sep 1 Bundle,"SoCal Division Sepsis Requests - Cerner
+Sepsis Updated for Cerner - DH 08.2023
+
+The General Variable Criteria (SIRS) information and the Organ Dysfunction Signs & Symptoms information are out of alignment with the current SEP - 1 criteria on the Adult Sepsis Screening PowerForm and the ED Triage Sepsis Screening Adult section of the ED Triage PowerForm.
+Currently under intake review by System Clinical Informatics leadership.",Owner,S - 1-2 hrs/wk,,System Initiative,All,In Progress,Discovery/Define,,Brenda Downs,Acute Institute &  Cardiology,,,,,,1,1,0.3,1.5,0.45,Yes,✓ Complete
+Ashley,"CAT Orthopedics, Bones - Gold ","SCI leading CAT Orthopedic building block to support alignment, standardization, and optimization across the system.",Owner,M - 2-5 hrs/wk,,Epic Gold,Epic,Complete,,,,,,,,,,1,1,0,3.5,0,No,⚠️ Missing Phase
+Ashley,CAT Nutrition - Gold ,"SCI leading CAT nutrition building block to support alignment, standardization, and optimization across the system. Nutrition CAT Building Block Review_July 2025 Nutrition CAT Building Block Prep",Owner,M - 2-5 hrs/wk,,Epic Gold,Epic,Complete,,,,,,,,,,1,1,0,3.5,0,No,⚠️ Missing Phase
+Ashley,CommonSpirit Critical Care Council,C5 council representative. Inclusion on the agenda to present EHR related updates,Support,S - 1-2 hrs/wk,,General Support,All,In Progress,,Monthly,Brenda Downs,Acute Institute &  Cardiology,,,,,,0.25,1,0,1.5,0,Yes,⚠️ Missing Phase
+Ashley,National Sepsis Workgroup,Sepsis council representative. Incusion on the agenda to present EHR related updates,Support,S - 1-2 hrs/wk,,General Support,All,In Progress,,Monthly,Brenda Downs,Acute Institute &  Cardiology,,,,,,0.25,1,0,1.5,0,Yes,⚠️ Missing Phase
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A
+,,,,,,,,,,,,,,,,,,0,0,0,0,0,No,N/A

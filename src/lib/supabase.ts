@@ -9,11 +9,24 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+export interface Manager {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface TeamMember {
   id: string;
-  name: string;
+  name: string;              // Keep for backward compatibility
+  first_name?: string;       // NEW: First name (populated from name)
+  last_name?: string;        // NEW: Last name (optional)
+  manager_id?: string;       // NEW: Reference to manager
   role: string;
-  specialty: string;
+  specialty?: string[];      // CHANGED: Now array for multi-select
   total_assignments: number;
   revenue_impact?: string;
   created_at: string;
@@ -186,7 +199,8 @@ export interface InitiativeStory {
 }
 
 // Effort Tracking Types
-export type EffortSize = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL';
+// Updated to match workload_calculator_config (2025-10-26)
+export type EffortSize = 'XS' | 'S' | 'M' | 'L' | 'XL';
 
 export interface EffortSizeMapping {
   size: EffortSize;
@@ -196,12 +210,11 @@ export interface EffortSizeMapping {
 }
 
 export const EFFORT_SIZES: EffortSizeMapping[] = [
-  { size: 'XS', label: 'Extra Small', hours: 1.5, color: '#10b981' },
-  { size: 'S', label: 'Small', hours: 4, color: '#3b82f6' },
-  { size: 'M', label: 'Medium', hours: 8, color: '#f59e0b' },
-  { size: 'L', label: 'Large', hours: 13, color: '#f97316' },
-  { size: 'XL', label: 'Extra Large', hours: 18, color: '#ef4444' },
-  { size: 'XXL', label: 'Double XL', hours: 25, color: '#dc2626' },
+  { size: 'XS', label: 'Extra Small', hours: 0.5, color: '#10b981' },  // Less than 1 hr/wk
+  { size: 'S', label: 'Small', hours: 1.5, color: '#3b82f6' },          // 1-2 hrs/wk
+  { size: 'M', label: 'Medium', hours: 3.5, color: '#f59e0b' },         // 2-5 hrs/wk
+  { size: 'L', label: 'Large', hours: 7.5, color: '#f97316' },          // 5-10 hrs/wk
+  { size: 'XL', label: 'Extra Large', hours: 15, color: '#ef4444' },    // More than 10 hrs/wk
 ];
 
 export interface EffortLog {
@@ -243,6 +256,69 @@ export interface InitiativeWithDetails extends Initiative {
   story?: InitiativeStory;
   effort_logs?: EffortLog[];
   effort_trend?: InitiativeEffortTrend;
+}
+
+// ============================================================================
+// Constants for Admin Management
+// ============================================================================
+
+// Role options for team members
+// Note: All current team members are System CIs
+export const TEAM_MEMBER_ROLES = ['System CI'] as const;
+
+// Specialty options (service lines) - alphabetically ordered
+export const SPECIALTIES = [
+  'Acute Institute & Cardiology',
+  'Ambulatory',
+  'Ancillary',
+  'Care Coordination',
+  'Emergency Department',
+  'Inpatient',
+  'Laboratory',
+  'Nursing',
+  'OB/NICU',
+  'Perioperative',
+  'Pharmacy & Oncology',
+  'Radiology',
+  'Revenue Cycle',
+  'Surgery, Anesthesia, Transplant',
+  'Other',
+] as const;
+
+// ============================================================================
+// Helper Functions for Display Names
+// ============================================================================
+
+/**
+ * Get full display name for team member
+ * Prefers first_name + last_name if available, falls back to name
+ */
+export function getTeamMemberDisplayName(member: TeamMember): string {
+  if (member.first_name && member.last_name) {
+    return `${member.first_name} ${member.last_name}`;
+  }
+  if (member.first_name) {
+    return member.first_name;
+  }
+  return member.name;
+}
+
+/**
+ * Get short display name (first name + last initial)
+ * Used for compact displays like capacity cards
+ */
+export function getTeamMemberShortName(member: TeamMember): string {
+  if (member.first_name && member.last_name) {
+    return `${member.first_name} ${member.last_name.charAt(0)}.`;
+  }
+  return member.first_name || member.name;
+}
+
+/**
+ * Get manager's full name
+ */
+export function getManagerDisplayName(manager: Manager): string {
+  return `${manager.first_name} ${manager.last_name}`;
 }
 
 // Dashboard Metrics - Pre-calculated from Excel Dashboard tab (columns A-Y)

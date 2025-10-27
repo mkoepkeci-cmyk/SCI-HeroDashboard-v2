@@ -257,15 +257,17 @@ export default function PersonalWorkloadDashboard({
 
       {/* Conditional Content Based on View */}
       {view === 'entry' ? (
-        <BulkEffortEntry
-          teamMemberId={teamMember?.id || null}
-          teamMemberName={teamMember?.name || null}
-          initiatives={initiatives}
-          selectedWeek={selectedWeek}
-          onSave={loadEffortLogs}
-          onEditInitiative={(initiative) => setEditingInitiative(initiative)}
-          onAddInitiative={() => setShowAddInitiative(true)}
-        />
+        <>
+          <BulkEffortEntry
+            teamMemberId={teamMember?.id || null}
+            teamMemberName={teamMember?.name || null}
+            initiatives={initiatives}
+            selectedWeek={selectedWeek}
+            onSave={loadEffortLogs}
+            onEditInitiative={(initiative) => setEditingInitiative(initiative)}
+            onAddInitiative={() => setShowAddInitiative(true)}
+          />
+        </>
       ) : (
         <>
           {/* Summary View - Existing Dashboard Content */}

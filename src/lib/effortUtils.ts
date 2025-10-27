@@ -21,14 +21,14 @@ export function getEffortSizeDetails(size: EffortSize) {
 
 /**
  * Get effort size from hours
+ * Updated to match workload_calculator_config (2025-10-26)
  */
 export function getEffortSizeFromHours(hours: number): EffortSize {
-  if (hours <= 2.5) return 'XS';
-  if (hours <= 6) return 'S';
-  if (hours <= 10.5) return 'M';
-  if (hours <= 15.5) return 'L';
-  if (hours <= 21.5) return 'XL';
-  return 'XXL';
+  if (hours <= 1) return 'XS';     // 0.5 hrs (less than 1 hr/wk)
+  if (hours <= 2.5) return 'S';    // 1.5 hrs (1-2 hrs/wk)
+  if (hours <= 5.5) return 'M';    // 3.5 hrs (2-5 hrs/wk)
+  if (hours <= 11) return 'L';     // 7.5 hrs (5-10 hrs/wk)
+  return 'XL';                     // 15 hrs (more than 10 hrs/wk)
 }
 
 /**

@@ -1,19 +1,15 @@
 import { X, Briefcase, Clock, Target, TrendingUp, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import type { Database } from '../lib/supabase';
+import { getTeamMemberWorkloadData } from '../lib/workloadCalculator';
+import type { InitiativeWithDetails } from '../lib/supabase';
 
-type Assignment = Database['public']['Tables']['assignments']['Row'];
 type TeamMember = Database['public']['Tables']['team_members']['Row'];
 
 interface StaffDetailModalProps {
   member: TeamMember & {
-    assignments: Assignment[];
-    capacity_warnings?: string;
-    dashboard_metrics?: {
-      active_hours_per_week: number;
-      capacity_utilization: number;
-    };
+    initiatives: InitiativeWithDetails[];  // Use initiatives instead of assignments
   };
   onClose: () => void;
 }
@@ -73,31 +69,41 @@ function getWorkEffortHours(effort: string | null | undefined): number {
 
 export default function StaffDetailModal({ member, onClose }: StaffDetailModalProps) {
   const [showMissingDataDetails, setShowMissingDataDetails] = useState(false);
+  const [workloadData, setWorkloadData] = useState<Awaited<ReturnType<typeof getTeamMemberWorkloadData>> | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Load workload data on mount
+  useEffect(() => {
+    async function loadWorkload() {
+      try {
+        setLoading(true);
+        const data = await getTeamMemberWorkloadData(member.id, member.name);
+        setWorkloadData(data);
+      } catch (error) {
+        console.error('Error loading workload data:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadWorkload();
+  }, [member.id, member.name]);
 
   // Debug logging
   console.log('StaffDetailModal - member:', member.name);
-  console.log('StaffDetailModal - total assignments:', member.assignments?.length || 0);
+  console.log('StaffDetailModal - workload data:', workloadData);
 
-  // Log status breakdown
-  const statusCounts = (member.assignments || []).reduce((acc, a) => {
-    const status = a.status || 'NULL';
-    acc[status] = (acc[status] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-  console.log('StaffDetailModal - status breakdown:', statusCounts);
-
-  // Filter to ACTIVE assignments only (including Unknown status to catch incomplete data)
-  const activeStatuses = ['Active', 'Planning', 'Not Started', 'In Progress', 'Unknown'];
-  const activeAssignments = (member.assignments || []).filter(a =>
-    a.status && activeStatuses.includes(a.status)
+  // Filter to ACTIVE initiatives only
+  const activeStatuses = ['Active', 'Planning', 'Not Started', 'In Progress', 'Scaling'];
+  const activeAssignments = (member.initiatives || []).filter(i =>
+    i.status && activeStatuses.includes(i.status)
   );
 
-  // Calculate work type breakdown (ACTIVE assignments only, excluding Unknown)
+  // Calculate work type breakdown (ACTIVE initiatives only, excluding Unknown)
   const workTypeBreakdown = activeAssignments
-    .filter(a => a.work_type && a.work_type !== 'Unknown')
-    .reduce((acc, assignment) => {
-      const type = assignment.work_type;
-      const hours = getWorkEffortHours(assignment.work_effort);
+    .filter(i => i.type && i.type !== 'Unknown')
+    .reduce((acc, initiative) => {
+      const type = initiative.type;
+      const hours = getWorkEffortHours(initiative.work_effort);
 
       if (!acc[type]) {
         acc[type] = { name: type, count: 0, hours: 0 };
@@ -112,10 +118,10 @@ export default function StaffDetailModal({ member, onClose }: StaffDetailModalPr
   const workTypeData = Object.values(workTypeBreakdown)
     .sort((a, b) => b.hours - a.hours);
 
-  // Calculate work effort breakdown (ACTIVE assignments only)
-  const workEffortBreakdown = activeAssignments.reduce((acc, assignment) => {
-    const code = parseWorkEffort(assignment.work_effort) || 'Unknown';
-    const hours = getWorkEffortHours(assignment.work_effort);
+  // Calculate work effort breakdown (ACTIVE initiatives only)
+  const workEffortBreakdown = activeAssignments.reduce((acc, initiative) => {
+    const code = parseWorkEffort(initiative.work_effort) || 'Unknown';
+    const hours = getWorkEffortHours(initiative.work_effort);
 
     if (!acc[code]) {
       acc[code] = { name: code, count: 0, hours: 0 };
@@ -129,9 +135,9 @@ export default function StaffDetailModal({ member, onClose }: StaffDetailModalPr
     .filter(effort => workEffortBreakdown[effort])
     .map(effort => workEffortBreakdown[effort]);
 
-  // Calculate status breakdown (ALL assignments to show complete picture)
-  const statusBreakdown = (member.assignments || []).reduce((acc, assignment) => {
-    const status = assignment.status || 'Unknown';
+  // Calculate status breakdown (ALL initiatives to show complete picture)
+  const statusBreakdown = (member.initiatives || []).reduce((acc, initiative) => {
+    const status = initiative.status || 'Unknown';
     if (!acc[status]) {
       acc[status] = { name: status, count: 0 };
     }
@@ -142,45 +148,36 @@ export default function StaffDetailModal({ member, onClose }: StaffDetailModalPr
   const statusData = Object.values(statusBreakdown)
     .sort((a, b) => b.count - a.count);
 
-  // Calculate data quality - check ALL fields
-  // Use ACTIVE assignments only (already filtered at top of component)
-  const totalAssignments = activeAssignments.length;
-  const hasEffort = activeAssignments.filter(a => a.work_effort).length;
-  const missingEffort = totalAssignments - hasEffort;
-
-  // Check for all missing data types (only for ACTIVE assignments)
-  // Check for both NULL and "Unknown" values in critical fields
-  const assignmentsWithMissingData = activeAssignments.map(assignment => {
-    const missingFields: string[] = [];
-    if (!assignment.work_type || assignment.work_type === 'Unknown') missingFields.push('Work Type');
-    if (!assignment.work_effort || assignment.work_effort === 'Unknown') missingFields.push('Work Effort');
-    if (!assignment.phase || assignment.phase === 'Unknown') missingFields.push('Phase');
-    if (!assignment.role_type || assignment.role_type === 'Unknown') missingFields.push('Role Type');
-
-    return {
-      assignment,
-      missingFields
-    };
-  }).filter(item => item.missingFields.length > 0);
-
-  const totalMissingDataCount = assignmentsWithMissingData.length;
+  // Use workload data from live calculation
+  const totalAssignments = workloadData?.totalActive || 0;
+  const totalMissingDataCount = workloadData?.incompleteCount || 0;
   const completionRate = totalAssignments > 0 ? ((totalAssignments - totalMissingDataCount) / totalAssignments) * 100 : 100;
 
-  // Debug: Log missing data for this member
-  console.log('StaffDetailModal - active assignments:', totalAssignments);
-  console.log('StaffDetailModal - assignments with missing data:', totalMissingDataCount);
-  if (totalMissingDataCount > 0) {
-    console.log('StaffDetailModal - missing data details:', assignmentsWithMissingData.map(a => ({
-      name: a.assignment.assignment_name,
-      missing: a.missingFields
-    })));
-  }
+  // Get incomplete initiatives for detail display
+  const assignmentsWithMissingData = (workloadData?.incompleteInitiatives || []).map(initiative => {
+    const missingFields: string[] = [];
+    const isGovernance = initiative.type === 'Governance';
 
-  // Use dashboard_metrics for accurate capacity data (matches Workload tab)
-  const totalHours = member.dashboard_metrics?.active_hours_per_week || 0;
-  const capacityPercentage = member.dashboard_metrics?.capacity_utilization
-    ? Math.round(member.dashboard_metrics.capacity_utilization * 100)
-    : 0;
+    if (!initiative.role || initiative.role === 'Unknown') missingFields.push('Role');
+    if (!initiative.work_effort || initiative.work_effort === 'Unknown') missingFields.push('Work Effort');
+    if (!initiative.type || initiative.type === 'Unknown') missingFields.push('Work Type');
+    if (!isGovernance && (!initiative.phase || initiative.phase === 'Unknown')) missingFields.push('Phase');
+
+    return {
+      assignment: initiative,
+      missingFields
+    };
+  });
+
+  // Debug: Log missing data for this member
+  console.log('StaffDetailModal - active initiatives:', totalAssignments);
+  console.log('StaffDetailModal - initiatives with missing data:', totalMissingDataCount);
+
+  // Use live calculated capacity data
+  const plannedHours = workloadData?.estimatedHours || 0;
+  const actualHours = workloadData?.actualHours || 0;
+  const variance = actualHours - plannedHours;
+  const capacityPercentage = Math.round((workloadData?.capacityUtilization || 0) * 100);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -196,7 +193,15 @@ export default function StaffDetailModal({ member, onClose }: StaffDetailModalPr
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4" />
-                <span>{totalHours.toFixed(1)}h/wk</span>
+                <span>Planned: {plannedHours.toFixed(1)}h/wk</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Target className="w-4 h-4" />
+                <span>Actual: {actualHours.toFixed(1)}h</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4" />
+                <span>Variance: {variance > 0 ? '+' : ''}{variance.toFixed(1)}h</span>
               </div>
               <div className="flex items-center gap-2">
                 <Target className="w-4 h-4" />
@@ -222,10 +227,9 @@ export default function StaffDetailModal({ member, onClose }: StaffDetailModalPr
             <div className="flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="font-semibold text-red-900">Incomplete Assignment Data</p>
+                <p className="font-semibold text-red-900">Incomplete Initiative Data</p>
                 <p className="text-red-800 text-sm">
-                  {totalMissingDataCount} of {totalAssignments} assignments have missing data fields.
-                  {missingEffort > 0 && ' Work effort data is required for accurate capacity calculation.'}
+                  {totalMissingDataCount} of {totalAssignments} initiatives have missing data fields (role, work effort, type, or phase). These initiatives cannot contribute to capacity calculation.
                 </p>
                 <button
                   onClick={() => setShowMissingDataDetails(!showMissingDataDetails)}
@@ -239,7 +243,7 @@ export default function StaffDetailModal({ member, onClose }: StaffDetailModalPr
                   ) : (
                     <>
                       <ChevronDown className="w-4 h-4" />
-                      Show Missing Assignments ({totalMissingDataCount})
+                      Show Missing Initiatives ({totalMissingDataCount})
                     </>
                   )}
                 </button>
@@ -248,7 +252,7 @@ export default function StaffDetailModal({ member, onClose }: StaffDetailModalPr
                     <table className="w-full text-sm">
                       <thead className="bg-red-100 sticky top-0">
                         <tr>
-                          <th className="text-left p-2 font-semibold text-red-900">Assignment Name</th>
+                          <th className="text-left p-2 font-semibold text-red-900">Initiative Name</th>
                           <th className="text-left p-2 font-semibold text-red-900">Work Type</th>
                           <th className="text-left p-2 font-semibold text-red-900">Status</th>
                           <th className="text-left p-2 font-semibold text-red-900">Missing Fields</th>
@@ -258,10 +262,10 @@ export default function StaffDetailModal({ member, onClose }: StaffDetailModalPr
                         {assignmentsWithMissingData.map((item, idx) => (
                           <tr key={item.assignment.id} className={idx % 2 === 0 ? 'bg-red-50' : 'bg-white'}>
                             <td className="p-2 text-gray-900">
-                              {item.assignment.assignment_name || 'Unnamed Assignment'}
+                              {item.assignment.initiative_name || 'Unnamed Initiative'}
                             </td>
                             <td className="p-2 text-gray-700">
-                              {item.assignment.work_type || 'N/A'}
+                              {item.assignment.type || 'N/A'}
                             </td>
                             <td className="p-2">
                               <span
@@ -451,20 +455,20 @@ export default function StaffDetailModal({ member, onClose }: StaffDetailModalPr
                 {/* Metrics Grid */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-blue-50 rounded-lg p-4">
-                    <div className="text-3xl font-bold text-blue-900">{totalHours.toFixed(1)}h</div>
-                    <div className="text-sm text-blue-700">Active Hours/Week</div>
+                    <div className="text-3xl font-bold text-blue-900">{plannedHours.toFixed(1)}h</div>
+                    <div className="text-sm text-blue-700">Planned Hours/Week</div>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-4">
                     <div className="text-3xl font-bold text-gray-900">{member.available_hours || 40}h</div>
                     <div className="text-sm text-gray-700">Available Hours</div>
                   </div>
                   <div className="bg-green-50 rounded-lg p-4">
-                    <div className="text-3xl font-bold text-green-900">{hasEffort}</div>
-                    <div className="text-sm text-green-700">With Work Effort</div>
+                    <div className="text-3xl font-bold text-green-900">{workloadData?.completeCount || 0}</div>
+                    <div className="text-sm text-green-700">Complete Initiatives</div>
                   </div>
                   <div className="bg-amber-50 rounded-lg p-4">
-                    <div className="text-3xl font-bold text-amber-900">{missingEffort}</div>
-                    <div className="text-sm text-amber-700">Missing Effort Data</div>
+                    <div className="text-3xl font-bold text-amber-900">{workloadData?.incompleteCount || 0}</div>
+                    <div className="text-sm text-amber-700">Incomplete Initiatives</div>
                   </div>
                 </div>
 

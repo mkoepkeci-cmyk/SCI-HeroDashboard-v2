@@ -15,6 +15,7 @@
  */
 
 import { supabase, InitiativeWithDetails, EffortLog } from './supabase';
+import { getWeekStartDate } from './effortUtils';
 
 // ============================================================================
 // Configuration Types
@@ -226,21 +227,16 @@ export function detectMissingData(initiative: InitiativeWithDetails): {
   message: string;
   canCalculate: boolean;
 } {
-  // Governance is exempt from work_effort requirement
-  if (initiative.type === 'Governance') {
-    if (!initiative.direct_hours_per_week) {
-      return {
-        status: 'missing_size',
-        message: '⚠️ Missing Direct Hours',
-        canCalculate: false,
-      };
-    }
+  // Governance can use EITHER direct hours OR formula
+  // If direct hours are set, use them (preferred for ongoing governance work)
+  if (initiative.type === 'Governance' && initiative.direct_hours_per_week) {
     return {
       status: 'complete',
-      message: '✓ Complete',
+      message: '✓ Complete (Direct Hours)',
       canCalculate: true,
     };
   }
+  // If no direct_hours for Governance, fall through to use formula calculation
 
   // Check for baseline data (role + size + type)
   const hasRole = !!initiative.role;
@@ -280,7 +276,8 @@ export function detectMissingData(initiative: InitiativeWithDetails): {
     };
   }
 
-  if (!initiative.phase) {
+  // Phase not required for Governance (ongoing work, not a project)
+  if (!initiative.phase && initiative.type !== 'Governance') {
     return {
       status: 'missing_phase',
       message: '⚠️ Missing Phase',
@@ -512,6 +509,136 @@ export function formatCapacityStatus(
 // ============================================================================
 // Dashboard Metrics Recalculation
 // ============================================================================
+
+/**
+ * Get comprehensive workload data for a team member
+ * This is the SINGLE SOURCE OF TRUTH for all capacity calculations
+ *
+ * @param teamMemberId - UUID of team member (optional if teamMemberName provided)
+ * @param teamMemberName - Name of team member (optional if teamMemberId provided)
+ * @returns Complete workload data including initiatives, capacity, and data quality
+ */
+export async function getTeamMemberWorkloadData(
+  teamMemberId: string | null,
+  teamMemberName: string | null,
+  weekStartDate?: string // Optional: specific week to get actual hours for (defaults to current week)
+): Promise<{
+  activeInitiatives: InitiativeWithDetails[];
+  totalActive: number;
+  incompleteCount: number;
+  incompleteInitiatives: InitiativeWithDetails[];
+  completeCount: number;
+  estimatedHours: number; // Planned capacity (weighted formula)
+  actualHours: number; // Actual hours logged for the week
+  capacityUtilization: number;
+  capacityStatus: CapacityStatus;
+  dataQualityWarnings: DataQualityWarnings;
+}> {
+  // Fetch initiatives from database
+  let query = supabase.from('initiatives').select('*');
+
+  if (teamMemberName) {
+    query = query.eq('owner_name', teamMemberName);
+  } else if (teamMemberId) {
+    query = query.eq('team_member_id', teamMemberId);
+  } else {
+    throw new Error('Either teamMemberId or teamMemberName must be provided');
+  }
+
+  const { data: allInitiatives, error } = await query;
+  if (error) throw error;
+
+  // Filter to active statuses only
+  const activeStatuses = ['Active', 'Planning', 'Scaling', 'Not Started', 'In Progress'];
+  const activeInitiatives = (allInitiatives || []).filter(i => activeStatuses.includes(i.status || ''));
+
+  // Load calculator config
+  const config = await loadCalculatorConfig();
+
+  // Separate complete vs incomplete and calculate capacity
+  const completeInitiatives: InitiativeWithDetails[] = [];
+  const incompleteInitiatives: InitiativeWithDetails[] = [];
+  let estimatedHours = 0;
+
+  const dataQualityWarnings: DataQualityWarnings = {
+    missingRole: 0,
+    missingSize: 0,
+    missingWorkType: 0,
+    missingPhase: 0,
+    needsBaseline: 0,
+  };
+
+  for (const init of activeInitiatives) {
+    // Check if has required fields
+    const hasRole = init.role && init.role !== 'Unknown';
+    const hasEffort = init.work_effort && init.work_effort !== 'Unknown';
+    const hasType = init.type && init.type !== 'Unknown';
+    const hasPhase = init.phase && init.phase !== 'Unknown';
+    const isGovernance = init.type === 'Governance';
+
+    // Count missing data
+    if (!hasRole) dataQualityWarnings.missingRole++;
+    if (!hasEffort) dataQualityWarnings.missingSize++;
+    if (!hasType) dataQualityWarnings.missingWorkType++;
+    if (!hasPhase && !isGovernance) dataQualityWarnings.missingPhase++;
+
+    // Check if has all baseline data needed for calculation
+    // Governance doesn't require phase
+    if (!hasRole || !hasEffort || !hasType || (!hasPhase && !isGovernance)) {
+      // Check if missing ALL baseline fields
+      if (!hasRole && !hasEffort && !hasType) {
+        dataQualityWarnings.needsBaseline++;
+      }
+      console.log(`[workloadCalculator] SKIPPING ${init.initiative_name}: role=${init.role}, effort=${init.work_effort}, type=${init.type}, phase=${init.phase}`);
+      incompleteInitiatives.push(init as InitiativeWithDetails);
+      continue;
+    }
+
+    // Calculate hours using formula
+    const calculated = calculateEstimatedHours(init as InitiativeWithDetails, config);
+    console.log(`[workloadCalculator] COUNTING ${init.initiative_name}: ${calculated.hours.toFixed(2)} hrs`);
+    estimatedHours += calculated.hours;
+    completeInitiatives.push(init as InitiativeWithDetails);
+  }
+
+  console.log(`[workloadCalculator] TOTAL for ${teamMemberName}: ${estimatedHours.toFixed(2)} hrs from ${completeInitiatives.length} initiatives (skipped ${incompleteInitiatives.length})`);
+
+
+  const capacityUtilization = estimatedHours / 40;
+  const capacityStatus = determineCapacityStatus(capacityUtilization, config);
+
+  // Fetch actual hours from effort_logs for the specified week
+  let actualHours = 0;
+  if (teamMemberId) {
+    // Determine which week to query (default to current week)
+    const targetWeek = weekStartDate || getWeekStartDate();
+
+    const { data: effortLogs, error: effortError } = await supabase
+      .from('effort_logs')
+      .select('hours_spent')
+      .eq('team_member_id', teamMemberId)
+      .eq('week_start_date', targetWeek);
+
+    if (effortError) {
+      console.error('Error fetching effort logs:', effortError);
+    } else {
+      actualHours = (effortLogs || []).reduce((sum, log) => sum + (log.hours_spent || 0), 0);
+    }
+  }
+
+  return {
+    activeInitiatives: activeInitiatives as InitiativeWithDetails[],
+    totalActive: activeInitiatives.length,
+    incompleteCount: incompleteInitiatives.length,
+    incompleteInitiatives,
+    completeCount: completeInitiatives.length,
+    estimatedHours,
+    actualHours,
+    capacityUtilization,
+    capacityStatus,
+    dataQualityWarnings,
+  };
+}
 
 /**
  * Recalculate and update dashboard_metrics for a team member
