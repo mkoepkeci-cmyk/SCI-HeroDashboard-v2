@@ -62,8 +62,7 @@ export function TeamCapacityCard({
       {/* Header with Avatar and Name */}
       <div className="flex items-center gap-2 mb-3">
         <div
-          className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm"
-          style={{ backgroundColor: plannedColor }}
+          className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm bg-[#9B2F6A]"
         >
           {initials}
         </div>

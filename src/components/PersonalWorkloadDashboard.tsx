@@ -189,7 +189,7 @@ export default function PersonalWorkloadDashboard({
               }}
               className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              {!teamMember && <option value="">Select a team member...</option>}
+              <option value="">Select Team Member</option>
               {allTeamMembers.map(member => (
                 <option key={member.id} value={member.id}>
                   {member.name}
@@ -198,22 +198,24 @@ export default function PersonalWorkloadDashboard({
             </select>
           </div>
 
-          {/* Week Selector */}
-          <div className="flex items-center gap-3">
-            <Calendar className="w-5 h-5 text-gray-400 flex-shrink-0" />
-            <label className="text-sm font-medium text-gray-700 flex-shrink-0">Week:</label>
-            <select
-              value={selectedWeek}
-              onChange={(e) => setSelectedWeek(e.target.value)}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              {recentWeeks.map(week => (
-                <option key={week} value={week}>
-                  {formatWeekRange(week)} {week === getWeekStartDate() && '(Current)'}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Week Selector - Only shown in Summary view */}
+          {view === 'summary' && (
+            <div className="flex items-center gap-3">
+              <Calendar className="w-5 h-5 text-gray-400 flex-shrink-0" />
+              <label className="text-sm font-medium text-gray-700 flex-shrink-0">Week:</label>
+              <select
+                value={selectedWeek}
+                onChange={(e) => setSelectedWeek(e.target.value)}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                {recentWeeks.map(week => (
+                  <option key={week} value={week}>
+                    {formatWeekRange(week)} {week === getWeekStartDate() && '(Current)'}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* View Toggle */}
           <div className="flex items-center gap-2">
@@ -256,7 +258,13 @@ export default function PersonalWorkloadDashboard({
       )}
 
       {/* Conditional Content Based on View */}
-      {view === 'entry' ? (
+      {!teamMember ? (
+        <div className="bg-white rounded-lg border p-8 text-center">
+          <User className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">No Team Member Selected</h3>
+          <p className="text-gray-500">Please select a team member from the dropdown above to view their workload.</p>
+        </div>
+      ) : view === 'entry' ? (
         <>
           <BulkEffortEntry
             teamMemberId={teamMember?.id || null}
