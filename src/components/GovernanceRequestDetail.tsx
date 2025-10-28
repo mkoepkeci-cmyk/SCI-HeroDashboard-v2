@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Save, FileText, DollarSign, Users, Clock, CheckCircle2, AlertCircle, Loader2, MessageSquare, Send, ArrowRight, Link as LinkIcon, Trash2 } from 'lucide-react';
+import { X, Save, FileText, DollarSign, Users, Clock, CheckCircle2, AlertCircle, Loader2, MessageSquare, Send, ArrowRight, Link as LinkIcon, Trash2, TrendingUp, BarChart3 } from 'lucide-react';
 import { supabase, GovernanceRequest, GovernanceComment, TeamMember, Initiative } from '../lib/supabase';
 import { getStatusConfig, formatDate, formatDateTime, formatCurrency, getAvailableStatuses, DIVISION_REGIONS } from '../lib/governanceUtils';
 import { convertGovernanceRequestToInitiative, approveGovernanceRequest, createInitiativeForAssignedRequest, populateInitiativeDetails } from '../lib/governanceConversion';
@@ -36,6 +36,11 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
       fetchLinkedInitiative();
     }
   }, [request.id]);
+
+  // Sync formData with request prop when modal reopens
+  useEffect(() => {
+    setFormData(request);
+  }, [request]);
 
   const fetchComments = async () => {
     const { data } = await supabase
@@ -280,7 +285,8 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
   };
 
   const statusConfig = getStatusConfig(formData.status);
-  const canEdit = formData.status === 'Draft' || formData.status === 'Needs Refinement';
+  // Allow editing consultation requests at any status
+  const canEdit = true;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start justify-center p-4 overflow-y-auto z-50">
@@ -612,36 +618,172 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
                 <p className="text-gray-900 whitespace-pre-wrap">{formData.desired_outcomes}</p>
               )}
             </div>
+
+            {/* Value Statements (inline in Basic Information) */}
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Patient Care Value</label>
+              {editing ? (
+                <textarea
+                  rows={3}
+                  value={formData.patient_care_value}
+                  onChange={(e) => setFormData({ ...formData, patient_care_value: e.target.value })}
+                  className="w-full border border-gray-300 rounded p-2"
+                />
+              ) : (
+                <p className="text-gray-900 whitespace-pre-wrap">{formData.patient_care_value || 'Not specified'}</p>
+              )}
+            </div>
+
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Compliance/Regulatory Value</label>
+              {editing ? (
+                <textarea
+                  rows={3}
+                  value={formData.compliance_regulatory_value}
+                  onChange={(e) => setFormData({ ...formData, compliance_regulatory_value: e.target.value })}
+                  className="w-full border border-gray-300 rounded p-2"
+                />
+              ) : (
+                <p className="text-gray-900 whitespace-pre-wrap">{formData.compliance_regulatory_value || 'Not specified'}</p>
+              )}
+            </div>
+
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Financial Impact</label>
+              {editing ? (
+                <input
+                  type="number"
+                  step="any"
+                  value={formData.financial_impact}
+                  onChange={(e) => setFormData({ ...formData, financial_impact: parseFloat(e.target.value) || 0 })}
+                  className="w-full border border-gray-300 rounded p-2"
+                />
+              ) : (
+                <p className="text-gray-900 font-semibold">{formatCurrency(formData.financial_impact)}</p>
+              )}
+            </div>
           </div>
 
-          {/* Value Proposition */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h4 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                Patient Care Value
-              </h4>
-              <p className="text-sm text-blue-800">{formData.patient_care_value || 'Not specified'}</p>
-            </div>
+          {/* Impact Metrics */}
+          {formData.impact_metrics && Array.isArray(formData.impact_metrics) && formData.impact_metrics.length > 0 && (
+            <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
+              <h3 className="font-semibold text-blue-900 mb-4 flex items-center gap-2">
+                <BarChart3 className="w-5 h-5" />
+                Impact Metrics
+              </h3>
+              <div className="space-y-4">
+                {formData.impact_metrics.map((metric: any, index: number) => (
+                  <div key={index} className="bg-white border border-blue-200 rounded-lg p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div className="col-span-full">
+                        <h4 className="font-semibold text-gray-900 mb-1">{metric.metric_name || 'Unnamed Metric'}</h4>
+                        <div className="flex gap-2 text-xs">
+                          {metric.metric_type && (
+                            <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded">{metric.metric_type}</span>
+                          )}
+                          {metric.unit && (
+                            <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded">Unit: {metric.unit}</span>
+                          )}
+                        </div>
+                      </div>
 
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-              <h4 className="font-semibold text-orange-900 mb-2 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4" />
-                Compliance/Regulatory
-              </h4>
-              <p className="text-sm text-orange-800">{formData.compliance_regulatory_value || 'Not specified'}</p>
-            </div>
+                      {/* Baseline */}
+                      {metric.baseline_value && (
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Baseline</label>
+                          <p className="text-sm font-semibold text-gray-900">{metric.baseline_value}</p>
+                          {metric.baseline_date && (
+                            <p className="text-xs text-gray-500">{formatDate(metric.baseline_date)}</p>
+                          )}
+                        </div>
+                      )}
 
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <h4 className="font-semibold text-green-900 mb-2 flex items-center gap-2">
-                <DollarSign className="w-4 h-4" />
-                Financial Impact
-              </h4>
-              <p className="text-xl font-bold text-green-900">
-                {formatCurrency(formData.financial_impact)}
-              </p>
+                      {/* Current */}
+                      {metric.current_value && (
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Current</label>
+                          <p className="text-sm font-semibold text-gray-900">{metric.current_value}</p>
+                          {metric.measurement_date && (
+                            <p className="text-xs text-gray-500">{formatDate(metric.measurement_date)}</p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Target */}
+                      {metric.target_value && (
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Target</label>
+                          <p className="text-sm font-semibold text-gray-900">{metric.target_value}</p>
+                        </div>
+                      )}
+
+                      {/* Improvement */}
+                      {metric.improvement && (
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Improvement</label>
+                          <p className="text-sm font-semibold text-green-700">{metric.improvement}</p>
+                        </div>
+                      )}
+
+                      {/* Measurement Method */}
+                      {metric.measurement_method && (
+                        <div className="col-span-full">
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Measurement Method</label>
+                          <p className="text-sm text-gray-700">{metric.measurement_method}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Detailed Financial Projections */}
+          {(formData.projected_annual_revenue || formData.calculation_methodology || formData.projection_basis || (formData.key_assumptions && formData.key_assumptions.length > 0)) && (
+            <div className="border border-green-200 rounded-lg p-4 bg-green-50">
+              <h3 className="font-semibold text-green-900 mb-4 flex items-center gap-2">
+                <TrendingUp className="w-5 h-5" />
+                Detailed Financial Projections
+              </h3>
+              <div className="space-y-4">
+                {/* Projected Revenue */}
+                {formData.projected_annual_revenue && (
+                  <div className="bg-white border border-green-200 rounded-lg p-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Projected Annual Revenue/Savings</label>
+                    <p className="text-2xl font-bold text-green-900">
+                      {formatCurrency(formData.projected_annual_revenue)}
+                    </p>
+                    {formData.projection_basis && (
+                      <p className="text-sm text-gray-600 mt-1">
+                        <span className="font-medium">Basis:</span> {formData.projection_basis}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Calculation Methodology */}
+                {formData.calculation_methodology && (
+                  <div className="bg-white border border-green-200 rounded-lg p-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Calculation Methodology</label>
+                    <p className="text-sm text-gray-900 whitespace-pre-wrap">{formData.calculation_methodology}</p>
+                  </div>
+                )}
+
+                {/* Key Assumptions */}
+                {formData.key_assumptions && Array.isArray(formData.key_assumptions) && formData.key_assumptions.length > 0 && (
+                  <div className="bg-white border border-green-200 rounded-lg p-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Key Assumptions</label>
+                    <ul className="list-disc list-inside space-y-1">
+                      {formData.key_assumptions.map((assumption: string, index: number) => (
+                        <li key={index} className="text-sm text-gray-900">{assumption}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Leadership & Timeline */}
           <div className="border border-gray-200 rounded-lg p-4">

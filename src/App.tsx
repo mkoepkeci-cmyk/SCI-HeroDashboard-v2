@@ -101,6 +101,12 @@ function App() {
 
       if (membersError) throw membersError;
 
+      // Debug: Check if specialty data is being fetched
+      console.log('[App] Fetched team_members count:', members?.length);
+      if (members && members.length > 0) {
+        console.log('[App] Sample member specialty:', members[0].name, '→', members[0].specialty);
+      }
+
       const { data: managersData, error: managersError } = await supabase
         .from('managers')
         .select('*')
@@ -277,6 +283,12 @@ function App() {
       });
 
       setTeamMembers(membersWithDetails);
+
+      // Debug: Check if specialty survived the transformation
+      const ashleyWithDetails = membersWithDetails.find(m => m.name === 'Ashley Daily');
+      if (ashleyWithDetails) {
+        console.log('[App] Ashley in membersWithDetails - specialty:', ashleyWithDetails.specialty);
+      }
 
       // Set Marty as default current user for demo (in production, use actual auth)
       const marty = membersWithDetails.find(m => m.name === 'Marty');
@@ -1431,6 +1443,7 @@ function App() {
             )}
             {selectedGovernanceRequest && (
               <GovernanceRequestDetail
+                key={selectedGovernanceRequest.id}
                 request={selectedGovernanceRequest}
                 onClose={() => setSelectedGovernanceRequest(null)}
                 onUpdate={() => {
