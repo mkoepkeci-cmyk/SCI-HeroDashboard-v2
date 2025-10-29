@@ -92,6 +92,13 @@ export interface CompletionStatus {
   story: boolean;
 }
 
+export interface JournalEntry {
+  timestamp: string;
+  author: string;
+  author_id?: string;
+  entry: string;
+}
+
 export interface Initiative {
   id: string;
   owner_name: string;
@@ -116,6 +123,10 @@ export interface Initiative {
   problem_statement?: string;  // System-level problem from intake form
   desired_outcomes?: string;  // Expected outcomes from intake form
   governance_metadata?: Record<string, any>;  // Governance-specific data (JSONB)
+  proposed_solution?: string;  // Proposed solution for governance review (Tab 3)
+  voting_statement?: string;  // Voting statement for governance committee (Tab 3)
+  ehr_areas_impacted?: string[];  // EHR areas/modules impacted (Tab 3)
+  journal_log?: JournalEntry[];  // Timestamped journal entries (Tab 3)
   direct_hours_per_week?: number; // For Governance work type: actual hours per week (bypasses formula)
   is_draft: boolean;
   is_active?: boolean;
