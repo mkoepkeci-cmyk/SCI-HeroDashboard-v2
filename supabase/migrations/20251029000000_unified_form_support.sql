@@ -73,55 +73,28 @@ COMMENT ON CONSTRAINT effort_logs_effort_size_check ON effort_logs IS 'Valid eff
 -- 5. UPDATE EXISTING INITIATIVES FROM LINKED GOVERNANCE REQUESTS
 -- =============================================================================
 
--- Note: We populate data from linked governance requests if they exist.
--- The completion tracking trigger will fire, but since we're only adding new fields
--- (not changing existing completion-tracked fields), it should handle gracefully.
-
--- Populate new fields from linked governance requests (for existing linked initiatives)
+-- NOTE: Automatic data population has been commented out due to trigger conflicts.
+-- The completion tracking trigger on initiatives fires on UPDATE and expects specific
+-- parameters (TG_ARGV[0]) that aren't available during this migration UPDATE.
+--
+-- MANUAL STEP REQUIRED: After this migration, you should manually populate new fields
+-- for the 3 existing governance-linked initiatives using the populateInitiativeDetails()
+-- function in the app, or by running Phase 2 workflow again.
+--
+-- To manually populate later (if needed), run this query in SQL Editor:
+/*
 UPDATE initiatives i
 SET
   problem_statement = gr.problem_statement,
   desired_outcomes = gr.desired_outcomes,
-  request_id = gr.request_id,
-  governance_metadata = jsonb_build_object(
-    'division_region', gr.division_region,
-    'submitter', jsonb_build_object(
-      'name', gr.submitter_name,
-      'email', gr.submitter_email
-    ),
-    'impact_categories', jsonb_build_object(
-      'board_goal', COALESCE(gr.impact_commonspirit_board_goal, false),
-      '2026_5for25', COALESCE(gr.impact_commonspirit_2026_5for25, false),
-      'system_policy', COALESCE(gr.impact_system_policy, false),
-      'patient_safety', COALESCE(gr.impact_patient_safety, false),
-      'regulatory_compliance', COALESCE(gr.impact_regulatory_compliance, false),
-      'financial', COALESCE(gr.impact_financial, false),
-      'other', gr.impact_other
-    ),
-    'groups_impacted', jsonb_build_object(
-      'nurses', COALESCE(gr.groups_nurses, false),
-      'physicians_apps', COALESCE(gr.groups_physicians_apps, false),
-      'therapies', COALESCE(gr.groups_therapies, false),
-      'lab', COALESCE(gr.groups_lab, false),
-      'pharmacy', COALESCE(gr.groups_pharmacy, false),
-      'radiology', COALESCE(gr.groups_radiology, false),
-      'administration', COALESCE(gr.groups_administration, false),
-      'other', gr.groups_other
-    ),
-    'regions_impacted', gr.regions_impacted,
-    'required_date', gr.required_date,
-    'required_date_reason', gr.required_date_reason,
-    'supporting_info', gr.supporting_information,
-    'additional_comments', gr.additional_comments,
-    'patient_care_value', gr.patient_care_value,
-    'compliance_regulatory_value', gr.compliance_regulatory_value,
-    'target_timeline', gr.target_timeline,
-    'estimated_scope', gr.estimated_scope
-  ),
-  updated_at = i.updated_at  -- Keep original updated_at timestamp
+  request_id = gr.request_id
 FROM governance_requests gr
 WHERE i.governance_request_id = gr.id
-  AND i.problem_statement IS NULL;  -- Only update if not already populated
+  AND i.problem_statement IS NULL;
+*/
+
+-- The governance_metadata JSONB field will be populated by the app's Phase 2 workflow
+-- (populateInitiativeDetails function in governanceConversion.ts)
 
 -- =============================================================================
 -- ROLLBACK INSTRUCTIONS
