@@ -4,6 +4,163 @@
 
 ---
 
+## 📋 Purpose & Strategic Context
+
+### Why This Audit?
+
+The SCI Hero Dashboard is currently in a **critical transition phase** - moving from proof-of-concept with test data to production deployment with live, ongoing operational data. This audit was commissioned to evaluate the current database structure **before** committing to the existing schema with real data.
+
+**Current State:**
+- 425 test initiatives populated from historical spreadsheet
+- 16 team members with sample assignments
+- Governance portal recently implemented (3 test requests)
+- Effort tracking system active (55 test logs)
+
+**The Problem:**
+During initial development, the database structure evolved organically through rapid prototyping. Tables were added to solve immediate needs without holistic architectural planning. Now, before loading real data that will need to be maintained for years, we must evaluate whether the current structure is **sustainable, efficient, and maintainable** for production use.
+
+---
+
+### Strategic Goals
+
+#### 1. **Eliminate Technical Debt Before Production**
+Once real data is loaded, restructuring the database becomes exponentially more difficult and risky. This is the optimal time to identify and fix structural issues.
+
+#### 2. **Reduce Maintenance Burden**
+The current structure requires manual synchronization of calculated data across multiple tables. In production, this creates:
+- Data consistency risks
+- Performance bottlenecks
+- Complex maintenance code
+- Higher bug probability
+
+#### 3. **Optimize for Long-Term Scalability**
+The dashboard will track initiatives for years, accumulating thousands of records. The structure must:
+- Support efficient queries at scale
+- Minimize storage overhead
+- Enable easy feature additions
+- Reduce cognitive load for future developers
+
+#### 4. **Establish Single Source of Truth**
+Multiple tables currently store duplicate or derived data. Production systems require:
+- Clear data lineage
+- No ambiguity about authoritative values
+- Simplified backup/recovery
+- Easier data auditing
+
+---
+
+### What This Audit Provides
+
+**Comprehensive Analysis:**
+- Complete inventory of all 15 tables (324 columns, 1,422 rows)
+- Column-by-column evaluation of necessity and redundancy
+- Usage statistics (% of records populated)
+- Relationship mapping between tables
+
+**Actionable Recommendations:**
+- Specific tables to delete (4 redundant tables = 526 rows)
+- Normalization strategies for bloated tables (governance_requests: 66 → 30 columns)
+- Migration plan with effort estimates (24-40 hours)
+- Risk assessment for each change (Low/Medium/High)
+
+**Optimization Roadmap:**
+- Priority 1: Quick wins (delete redundant tables)
+- Priority 2: Structural improvements (normalize governance)
+- Priority 3: Performance enhancements (add indexes, views)
+- Priority 4: Optional optimizations (sparse table consolidation)
+
+---
+
+### Success Criteria
+
+**After implementing these recommendations:**
+- ✅ 37% reduction in redundant data (526 rows eliminated)
+- ✅ 35% reduction in total columns (113 columns eliminated)
+- ✅ Zero manual data synchronization required
+- ✅ Governance table complexity reduced from 66 → 30 columns
+- ✅ All calculated metrics derived from source tables (no stale data)
+- ✅ Database views provide cached query results when needed
+- ✅ Proper indexes on all frequently-queried columns
+- ✅ Clear migration path for future schema changes
+
+**Impact on Development:**
+- Simpler codebase (~1,000 lines of sync code removed)
+- Faster feature development (less complexity)
+- Fewer bugs (single source of truth)
+- Easier onboarding for new developers
+
+**Impact on Operations:**
+- Faster queries (optimized structure + indexes)
+- Lower storage costs (less redundancy)
+- Simpler backups (smaller database)
+- Easier data auditing (clear lineage)
+
+---
+
+### Audience & How to Use This Document
+
+**Target Readers:**
+- Technical leads making go/no-go decisions on refactoring
+- Database administrators planning migrations
+- Developers implementing schema changes
+- Product owners evaluating cost vs. benefit
+
+**Document Structure:**
+1. **Executive Summary** - High-level findings and recommendations
+2. **Critical Issues** - Four major structural problems identified
+3. **Table-by-Table Analysis** - Deep dive into each table
+4. **Optimization Recommendations** - Specific actions with priorities
+5. **Migration Strategy** - Step-by-step implementation plan
+6. **Performance Recommendations** - Indexes, views, caching strategies
+
+**Reading Guide:**
+- **Need quick decision?** → Read Executive Summary + Final Recommendation
+- **Planning migration?** → Read Migration Strategy section
+- **Implementing changes?** → Use Table-by-Table Analysis as reference
+- **Reviewing architecture?** → Read Critical Issues + Optimization Recommendations
+
+---
+
+### Timeline & Decision Points
+
+**Decision Point #1: Should we proceed with optimization?**
+- **If YES** → Continue to Phase 1 (delete redundant tables)
+- **If NO** → Document decision rationale, proceed with current structure, accept technical debt
+
+**Decision Point #2: How much optimization is appropriate?**
+- **Minimum viable** → Phase 1 only (delete 4 tables, 4-8 hours)
+- **Recommended** → Phase 1 + 2 (also migrate assignments, 6-12 hours)
+- **Comprehensive** → All 4 phases (full optimization, 24-40 hours)
+
+**Decision Point #3: When to implement?**
+- **Before production data load** ← STRONGLY RECOMMENDED
+- **During pilot phase** → Medium risk, manageable
+- **After full deployment** → High risk, requires extensive testing
+
+---
+
+### Constraints & Assumptions
+
+**Constraints:**
+- Must preserve all existing functionality
+- Cannot lose any test data during migration
+- Must maintain compatibility with current application code
+- Changes must be reversible (rollback plan required)
+
+**Assumptions:**
+- Test data patterns reflect future production data
+- Current sparse table usage (1-2% population) will remain similar
+- Performance requirements align with current dashboard response times
+- Team has access to Supabase SQL editor and migration tools
+
+**Out of Scope:**
+- Application-level caching strategies
+- Frontend performance optimization
+- API endpoint redesign
+- Authentication/authorization changes
+
+---
+
 ## Executive Summary
 
 **Total Tables**: 15
