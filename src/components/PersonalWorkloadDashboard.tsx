@@ -14,7 +14,7 @@ import {
 } from '../lib/effortUtils';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import BulkEffortEntry from './BulkEffortEntry';
-import { InitiativeSubmissionForm } from './InitiativeSubmissionForm';
+import { UnifiedWorkItemForm } from './UnifiedWorkItemForm';
 import { SCIRequestsCard } from './SCIRequestsCard';
 
 interface PersonalWorkloadDashboardProps {
@@ -451,45 +451,35 @@ export default function PersonalWorkloadDashboard({
 
       {/* Edit Initiative Modal */}
       {editingInitiative && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
-          <div className="min-h-screen flex items-start justify-center p-4 py-8">
-            <div className="max-w-6xl w-full">
-              <InitiativeSubmissionForm
-                editingInitiative={editingInitiative}
-                onClose={() => setEditingInitiative(null)}
-                onSuccess={async () => {
-                  // Refresh data BEFORE closing modal to ensure updates are visible
-                  if (onInitiativesRefresh) {
-                    await onInitiativesRefresh();
-                  }
-                  await loadEffortLogs(); // Refresh effort logs in case initiative details changed
-                  setEditingInitiative(null); // Close modal AFTER data refresh
-                }}
-              />
-            </div>
-          </div>
-        </div>
+        <UnifiedWorkItemForm
+          editingInitiative={editingInitiative}
+          onClose={() => setEditingInitiative(null)}
+          onSuccess={async () => {
+            // Refresh data BEFORE closing modal to ensure updates are visible
+            if (onInitiativesRefresh) {
+              await onInitiativesRefresh();
+            }
+            await loadEffortLogs(); // Refresh effort logs in case initiative details changed
+            setEditingInitiative(null); // Close modal AFTER data refresh
+          }}
+        />
       )}
 
       {/* Add Initiative Modal */}
       {showAddInitiative && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <InitiativeSubmissionForm
-              onClose={() => {
-                setShowAddInitiative(false);
-              }}
-              onSuccess={async () => {
-                // Refresh data BEFORE closing modal
-                if (onInitiativesRefresh) {
-                  await onInitiativesRefresh();
-                }
-                await loadEffortLogs();
-                setShowAddInitiative(false);
-              }}
-            />
-          </div>
-        </div>
+        <UnifiedWorkItemForm
+          onClose={() => {
+            setShowAddInitiative(false);
+          }}
+          onSuccess={async () => {
+            // Refresh data BEFORE closing modal
+            if (onInitiativesRefresh) {
+              await onInitiativesRefresh();
+            }
+            await loadEffortLogs();
+            setShowAddInitiative(false);
+          }}
+        />
       )}
     </div>
   );
