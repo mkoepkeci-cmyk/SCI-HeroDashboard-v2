@@ -112,6 +112,10 @@ export interface Initiative {
   governance_bodies?: string[];
   team_member_id?: string;
   governance_request_id?: string;  // Link back to governance request (if created from portal)
+  request_id?: string;  // Governance request ID (GOV-YYYY-XXX) for display
+  problem_statement?: string;  // System-level problem from intake form
+  desired_outcomes?: string;  // Expected outcomes from intake form
+  governance_metadata?: Record<string, any>;  // Governance-specific data (JSONB)
   direct_hours_per_week?: number; // For Governance work type: actual hours per week (bypasses formula)
   is_draft: boolean;
   is_active?: boolean;

@@ -502,7 +502,6 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
                     <option value="M">M - Medium (8 hrs/week)</option>
                     <option value="L">L - Large (13 hrs/week)</option>
                     <option value="XL">XL - Extra Large (18 hrs/week)</option>
-                    <option value="XXL">XXL - Double XL (25 hrs/week)</option>
                   </select>
                 </div>
 

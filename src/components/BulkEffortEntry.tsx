@@ -981,8 +981,8 @@ export default function BulkEffortEntry({
                                   })()}
                                   <span>{entry.initiative.initiative_name}</span>
                                 </div>
-                                {entry.initiative.service_line && (
-                                  <div className="text-xs text-gray-500">{entry.initiative.service_line}</div>
+                                {entry.initiative.request_id && (
+                                  <div className="text-xs text-gray-500 font-mono">{entry.initiative.request_id}</div>
                                 )}
                               </>
                             )}
