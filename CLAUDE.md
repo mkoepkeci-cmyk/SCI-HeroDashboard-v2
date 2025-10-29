@@ -223,26 +223,65 @@ Shows 6 productivity metrics in 2x3 grid:
 
 ### 2. SCI Requests (Governance Portal)
 
-**Purpose**: Intake and workflow management for new SCI consultation requests
+**Purpose**: Intake and workflow management for new SCI consultation requests with automatic initiative creation
 
-**Workflow:**
+**Status**: ✅ PRODUCTION - Phase 1/Phase 2 Workflow Active
+
+**Enhanced Workflow with Automatic Initiative Creation:**
 ```
 1. Requestor submits consultation request
    ↓ (status: Draft)
 2. Requestor finalizes submission
    ↓ (status: Ready for Review)
-3. SCI Lead reviews
-   ↓ (status: Needs Refinement OR Approved)
-4. If approved, convert to initiative
+3. SCI Lead assigns SCI
+   ↓ 🔄 PHASE 1 AUTO-RUNS: Creates minimal initiative for effort tracking
+   ↓ Initiative created with request_id link (GOV-YYYY-XXX)
+4. SCI updates to Ready for Governance
+   ↓ 🔄 PHASE 2 AUTO-RUNS: Populates full initiative details
+   ↓ Initiative becomes fully searchable with metrics, financials, stories
+5. Optional: Convert to standalone initiative
    ↓ (status: Converted to Initiative)
 ```
 
+**Phase 1: Minimal Initiative Creation**
+- **Trigger**: Status = "Ready for Review" + SCI assigned
+- **Function**: `createInitiativeForAssignedRequest()` in governanceConversion.ts
+- **Creates**:
+  - Initiative record linked to governance request
+  - Fields: request_id (GOV-YYYY-XXX), owner, type, status=Not Started
+  - Purpose: Enables immediate effort tracking in My Effort table
+  - Links: governance_request.linked_initiative_id ↔ initiative.governance_request_id
+
+**Phase 2: Full Initiative Population**
+- **Trigger**: Status = "Ready for Governance"
+- **Function**: `populateInitiativeDetails()` in governanceConversion.ts
+- **Populates**:
+  - Problem statement, desired outcomes, collaborators
+  - Financial projections (projected_annual_revenue, methodology)
+  - Initiative metrics (baseline, target values)
+  - Success story template (challenge, approach, outcome)
+  - Status changed to "In Progress"
+  - Purpose: Makes initiative fully searchable and reportable
+
+**Request ID Format**: GOV-YYYY-XXX (e.g., GOV-2025-001, GOV-2025-002)
+- Auto-generated sequentially per year
+- Displayed under initiative name in My Effort table
+- Used for routing and linking
+
 **Features:**
 - Comprehensive intake form (requestor info, business justification, expected outcomes)
-- SCI assignment workflow
+- SCI assignment workflow with Phase 1 auto-trigger
 - Impact estimation (users, revenue, time savings, timeline)
-- One-click conversion to formal initiative
-- Tracks conversion link between request and initiative
+- Automatic initiative creation for effort tracking
+- Full initiative population for governance readiness
+- Bidirectional linking between requests and initiatives
+- One-click conversion to standalone initiative (optional)
+
+**Components:**
+- `GovernancePortalView.tsx` - Main portal interface
+- `GovernanceRequestForm.tsx` - Comprehensive intake form (51KB)
+- `GovernanceRequestDetail.tsx` - Detail modal with Phase 1/2 triggers (39KB)
+- `SCIRequestsCard.tsx` - Shows assigned requests in SCI View
 
 ### 3. Browse Initiatives
 
@@ -270,14 +309,27 @@ Shows 6 productivity metrics in 2x3 grid:
 **Features:**
 
 #### Bulk Effort Entry Table
-- Table view showing all active/planning initiatives
+- Table view showing all active/planning initiatives grouped by work type
 - Inline editing: hours, effort size (XS-XXL), notes
 - **Skip checkbox**: Mark "no work this week" (saves 0 hours with note)
+- **"+ Add Initiative" button**: Opens InitiativeSubmissionForm to add new initiative
 - **Add Misc. Assignment**: Create ad-hoc General Support tasks on-the-fly
 - **Copy Last Week**: Auto-fill effort from previous week
 - **Reassign button**: Transfer initiative ownership to another SCI
 - **Delete button**: Remove initiative (soft delete, status → "Deleted")
 - **Batch save**: Save all modified entries at once
+
+**Work Type Display Order** (BulkEffortEntry.tsx line 446):
+1. Governance
+2. Policy/Guidelines
+3. System Project
+4. Market Project
+5. System Initiative
+6. Ticket
+7. General Support
+8. Epic Gold
+9. Epic Upgrades
+10. Uncategorized
 
 #### Effort Sizes
 - XS = 1.5 hours
@@ -324,6 +376,95 @@ Shows 6 productivity metrics in 2x3 grid:
 
 ---
 
+## Initiative Form Fields & Options
+
+**Form Location**: InitiativeSubmissionForm.tsx
+
+### Work Type Options
+**Purpose**: Categorizes initiatives for workload tracking and reporting
+
+**Available Values:**
+- Epic Gold
+- Governance
+- System Initiative
+- System Project
+- Epic Upgrades
+- General Support
+- Policy/Guidelines
+- Market Project
+- Ticket
+
+### Phase Options
+**Purpose**: Tracks project lifecycle stage for capacity planning
+
+**Available Values:**
+- Discovery/Define
+- Design
+- Build
+- Validate/Test
+- Deploy
+- Did we Deliver
+- Post Go Live Support
+- In Progress
+- Maintenance
+- Steady State
+- N/A
+
+### Work Effort (Estimated Weekly Hours)
+**Purpose**: Initial capacity estimate for planning
+
+**Available Values:**
+- XS - Less than 1 hr/wk
+- S - 1-2 hrs/wk
+- M - 2-5 hrs/wk (default)
+- L - 5-10 hrs/wk
+- XL - More than 10 hrs/wk
+
+**Mapped to Hours** (for capacity calculation - workloadCalculator.ts):
+- XS = 0.5 hours
+- S = 1.5 hours
+- M = 3.5 hours
+- L = 7.5 hours
+- XL = 15 hours
+
+### EHRs Impacted
+**Purpose**: Tracks which electronic health record systems are affected
+
+**Available Values:**
+- All
+- Epic
+- Cerner
+- Altera
+- Epic and Cerner
+
+### Service Line Options
+**Purpose**: Identifies clinical area or department
+
+**Available Values:**
+- Ambulatory
+- Pharmacy
+- Nursing
+- Pharmacy & Oncology
+- Cardiology
+- Emergency Department
+- Inpatient
+- Perioperative
+- Laboratory
+- Radiology
+- Revenue Cycle
+- Other
+
+### Role Options (Team Member Assignment)
+**Purpose**: Defines team member's involvement level
+
+**Available Values:**
+- Owner - Primary responsible party
+- Co-Owner - Shared primary responsibility
+- Secondary - Supporting role
+- Support - Minor involvement
+
+---
+
 ## Tech Stack
 
 ### Frontend
@@ -354,27 +495,43 @@ Shows 6 productivity metrics in 2x3 grid:
 │   ├── App.tsx                      # Main app with routing and data fetching
 │   ├── main.tsx                     # Entry point
 │   ├── index.css                    # Global styles
-│   ├── components/                  # React components
-│   │   ├── BulkEffortEntry.tsx     # Bulk effort logging table
-│   │   ├── CompletionIndicator.tsx # Progress indicators
-│   │   ├── EffortLogModal.tsx      # Individual effort entry
-│   │   ├── EffortSparkline.tsx     # Effort trend visualization
-│   │   ├── GovernanceRequestDetail.tsx     # SCI request detail view
-│   │   ├── GovernanceRequestForm.tsx       # SCI request intake form
-│   │   ├── GovernanceRequestsList.tsx      # All SCI requests
-│   │   ├── InitiativeCard.tsx              # Initiative display card
-│   │   ├── InitiativeSubmissionForm.tsx    # Create/edit initiatives
-│   │   ├── InitiativesTableView.tsx        # Categorized initiative table
-│   │   ├── InitiativesView.tsx             # Browse initiatives view
-│   │   ├── PersonalWorkloadDashboard.tsx   # Effort tracking dashboard
-│   │   ├── ReassignModal.tsx               # Initiative reassignment
-│   │   └── SCIRequestsCard.tsx             # Governance requests widget
-│   ├── lib/                         # Utilities and helpers
-│   │   ├── supabase.ts             # Supabase client setup
-│   │   ├── completionUtils.ts      # Completion calculations
-│   │   ├── effortUtils.ts          # Effort tracking utilities
-│   │   └── governanceConversion.ts # Convert requests to initiatives
-│   └── audit-page.tsx              # Data audit and stats page
+│   ├── components/                  # React components (28 files)
+│   │   ├── AdminTabContainer.tsx            # Admin panel container
+│   │   ├── BulkEffortEntry.tsx              # Bulk effort logging table
+│   │   ├── CapacityGauge.tsx                # Visual capacity indicator
+│   │   ├── CompletionIndicator.tsx          # Progress indicators
+│   │   ├── EffortLogModal.tsx               # Individual effort entry
+│   │   ├── EffortSparkline.tsx              # Effort trend visualization
+│   │   ├── GovernancePortalView.tsx         # Governance portal main view
+│   │   ├── GovernanceRequestDetail.tsx      # Request detail with Phase 1/2
+│   │   ├── GovernanceRequestForm.tsx        # Comprehensive intake form (51KB)
+│   │   ├── InitiativeCard.tsx               # Initiative display card
+│   │   ├── InitiativeModal.tsx              # Initiative detail modal
+│   │   ├── InitiativeSubmissionForm.tsx     # Create/edit initiatives
+│   │   ├── InitiativesTableView.tsx         # Categorized initiative table
+│   │   ├── InitiativesView.tsx              # Browse initiatives view
+│   │   ├── InsightsChat.tsx                 # AI-powered insights chat
+│   │   ├── LandingPage.tsx                  # Application landing page
+│   │   ├── LoadBalanceModal.tsx             # AI workload redistribution
+│   │   ├── ManagersPanel.tsx                # Manager dashboard panel
+│   │   ├── PersonalWorkloadDashboard.tsx    # Effort tracking dashboard
+│   │   ├── ReassignModal.tsx                # Initiative reassignment
+│   │   ├── SCIRequestsCard.tsx              # Assigned requests widget
+│   │   ├── StaffDetailModal.tsx             # Team member detail view
+│   │   ├── TeamCapacityCard.tsx             # Capacity card (200px)
+│   │   ├── TeamCapacityModal.tsx            # 6-metric productivity modal
+│   │   ├── TeamCapacityView.tsx             # Manager capacity dashboard
+│   │   ├── TeamManagementPanel.tsx          # Team administration
+│   │   ├── WorkloadCalculatorSettings.tsx   # Capacity weight configuration
+│   │   └── WorkloadDashboard.tsx            # Workload analytics view
+│   ├── lib/                                 # Utilities and helpers (7 files)
+│   │   ├── completionUtils.ts               # Completion calculations
+│   │   ├── effortUtils.ts                   # Effort tracking utilities
+│   │   ├── governanceConversion.ts          # Phase 1/2 workflow + conversion
+│   │   ├── governanceUtils.ts               # Governance helpers & validation
+│   │   ├── supabase.ts                      # Supabase client + type definitions
+│   │   ├── workloadCalculator.ts            # Capacity calculation engine
+│   │   └── workloadUtils.ts                 # Workload helper functions
 │
 ├── supabase/
 │   └── migrations/                 # Database schema migrations (12 files)
@@ -414,31 +571,46 @@ Shows 6 productivity metrics in 2x3 grid:
 - `key_highlights` - Notable achievements
 - `dashboard_metrics` - Pre-calculated team metrics
 
-#### Initiatives (Synced from Google Sheets)
+#### Initiatives (Synced from Google Sheets - 425 rows)
 - `initiatives` - Core initiative tracking
-  - Basic: owner_name, initiative_name, type, status
-  - Classification: **role**, **ehrs_impacted**, **service_line** (new fields)
-  - Timeline: start_date, end_date, phase, work_effort
-  - Collaboration: clinical_sponsor, key_collaborators, governance_bodies
-  - Meta: is_draft, completion_percentage, section_last_updated
-- `initiative_metrics` - Performance metrics (baseline, current, target)
-- `initiative_financial_impact` - Revenue, cost savings, calculations
-- `initiative_performance_data` - Users, adoption, outcomes
-- `initiative_projections` - Scaling scenarios and ROI
-- `initiative_stories` - Success stories (challenge, approach, outcome)
+  - **Basic**: owner_name, initiative_name, type, status, team_member_id
+  - **Classification**: role, ehrs_impacted, service_line
+  - **Timeline**: start_date, end_date, phase, work_effort, timeframe_display
+  - **Collaboration**: clinical_sponsor_name, clinical_sponsor_title, key_collaborators, governance_bodies
+  - **Governance Links**: governance_request_id (UUID), request_id (GOV-YYYY-XXX)
+  - **Meta**: is_draft, is_active, completion_percentage, completion_status, section_last_updated, desired_outcomes, direct_hours_per_week
+- `initiative_metrics` - Performance metrics (6 rows) - baseline, current, target values with improvement %
+- `initiative_financial_impact` - (3 rows) - Revenue, cost savings, calculation methodology
+- `initiative_performance_data` - (3 rows) - Users deployed, adoption rates, outcomes
+- `initiative_projections` - (2 rows) - Scaling scenarios and ROI calculations
+- `initiative_stories` - (354 rows) - Success stories (challenge, approach, outcome, collaboration)
 
-#### Governance Portal (User-Generated)
-- `governance_requests` - SCI consultation intake
-  - Requestor info, business justification, expected outcomes
-  - SCI assignment and review workflow
-  - Status progression (Draft → Ready for Review → Approved → Converted)
-  - Conversion tracking (links to created initiative)
+#### Governance Portal (User-Generated - 3 rows)
+- `governance_requests` - SCI consultation intake with Phase 1/2 workflow
+  - **Requestor**: submitter_name, submitter_email, division_region
+  - **Request**: title, problem_statement, desired_outcomes, system_clinical_leader
+  - **Impact**: patient_care_value, compliance_regulatory_value, financial_impact
+  - **Affected Groups**: groups_physicians_apps, groups_nurses, groups_pharmacy, groups_lab, groups_radiology, groups_therapies, groups_administration, groups_other
+  - **Impacts**: impact_patient_safety, impact_regulatory_compliance, impact_financial, impact_metrics, impact_system_policy, impact_commonspirit_board_goal, impact_commonspirit_2026_5for25, impact_other
+  - **Governance**: voting_bodies, voting_statement, impacted_ehr_areas, proposed_solution
+  - **SCI Assignment**: assigned_sci_id, assigned_sci_name, assigned_role, work_effort, work_type
+  - **Initiative Link**: linked_initiative_id (created by Phase 1)
+  - **Scoring**: benefit_score, effort_score, total_score, priority_rank
+  - **Status Workflow**: status, submitted_date, reviewed_date, approved_date, completed_date, converted_at, converted_by
+  - **Unique ID**: request_id (GOV-YYYY-XXX format, auto-generated)
 
-#### Effort Tracking (User-Generated)
+#### Effort Tracking (User-Generated - 55 rows)
 - `effort_logs` - Weekly time tracking per initiative
-  - One log per initiative per team member per week
-  - Fields: hours_spent, effort_size, notes
-  - Used for capacity management
+  - **Fields**: team_member_id, initiative_id, week_start_date, hours_spent, effort_size, note
+  - **Timestamps**: created_at, updated_at
+  - **Purpose**: Tracks actual time spent for capacity management
+
+#### Capacity Management (Configuration - 33 rows)
+- `workload_calculator_config` - Multiplier weights for capacity formula
+  - **Role weights**: Owner, Co-Owner, Secondary, Support
+  - **Type weights**: System Initiative, Governance, Project, Ticket, etc.
+  - **Phase weights**: Discovery, Design, Build, Test, Deliver, Steady State
+  - **Work effort base hours**: XS=0.5, S=1.5, M=3.5, L=7.5, XL=15
 
 See `/docs/database/SCHEMA_OVERVIEW.md` for complete schema documentation.
 
