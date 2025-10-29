@@ -73,8 +73,9 @@ COMMENT ON CONSTRAINT effort_logs_effort_size_check ON effort_logs IS 'Valid eff
 -- 5. UPDATE EXISTING INITIATIVES FROM LINKED GOVERNANCE REQUESTS
 -- =============================================================================
 
--- Disable triggers temporarily to avoid completion tracking issues
-ALTER TABLE initiatives DISABLE TRIGGER ALL;
+-- Note: We populate data from linked governance requests if they exist.
+-- The completion tracking trigger will fire, but since we're only adding new fields
+-- (not changing existing completion-tracked fields), it should handle gracefully.
 
 -- Populate new fields from linked governance requests (for existing linked initiatives)
 UPDATE initiatives i
@@ -116,13 +117,11 @@ SET
     'compliance_regulatory_value', gr.compliance_regulatory_value,
     'target_timeline', gr.target_timeline,
     'estimated_scope', gr.estimated_scope
-  )
+  ),
+  updated_at = i.updated_at  -- Keep original updated_at timestamp
 FROM governance_requests gr
 WHERE i.governance_request_id = gr.id
   AND i.problem_statement IS NULL;  -- Only update if not already populated
-
--- Re-enable triggers
-ALTER TABLE initiatives ENABLE TRIGGER ALL;
 
 -- =============================================================================
 -- ROLLBACK INSTRUCTIONS
