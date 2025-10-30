@@ -14,7 +14,6 @@ interface InsightsChatProps {
 const SUGGESTED_PROMPTS = [
   // Capacity & Workload
   "Who is over capacity and what are their top 3 initiatives by revenue impact?",
-  "Which team members have under 60% capacity and could take on new Pharmacy work?",
 
   // Financial & ROI
   "Show me the top 5 revenue-generating initiatives with their ROI details",
@@ -31,7 +30,6 @@ const SUGGESTED_PROMPTS = [
   "Show me all active initiatives by service line (Pharmacy, ED, Perioperative, etc.)",
 
   // Optimization
-  "Recommend workload rebalancing - who can give work, who can take it?",
   "Which initiatives should we prioritize based on revenue impact and team capacity?",
 ];
 
