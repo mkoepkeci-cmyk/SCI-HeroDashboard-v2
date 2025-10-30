@@ -500,7 +500,7 @@ function App() {
                 <span className="text-[10px] font-semibold tracking-wide">CommonSpirit Health</span>
               </div>
               <p className="text-white/90 text-[10px] font-medium">
-                {teamMembers.length} Team Members • {metrics.totalAssignments} Active Assignments • {metrics.totalInitiatives} Initiatives
+                {teamMembers.length} Team Members • {metrics.totalAssignments} Active Assignments • {metrics.activeInitiatives} Active Initiatives
               </p>
             </div>
             <div className="text-right">
