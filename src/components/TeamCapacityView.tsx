@@ -379,13 +379,13 @@ export default function TeamCapacityView({ teamMembers, managers }: TeamCapacity
               {/* Work Type Distribution */}
               <div className="bg-gray-50 rounded-lg p-3">
                 <h4 className="font-semibold text-gray-900 mb-2 text-xs">Work Type Distribution</h4>
-                <ResponsiveContainer width="100%" height={150}>
+                <ResponsiveContainer width="100%" height={220}>
                   <PieChart>
                     <Pie
                       data={workTypePieData}
                       cx="50%"
                       cy="50%"
-                      outerRadius={50}
+                      outerRadius={70}
                       dataKey="value"
                       label={(entry) => `${entry.value}`}
                     >
@@ -409,11 +409,11 @@ export default function TeamCapacityView({ teamMembers, managers }: TeamCapacity
               {/* Work Effort Distribution */}
               <div className="bg-gray-50 rounded-lg p-3">
                 <h4 className="font-semibold text-gray-900 mb-2 text-xs">Work Effort Distribution</h4>
-                <ResponsiveContainer width="100%" height={150}>
+                <ResponsiveContainer width="100%" height={220}>
                   <BarChart data={effortBarData} layout="vertical">
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" tick={{ fontSize: 9 }} />
-                    <YAxis dataKey="effort" type="category" tick={{ fontSize: 9 }} width={40} />
+                    <XAxis type="number" tick={{ fontSize: 10 }} />
+                    <YAxis dataKey="effort" type="category" tick={{ fontSize: 10 }} width={50} />
                     <Tooltip />
                     <Bar dataKey="count" fill="#00A1E0" />
                   </BarChart>
@@ -423,11 +423,11 @@ export default function TeamCapacityView({ teamMembers, managers }: TeamCapacity
               {/* Phase Distribution */}
               <div className="bg-gray-50 rounded-lg p-3">
                 <h4 className="font-semibold text-gray-900 mb-2 text-xs">Phase Distribution</h4>
-                <ResponsiveContainer width="100%" height={150}>
+                <ResponsiveContainer width="100%" height={220}>
                   <BarChart data={phaseBarData} layout="vertical">
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" tick={{ fontSize: 9 }} />
-                    <YAxis dataKey="phase" type="category" tick={{ fontSize: 8 }} width={60} />
+                    <XAxis type="number" tick={{ fontSize: 10 }} />
+                    <YAxis dataKey="phase" type="category" tick={{ fontSize: 9 }} width={90} />
                     <Tooltip />
                     <Bar dataKey="count" fill="#9B2F6A" />
                   </BarChart>
@@ -437,14 +437,14 @@ export default function TeamCapacityView({ teamMembers, managers }: TeamCapacity
               {/* Role Breakdown */}
               <div className="bg-gray-50 rounded-lg p-3">
                 <h4 className="font-semibold text-gray-900 mb-2 text-xs">Role Breakdown</h4>
-                <ResponsiveContainer width="100%" height={150}>
+                <ResponsiveContainer width="100%" height={220}>
                   <PieChart>
                     <Pie
                       data={rolePieData}
                       cx="50%"
                       cy="50%"
-                      innerRadius={30}
-                      outerRadius={50}
+                      innerRadius={45}
+                      outerRadius={70}
                       dataKey="value"
                       label={(entry) => `${entry.value}`}
                     >
@@ -481,11 +481,11 @@ export default function TeamCapacityView({ teamMembers, managers }: TeamCapacity
               {/* Service Line Coverage */}
               <div className="bg-gray-50 rounded-lg p-3">
                 <h4 className="font-semibold text-gray-900 mb-2 text-xs">Service Line Coverage (Top 8)</h4>
-                <ResponsiveContainer width="100%" height={150}>
+                <ResponsiveContainer width="100%" height={220}>
                   <BarChart data={serviceLineBarData} layout="vertical">
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" tick={{ fontSize: 9 }} />
-                    <YAxis dataKey="serviceLine" type="category" tick={{ fontSize: 7 }} width={80} />
+                    <XAxis type="number" tick={{ fontSize: 10 }} />
+                    <YAxis dataKey="serviceLine" type="category" tick={{ fontSize: 9 }} width={100} />
                     <Tooltip />
                     <Bar dataKey="count" fill="#F58025" />
                   </BarChart>

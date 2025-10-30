@@ -753,6 +753,236 @@ function App() {
           </div>
         </div>
 
+        {/* Organization-Wide Productivity Metrics */}
+        {(() => {
+          // Active statuses for capacity metrics
+          const activeStatuses = ['Active', 'In Progress', 'Not Started', 'Planning', 'Scaling'];
+
+          // Get all active initiatives from all team members
+          const orgActiveInitiatives = teamMembers.flatMap(member =>
+            (member.initiatives || []).filter(i => activeStatuses.includes(i.status || ''))
+          );
+
+          // For Status Health, include ALL initiatives (except Deleted) for visibility
+          const orgAllInitiatives = teamMembers.flatMap(member =>
+            (member.initiatives || []).filter(i => i.status !== 'Deleted')
+          );
+
+          // Calculate Work Type Distribution
+          const workTypeData = orgActiveInitiatives.reduce((acc, init) => {
+            const type = init.type || 'Other';
+            acc[type] = (acc[type] || 0) + 1;
+            return acc;
+          }, {} as Record<string, number>);
+
+          const workTypePieData = Object.entries(workTypeData).map(([name, value]) => ({
+            name,
+            value,
+          }));
+
+          // Calculate Work Effort Distribution
+          const effortData = orgActiveInitiatives.reduce((acc, init) => {
+            const effort = init.work_effort || 'Unknown';
+            acc[effort] = (acc[effort] || 0) + 1;
+            return acc;
+          }, {} as Record<string, number>);
+
+          const effortBarData = Object.entries(effortData).map(([effort, count]) => ({
+            effort,
+            count,
+          }));
+
+          // Calculate Phase Distribution
+          const phaseData = orgActiveInitiatives.reduce((acc, init) => {
+            const phase = init.phase || 'Unknown';
+            acc[phase] = (acc[phase] || 0) + 1;
+            return acc;
+          }, {} as Record<string, number>);
+
+          const phaseBarData = Object.entries(phaseData).map(([phase, count]) => ({
+            phase,
+            count,
+          }));
+
+          // Calculate Role Breakdown
+          const roleData = orgActiveInitiatives.reduce((acc, init) => {
+            const role = init.role || 'Unknown';
+            acc[role] = (acc[role] || 0) + 1;
+            return acc;
+          }, {} as Record<string, number>);
+
+          const rolePieData = Object.entries(roleData).map(([name, value]) => ({
+            name,
+            value,
+          }));
+
+          // Calculate Status Health (all statuses)
+          const statusCounts = orgAllInitiatives.reduce((acc, init) => {
+            const status = init.status || 'Unknown';
+            acc[status] = (acc[status] || 0) + 1;
+            return acc;
+          }, {} as Record<string, number>);
+
+          // Calculate Service Line Coverage (Top 8)
+          const serviceLineData = orgActiveInitiatives.reduce((acc, init) => {
+            const serviceLine = init.service_line || 'Unknown';
+            acc[serviceLine] = (acc[serviceLine] || 0) + 1;
+            return acc;
+          }, {} as Record<string, number>);
+
+          const serviceLineBarData = Object.entries(serviceLineData)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 8)
+            .map(([serviceLine, count]) => ({
+              serviceLine: serviceLine.length > 20 ? serviceLine.substring(0, 20) + '...' : serviceLine,
+              count,
+            }));
+
+          // Color schemes (consistent with TeamCapacityView)
+          const WORK_TYPE_COLORS: Record<string, string> = {
+            'Project': '#9C5C9D',
+            'System Initiative': '#00A1E0',
+            'Policy': '#6F47D0',
+            'Epic Gold': '#9B2F6A',
+            'Governance': '#6F47D0',
+            'General Support': '#F58025',
+            'Other': '#565658',
+          };
+
+          const ROLE_COLORS: Record<string, string> = {
+            'Owner': '#9B2F6A',
+            'Primary': '#00A1E0',
+            'Co-Owner': '#6F47D0',
+            'Secondary': '#F58025',
+            'Support': '#565658',
+            'Unknown': '#D1D5DB',
+          };
+
+          return (
+            <div className="bg-white border rounded-lg p-3">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Organization-Wide Productivity Analytics</h3>
+
+              {/* 3-Column Grid of Metrics */}
+              <div className="grid md:grid-cols-3 grid-cols-1 gap-4">
+                {/* Row 1, Col 1: Work Type Distribution */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 mb-3 text-sm">Work Type Distribution</h4>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <PieChart>
+                      <Pie
+                        data={workTypePieData}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={80}
+                        dataKey="value"
+                        label={(entry) => `${entry.value}`}
+                      >
+                        {workTypePieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={WORK_TYPE_COLORS[entry.name] || '#999'} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="flex flex-wrap gap-2 mt-2 text-xs">
+                    {workTypePieData.map((entry, idx) => (
+                      <div key={idx} className="flex items-center gap-1">
+                        <div className="w-3 h-3 rounded" style={{ backgroundColor: WORK_TYPE_COLORS[entry.name] || '#999' }}></div>
+                        <span className="text-gray-700">{entry.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Row 1, Col 2: Work Effort Distribution */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 mb-3 text-sm">Work Effort Distribution</h4>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <BarChart data={effortBarData} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" tick={{ fontSize: 11 }} />
+                      <YAxis dataKey="effort" type="category" tick={{ fontSize: 11 }} width={60} />
+                      <Tooltip />
+                      <Bar dataKey="count" fill="#00A1E0" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Row 1, Col 3: Phase Distribution */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 mb-3 text-sm">Phase Distribution</h4>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <BarChart data={phaseBarData} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" tick={{ fontSize: 11 }} />
+                      <YAxis dataKey="phase" type="category" tick={{ fontSize: 10 }} width={100} />
+                      <Tooltip />
+                      <Bar dataKey="count" fill="#9B2F6A" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Row 2, Col 1: Role Breakdown */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 mb-3 text-sm">Role Breakdown</h4>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <PieChart>
+                      <Pie
+                        data={rolePieData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={50}
+                        outerRadius={80}
+                        dataKey="value"
+                        label={(entry) => `${entry.value}`}
+                      >
+                        {rolePieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={ROLE_COLORS[entry.name] || '#999'} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="flex flex-wrap gap-2 mt-2 text-xs">
+                    {rolePieData.map((entry, idx) => (
+                      <div key={idx} className="flex items-center gap-1">
+                        <div className="w-3 h-3 rounded" style={{ backgroundColor: ROLE_COLORS[entry.name] || '#999' }}></div>
+                        <span className="text-gray-700">{entry.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Row 2, Col 2: Status Health */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 mb-3 text-sm">Status Health</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {Object.entries(statusCounts).map(([status, count]) => (
+                      <div key={status} className="bg-white rounded p-2 text-center border border-gray-200">
+                        <div className="text-2xl font-bold text-[#9B2F6A]">{count}</div>
+                        <div className="text-xs text-gray-600 truncate" title={status}>{status}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Row 2, Col 3: Service Line Coverage */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 mb-3 text-sm">Service Line Coverage (Top 8)</h4>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <BarChart data={serviceLineBarData} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" tick={{ fontSize: 11 }} />
+                      <YAxis dataKey="serviceLine" type="category" tick={{ fontSize: 10 }} width={120} />
+                      <Tooltip />
+                      <Bar dataKey="count" fill="#F58025" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Initiative Search & Browse */}
         <div className="bg-white border rounded-lg p-3">

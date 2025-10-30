@@ -222,13 +222,13 @@ export function TeamCapacityModal({
             {/* Row 1, Col 1: Work Type Distribution */}
             <div className="bg-gray-50 rounded-lg p-4">
               <h3 className="font-semibold text-gray-900 mb-3 text-sm">Work Type Distribution</h3>
-              <ResponsiveContainer width="100%" height={180}>
+              <ResponsiveContainer width="100%" height={240}>
                 <PieChart>
                   <Pie
                     data={workTypePieData}
                     cx="50%"
                     cy="50%"
-                    outerRadius={70}
+                    outerRadius={85}
                     dataKey="value"
                     label={(entry) => `${entry.value}`}
                   >
@@ -252,11 +252,11 @@ export function TeamCapacityModal({
             {/* Row 1, Col 2: Work Effort Distribution */}
             <div className="bg-gray-50 rounded-lg p-4">
               <h3 className="font-semibold text-gray-900 mb-3 text-sm">Work Effort Distribution</h3>
-              <ResponsiveContainer width="100%" height={180}>
+              <ResponsiveContainer width="100%" height={240}>
                 <BarChart data={effortBarData} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" tick={{ fontSize: 10 }} />
-                  <YAxis dataKey="effort" type="category" tick={{ fontSize: 10 }} width={60} />
+                  <XAxis type="number" tick={{ fontSize: 11 }} />
+                  <YAxis dataKey="effort" type="category" tick={{ fontSize: 11 }} width={60} />
                   <Tooltip />
                   <Bar dataKey="count" fill="#00A1E0" />
                 </BarChart>
@@ -266,11 +266,11 @@ export function TeamCapacityModal({
             {/* Row 1, Col 3: Phase Distribution */}
             <div className="bg-gray-50 rounded-lg p-4">
               <h3 className="font-semibold text-gray-900 mb-3 text-sm">Phase Distribution</h3>
-              <ResponsiveContainer width="100%" height={180}>
+              <ResponsiveContainer width="100%" height={240}>
                 <BarChart data={phaseBarData} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" tick={{ fontSize: 10 }} />
-                  <YAxis dataKey="phase" type="category" tick={{ fontSize: 9 }} width={80} />
+                  <XAxis type="number" tick={{ fontSize: 11 }} />
+                  <YAxis dataKey="phase" type="category" tick={{ fontSize: 10 }} width={100} />
                   <Tooltip />
                   <Bar dataKey="count" fill="#9B2F6A" />
                 </BarChart>
@@ -280,14 +280,14 @@ export function TeamCapacityModal({
             {/* Row 2, Col 1: Role Breakdown */}
             <div className="bg-gray-50 rounded-lg p-4">
               <h3 className="font-semibold text-gray-900 mb-3 text-sm">Role Breakdown</h3>
-              <ResponsiveContainer width="100%" height={180}>
+              <ResponsiveContainer width="100%" height={240}>
                 <PieChart>
                   <Pie
                     data={rolePieData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={40}
-                    outerRadius={70}
+                    innerRadius={55}
+                    outerRadius={85}
                     dataKey="value"
                     label={(entry) => `${entry.value}`}
                   >
@@ -324,11 +324,11 @@ export function TeamCapacityModal({
             {/* Row 2, Col 3: Service Line Coverage */}
             <div className="bg-gray-50 rounded-lg p-4">
               <h3 className="font-semibold text-gray-900 mb-3 text-sm">Service Line Coverage (Top 8)</h3>
-              <ResponsiveContainer width="100%" height={180}>
+              <ResponsiveContainer width="100%" height={240}>
                 <BarChart data={serviceLineBarData} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" tick={{ fontSize: 10 }} />
-                  <YAxis dataKey="serviceLine" type="category" tick={{ fontSize: 8 }} width={100} />
+                  <XAxis type="number" tick={{ fontSize: 11 }} />
+                  <YAxis dataKey="serviceLine" type="category" tick={{ fontSize: 10 }} width={120} />
                   <Tooltip />
                   <Bar dataKey="count" fill="#F58025" />
                 </BarChart>
