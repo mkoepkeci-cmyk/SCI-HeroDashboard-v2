@@ -300,8 +300,6 @@ export function validateGovernanceRequest(
   if (isSubmitting) {
     if (!data.problem_statement || data.problem_statement.trim().length === 0) {
       errors.problem_statement = 'Problem statement is required to submit';
-    } else if (data.problem_statement.trim().length < 50) {
-      errors.problem_statement = 'Problem statement should be at least 50 characters to clearly describe the system-level need';
     }
 
     if (!data.desired_outcomes || data.desired_outcomes.trim().length === 0) {

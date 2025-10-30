@@ -14,14 +14,16 @@ interface Metric {
 }
 
 interface Tab4FinancialData {
-  actualRevenue: string;
-  actualTimeframe: string;
-  measurementStartDate: string;
-  measurementEndDate: string;
+  // Projected Financial Impact (from planning/pilot)
   projectedAnnual: string;
   projectionBasis: string;
   calculationMethodology: string;
   keyAssumptions: string;
+  // Realized Financial Impact (actual measured)
+  actualRevenue: string;
+  actualTimeframe: string;
+  measurementStartDate: string;
+  measurementEndDate: string;
 }
 
 interface Tab4PerformanceData {
@@ -230,60 +232,102 @@ export const Tab4Content = ({
       {/* Revenue & Financial Impact */}
       <div>
         <h3 className="text-lg font-semibold mb-4">Revenue & Financial Impact</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Actual Revenue</label>
-            <input
-              type="number"
-              value={financial.actualRevenue}
-              onChange={(e) => setFinancial({ ...financial, actualRevenue: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg p-2"
-              placeholder="Dollar amount"
-            />
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Actual Timeframe</label>
-            <input
-              type="text"
-              value={financial.actualTimeframe}
-              onChange={(e) => setFinancial({ ...financial, actualTimeframe: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg p-2"
-              placeholder="e.g., FY24"
-            />
-          </div>
+        {/* Projected Financial Impact */}
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <h4 className="text-md font-semibold text-blue-900 mb-3">Projected Financial Impact (Estimated/Pilot)</h4>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Projected Annual Revenue/Savings ($)</label>
+              <input
+                type="number"
+                value={financial.projectedAnnual}
+                onChange={(e) => setFinancial({ ...financial, projectedAnnual: e.target.value })}
+                className="w-full border border-gray-300 rounded-lg p-2"
+                placeholder="Estimated full 12-month impact"
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Projected Annual Revenue</label>
-            <input
-              type="number"
-              value={financial.projectedAnnual}
-              onChange={(e) => setFinancial({ ...financial, projectedAnnual: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg p-2"
-              placeholder="Dollar amount"
-            />
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Projection Basis</label>
+              <input
+                type="text"
+                value={financial.projectionBasis}
+                onChange={(e) => setFinancial({ ...financial, projectionBasis: e.target.value })}
+                className="w-full border border-gray-300 rounded-lg p-2"
+                placeholder="e.g., Pilot data × 12 months"
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Projection Basis</label>
-            <input
-              type="text"
-              value={financial.projectionBasis}
-              onChange={(e) => setFinancial({ ...financial, projectionBasis: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg p-2"
-              placeholder="e.g., Per user, per year"
-            />
-          </div>
+            <div className="col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Calculation Methodology</label>
+              <textarea
+                value={financial.calculationMethodology}
+                onChange={(e) => setFinancial({ ...financial, calculationMethodology: e.target.value })}
+                rows={3}
+                className="w-full border border-gray-300 rounded-lg p-2"
+                placeholder="How was the financial impact calculated?"
+              />
+            </div>
 
-          <div className="col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Calculation Methodology</label>
-            <textarea
-              value={financial.calculationMethodology}
-              onChange={(e) => setFinancial({ ...financial, calculationMethodology: e.target.value })}
-              rows={3}
-              className="w-full border border-gray-300 rounded-lg p-2"
-              placeholder="How was the financial impact calculated?"
-            />
+            <div className="col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Key Assumptions</label>
+              <textarea
+                value={financial.keyAssumptions}
+                onChange={(e) => setFinancial({ ...financial, keyAssumptions: e.target.value })}
+                rows={3}
+                className="w-full border border-gray-300 rounded-lg p-2"
+                placeholder="Enter assumptions (one per line)"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Realized Financial Impact */}
+        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+          <h4 className="text-md font-semibold text-green-900 mb-3">Realized Financial Impact (Actual Measured)</h4>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Actual Revenue ($)</label>
+              <input
+                type="number"
+                value={financial.actualRevenue}
+                onChange={(e) => setFinancial({ ...financial, actualRevenue: e.target.value })}
+                className="w-full border border-gray-300 rounded-lg p-2"
+                placeholder="Dollar amount realized"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Actual Timeframe</label>
+              <input
+                type="text"
+                value={financial.actualTimeframe}
+                onChange={(e) => setFinancial({ ...financial, actualTimeframe: e.target.value })}
+                className="w-full border border-gray-300 rounded-lg p-2"
+                placeholder="e.g., FY24"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Measurement Start Date</label>
+              <input
+                type="date"
+                value={financial.measurementStartDate}
+                onChange={(e) => setFinancial({ ...financial, measurementStartDate: e.target.value })}
+                className="w-full border border-gray-300 rounded-lg p-2"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Measurement End Date</label>
+              <input
+                type="date"
+                value={financial.measurementEndDate}
+                onChange={(e) => setFinancial({ ...financial, measurementEndDate: e.target.value })}
+                className="w-full border border-gray-300 rounded-lg p-2"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -320,6 +364,125 @@ export const Tab4Content = ({
               rows={3}
               className="w-full border border-gray-300 rounded-lg p-2"
               placeholder="Describe the primary outcome achieved"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Projection Model (If Scaling) */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Projection Model (If Scaling)</h3>
+        <p className="text-sm text-gray-600 mb-4">
+          If planning to scale this initiative, provide projection details for future expansion.
+        </p>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Projection Scenario</label>
+            <input
+              type="text"
+              value={projections.projectionScenario}
+              onChange={(e) => setProjections({ ...projections, projectionScenario: e.target.value })}
+              className="w-full border border-gray-300 rounded-lg p-2"
+              placeholder="e.g., System-wide rollout"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Projected Scale (# users)</label>
+            <input
+              type="number"
+              value={projections.projectedUsers}
+              onChange={(e) => setProjections({ ...projections, projectedUsers: e.target.value })}
+              className="w-full border border-gray-300 rounded-lg p-2"
+              placeholder="Number of users"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">% of Organization</label>
+            <input
+              type="number"
+              value={projections.percentOfOrganization}
+              onChange={(e) => setProjections({ ...projections, percentOfOrganization: e.target.value })}
+              className="w-full border border-gray-300 rounded-lg p-2"
+              placeholder="Percentage"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Projected Time Savings</label>
+            <input
+              type="text"
+              value={projections.projectedTimeSavings}
+              onChange={(e) => setProjections({ ...projections, projectedTimeSavings: e.target.value })}
+              className="w-full border border-gray-300 rounded-lg p-2"
+              placeholder="e.g., 50 hours/week"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Projected Dollar Value</label>
+            <input
+              type="text"
+              value={projections.projectedDollarValue}
+              onChange={(e) => setProjections({ ...projections, projectedDollarValue: e.target.value })}
+              className="w-full border border-gray-300 rounded-lg p-2"
+              placeholder="Dollar amount"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Revenue Impact Type</label>
+            <input
+              type="text"
+              value={projections.revenueImpact}
+              onChange={(e) => setProjections({ ...projections, revenueImpact: e.target.value })}
+              className="w-full border border-gray-300 rounded-lg p-2"
+              placeholder="e.g., Cost Avoidance, Direct Revenue"
+            />
+          </div>
+
+          <div className="col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Projection Detail/Calculation</label>
+            <textarea
+              value={projections.projectionCalculationMethod}
+              onChange={(e) => setProjections({ ...projections, projectionCalculationMethod: e.target.value })}
+              rows={3}
+              className="w-full border border-gray-300 rounded-lg p-2"
+              placeholder="How did you calculate these projections?"
+            />
+          </div>
+
+          <div className="col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Projection Assumptions</label>
+            <textarea
+              value={projections.projectionAssumptions}
+              onChange={(e) => setProjections({ ...projections, projectionAssumptions: e.target.value })}
+              rows={3}
+              className="w-full border border-gray-300 rounded-lg p-2"
+              placeholder="Enter assumptions (one per line)"
+            />
+          </div>
+
+          <div className="col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Sensitivity Notes</label>
+            <textarea
+              value={projections.sensitivityNotes}
+              onChange={(e) => setProjections({ ...projections, sensitivityNotes: e.target.value })}
+              rows={2}
+              className="w-full border border-gray-300 rounded-lg p-2"
+              placeholder="What assumptions could change these numbers?"
+            />
+          </div>
+
+          <div className="col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Additional Benefits</label>
+            <textarea
+              value={projections.additionalBenefits}
+              onChange={(e) => setProjections({ ...projections, additionalBenefits: e.target.value })}
+              rows={3}
+              className="w-full border border-gray-300 rounded-lg p-2"
+              placeholder="Other anticipated benefits from scaling"
             />
           </div>
         </div>

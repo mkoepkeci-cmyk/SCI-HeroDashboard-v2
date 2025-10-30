@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Clock, TrendingUp, AlertCircle, Calendar, BarChart3, User, List, Plus } from 'lucide-react';
-import { supabase, InitiativeWithDetails, EffortLog, TeamMember } from '../lib/supabase';
+import { supabase, InitiativeWithDetails, EffortLog, TeamMember, GovernanceRequest } from '../lib/supabase';
 import {
   getWeekStartDate,
   formatWeekRange,
@@ -13,9 +13,11 @@ import {
   getLastNWeeks,
 } from '../lib/effortUtils';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import BulkEffortEntry from './BulkEffortEntry';
+import { EffortTrackingView } from './EffortTrackingView';
 import { UnifiedWorkItemForm } from './UnifiedWorkItemForm';
 import { SCIRequestsCard } from './SCIRequestsCard';
+import { GovernanceRequestDetail } from './GovernanceRequestDetail';
+import { GovernanceRequestForm } from './GovernanceRequestForm';
 
 interface PersonalWorkloadDashboardProps {
   teamMember: TeamMember | null;
@@ -54,7 +56,8 @@ export default function PersonalWorkloadDashboard({
   const [selectedWeek, setSelectedWeek] = useState(getWeekStartDate());
   const [view, setView] = useState<'summary' | 'entry'>('entry');
   const [editingInitiative, setEditingInitiative] = useState<InitiativeWithDetails | null>(null);
-  const [showAddInitiative, setShowAddInitiative] = useState(false);
+  const [selectedGovernanceRequest, setSelectedGovernanceRequest] = useState<GovernanceRequest | null>(null);
+  const [editingGovernanceRequest, setEditingGovernanceRequest] = useState<GovernanceRequest | null>(null);
 
   const recentWeeks = useMemo(() => getLastNWeeks(8), []);
 
@@ -250,9 +253,7 @@ export default function PersonalWorkloadDashboard({
         <SCIRequestsCard
           teamMemberId={teamMember.id}
           onRequestClick={(request) => {
-            // Navigate to governance portal and show the request detail
-            console.log('Request clicked:', request);
-            // Could implement navigation to request detail view here
+            setSelectedGovernanceRequest(request);
           }}
         />
       )}
@@ -266,14 +267,12 @@ export default function PersonalWorkloadDashboard({
         </div>
       ) : view === 'entry' ? (
         <>
-          <BulkEffortEntry
+          <EffortTrackingView
             teamMemberId={teamMember?.id || null}
             teamMemberName={teamMember?.name || null}
-            initiatives={initiatives}
             selectedWeek={selectedWeek}
             onSave={loadEffortLogs}
-            onEditInitiative={(initiative) => setEditingInitiative(initiative)}
-            onAddInitiative={() => setShowAddInitiative(true)}
+            onInitiativeUpdate={onInitiativesRefresh}
           />
         </>
       ) : (
@@ -465,19 +464,37 @@ export default function PersonalWorkloadDashboard({
         />
       )}
 
-      {/* Add Initiative Modal */}
-      {showAddInitiative && (
-        <UnifiedWorkItemForm
-          onClose={() => {
-            setShowAddInitiative(false);
-          }}
-          onSuccess={async () => {
-            // Refresh data BEFORE closing modal
+      {/* Governance Request Detail Modal */}
+      {selectedGovernanceRequest && (
+        <GovernanceRequestDetail
+          request={selectedGovernanceRequest}
+          onClose={() => setSelectedGovernanceRequest(null)}
+          onUpdate={async () => {
+            // Refresh data after updates
             if (onInitiativesRefresh) {
               await onInitiativesRefresh();
             }
             await loadEffortLogs();
-            setShowAddInitiative(false);
+          }}
+          onEdit={(request) => {
+            setEditingGovernanceRequest(request);
+            setSelectedGovernanceRequest(null); // Close detail modal
+          }}
+        />
+      )}
+
+      {/* Edit Governance Request Form Modal */}
+      {editingGovernanceRequest && (
+        <GovernanceRequestForm
+          editingRequest={editingGovernanceRequest}
+          onClose={() => setEditingGovernanceRequest(null)}
+          onSuccess={async () => {
+            // Refresh data after updates
+            if (onInitiativesRefresh) {
+              await onInitiativesRefresh();
+            }
+            await loadEffortLogs();
+            setEditingGovernanceRequest(null);
           }}
         />
       )}

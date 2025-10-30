@@ -23,7 +23,7 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
 
   // Assignment state (for "Ready for Governance" conversion)
   const [assignedSciId, setAssignedSciId] = useState(request.assigned_sci_id || '');
-  const [workEffort, setWorkEffort] = useState('');
+  const [workEffort, setWorkEffort] = useState(request.work_effort || '');
   const [converting, setConverting] = useState(false);
 
   // Form state
@@ -333,111 +333,144 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
         </div>
 
         <div className="p-6 space-y-6 max-h-[calc(100vh-16rem)] overflow-y-auto">
-          {/* Status Management Panel */}
+          {/* Status & SCI Assignment Panel */}
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-            <h3 className="font-semibold text-gray-900 mb-3">Status Management</h3>
-            <div className="flex gap-3 items-center">
-              <select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="flex-1 border border-gray-300 rounded-lg p-2"
-                disabled={saving}
-              >
-                {/* For Draft status, only show Ready for Review option */}
-                {request.status === 'Draft' ? (
-                  <>
-                    <option value="Draft">Draft</option>
-                    <option value="Ready for Review">Ready for Review</option>
-                  </>
-                ) : (
-                  <>
-                    <option value="Draft">Draft</option>
-                    <option value="Ready for Review">Ready for Review</option>
-                    <option value="Needs Refinement">Needs Refinement</option>
-                    <option value="Ready for Governance">Ready for Governance</option>
-                    <option value="Dismissed">Dismissed</option>
-                  </>
-                )}
-              </select>
-              <button
-                onClick={() => handleStatusChange(formData.status)}
-                disabled={saving || formData.status === request.status}
-                className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                {saving ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4" />
-                    Save Status
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
+            <h3 className="font-semibold text-gray-900 mb-4">Request Management</h3>
 
-          {/* SCI Assignment Panel */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h3 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
-              <Users className="w-5 h-5" />
-              Assign SCI
-            </h3>
-            <div className="flex gap-3 items-end">
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-blue-900 mb-1">
-                  System Clinical Informaticist
+            <div className="space-y-4">
+              {/* Status Dropdown */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Status
+                </label>
+                <select
+                  value={formData.status}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  className="w-full border border-gray-300 rounded-lg p-2"
+                  disabled={saving}
+                >
+                  {/* For Draft status, only show Ready for Review option */}
+                  {request.status === 'Draft' ? (
+                    <>
+                      <option value="Draft">Draft</option>
+                      <option value="Ready for Review">Ready for Review</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="Draft">Draft</option>
+                      <option value="Ready for Review">Ready for Review</option>
+                      <option value="Needs Refinement">Needs Refinement</option>
+                      <option value="Ready for Governance">Ready for Governance</option>
+                      <option value="Dismissed">Dismissed</option>
+                    </>
+                  )}
+                </select>
+              </div>
+
+              {/* SCI Assignment Dropdown */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Assigned SCI
                 </label>
                 <select
                   value={assignedSciId}
                   onChange={(e) => setAssignedSciId(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg p-2"
+                  disabled={saving}
                 >
                   <option value="">Select SCI...</option>
                   {teamMembers.map(tm => (
                     <option key={tm.id} value={tm.id}>{tm.name}</option>
                   ))}
                 </select>
+                {formData.assigned_sci_name && (
+                  <p className="text-sm text-gray-600 mt-1">
+                    Currently: <strong>{formData.assigned_sci_name}</strong>
+                  </p>
+                )}
               </div>
+
+              {/* Estimated Work Effort */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Estimated Work Effort
+                </label>
+                <select
+                  value={workEffort}
+                  onChange={(e) => setWorkEffort(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg p-2"
+                  disabled={saving}
+                >
+                  <option value="">Select effort size...</option>
+                  <option value="XS">XS - Less than 1 hr/wk</option>
+                  <option value="S">S - 1-2 hrs/wk</option>
+                  <option value="M">M - 2-5 hrs/wk</option>
+                  <option value="L">L - 5-10 hrs/wk</option>
+                  <option value="XL">XL - More than 10 hrs/wk</option>
+                </select>
+                {formData.work_effort && (
+                  <p className="text-sm text-gray-600 mt-1">
+                    Currently: <strong>{formData.work_effort}</strong>
+                  </p>
+                )}
+              </div>
+
+              {/* Single Save Button */}
               <button
                 onClick={async () => {
-                  if (!assignedSciId) {
-                    alert('Please select an SCI');
-                    return;
-                  }
-
-                  const selectedSci = teamMembers.find(tm => tm.id === assignedSciId);
-                  if (!selectedSci) return;
-
                   try {
                     setSaving(true);
 
-                    // Update governance request with assigned SCI
+                    const selectedSci = assignedSciId ? teamMembers.find(tm => tm.id === assignedSciId) : null;
+                    const updateData: any = {
+                      updated_at: new Date().toISOString()
+                    };
+
+                    // Update status if changed
+                    if (formData.status !== request.status) {
+                      updateData.status = formData.status;
+
+                      // Set submitted_date when changing to "Ready for Review"
+                      if (formData.status === 'Ready for Review' && !request.submitted_date) {
+                        updateData.submitted_date = new Date().toISOString();
+                      }
+                    }
+
+                    // Update SCI assignment if changed
+                    if (assignedSciId && assignedSciId !== request.assigned_sci_id) {
+                      updateData.assigned_sci_id = assignedSciId;
+                      updateData.assigned_sci_name = selectedSci?.name || '';
+                    }
+
+                    // Update work effort if changed
+                    if (workEffort && workEffort !== request.work_effort) {
+                      updateData.work_effort = workEffort;
+                    }
+
+                    // Perform the update
                     const { error } = await supabase
                       .from('governance_requests')
-                      .update({
-                        assigned_sci_id: assignedSciId,
-                        assigned_sci_name: selectedSci.name,
-                        updated_at: new Date().toISOString()
-                      })
+                      .update(updateData)
                       .eq('id', request.id);
 
                     if (error) throw error;
 
-                    // Note: Initiative will be created when status changes to "Ready for Review"
-                    setFormData({ ...formData, assigned_sci_id: assignedSciId, assigned_sci_name: selectedSci.name });
-                    onUpdate();
+                    // Call handleStatusChange for Phase 1/2 workflow triggers
+                    if (formData.status !== request.status) {
+                      await handleStatusChange(formData.status);
+                    } else {
+                      // Just refresh if only SCI changed
+                      onUpdate();
+                    }
 
                   } catch (error: any) {
-                    alert(`Failed to assign SCI: ${error.message}`);
+                    alert(`Failed to save changes: ${error.message}`);
                   } finally {
                     setSaving(false);
                   }
                 }}
-                disabled={!assignedSciId || saving}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                disabled={saving || (formData.status === request.status && assignedSciId === request.assigned_sci_id && workEffort === request.work_effort)}
+                className="w-full px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {saving ? (
                   <>
@@ -447,16 +480,11 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
                 ) : (
                   <>
                     <Save className="w-4 h-4" />
-                    Save
+                    Save Changes
                   </>
                 )}
               </button>
             </div>
-            {formData.assigned_sci_name && (
-              <p className="text-sm text-blue-700 mt-2">
-                Currently assigned to: <strong>{formData.assigned_sci_name}</strong>
-              </p>
-            )}
           </div>
 
           {/* SCI Assignment Panel (Ready for Governance, not yet converted) */}

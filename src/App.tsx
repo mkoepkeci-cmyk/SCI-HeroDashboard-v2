@@ -90,8 +90,16 @@ function App() {
     fetchTeamData();
   }, []);
 
+  // Refresh data when navigating to dashboard view
+  useEffect(() => {
+    if (activeView === 'dashboard') {
+      fetchTeamData();
+    }
+  }, [activeView]);
+
   const fetchTeamData = async () => {
     try {
+      console.log('🔄 [fetchTeamData] Starting data refresh...');
       setLoading(true);
 
       const { data: members, error: membersError } = await supabase
@@ -116,24 +124,9 @@ function App() {
       if (managersError) throw managersError;
       setManagers(managersData || []);
 
-      const { data: workTypes, error: workTypesError } = await supabase
-        .from('work_type_summary')
-        .select('*');
-
-      if (workTypesError) throw workTypesError;
-
-      const { data: ehrPlatforms, error: ehrError } = await supabase
-        .from('ehr_platform_summary')
-        .select('*');
-
-      if (ehrError) throw ehrError;
-
-      const { data: highlights, error: highlightsError } = await supabase
-        .from('key_highlights')
-        .select('*')
-        .order('order_index', { ascending: true });
-
-      if (highlightsError) throw highlightsError;
+      // REMOVED: work_type_summary, ehr_platform_summary, key_highlights queries
+      // These tables contain stale pre-aggregated data from before migration
+      // Now calculating these in real-time from initiatives table instead
 
       const { data: initiatives, error: initiativesError } = await supabase
         .from('initiatives')
@@ -221,26 +214,9 @@ function App() {
       }));
 
       const membersWithDetails: TeamMemberWithDetails[] = (members || []).map((member) => {
-        const memberWorkTypes = (workTypes || [])
-          .filter((wt) => wt.team_member_id === member.id)
-          .reduce((acc, wt) => {
-            acc[wt.work_type] = wt.count;
-            return acc;
-          }, {} as { [key: string]: number });
-
-        const memberEHRs = (ehrPlatforms || [])
-          .filter((ehr) => ehr.team_member_id === member.id)
-          .reduce((acc, ehr) => {
-            acc[ehr.ehr_platform] = ehr.count;
-            return acc;
-          }, {} as { [key: string]: number });
-
-        const memberHighlights = (highlights || [])
-          .filter((h) => h.team_member_id === member.id)
-          .map((h) => h.highlight);
-
+        // Get initiatives for this member (filter out deleted)
         const memberInitiatives = initiativesWithDetails.filter(
-          (i) => i.team_member_id === member.id || i.owner_name === member.name
+          (i) => (i.team_member_id === member.id || i.owner_name === member.name) && i.status !== 'Deleted'
         );
 
         const memberAssignments = (assignments || []).filter(
@@ -252,28 +228,65 @@ function App() {
           (dm: any) => dm.team_member_id === member.id
         );
 
-        // Augment work types with counts from initiatives to include misc assignments
-        // Count initiatives by type for this member
-        const initiativeCounts = memberInitiatives.reduce((acc, initiative) => {
-          const type = initiative.type || 'General Support';
+        // Calculate work types from initiatives in REAL-TIME (not from stale summary table)
+        const memberWorkTypes = memberInitiatives.reduce((acc, initiative) => {
+          const type = initiative.type || 'Other';
           acc[type] = (acc[type] || 0) + 1;
           return acc;
         }, {} as { [key: string]: number });
 
-        // Merge work_type_summary counts with initiative counts
-        // For types that exist in both, use the max to ensure misc assignments are counted
-        const combinedWorkTypes = { ...memberWorkTypes };
-        Object.keys(initiativeCounts).forEach(type => {
-          combinedWorkTypes[type] = Math.max(
-            combinedWorkTypes[type] || 0,
-            initiativeCounts[type] || 0
-          );
-        });
+        // Calculate EHR summaries from initiatives in REAL-TIME (not from stale summary table)
+        const memberEHRs = memberInitiatives.reduce((acc, initiative) => {
+          const ehr = initiative.ehrs_impacted;
+          if (ehr && ehr !== 'All') {
+            acc[ehr] = (acc[ehr] || 0) + 1;
+          } else if (ehr === 'All') {
+            // Count "All" towards each EHR platform
+            ['Epic', 'Cerner', 'Altera'].forEach(platform => {
+              acc[platform] = (acc[platform] || 0) + 1;
+            });
+          }
+          return acc;
+        }, {} as { [key: string]: number });
+
+        // Calculate key highlights dynamically from initiatives (not from stale table)
+        const memberHighlights: string[] = [];
+
+        // Count Epic Gold initiatives
+        const epicGoldCount = memberInitiatives.filter(i => i.type === 'Epic Gold').length;
+        if (epicGoldCount > 0) {
+          memberHighlights.push(`${epicGoldCount} Epic Gold ${epicGoldCount === 1 ? 'CAT' : 'CATs'}`);
+        }
+
+        // Count Governance initiatives
+        const governanceCount = memberInitiatives.filter(i => i.type === 'Governance').length;
+        if (governanceCount > 0) {
+          memberHighlights.push(`${governanceCount} Governance ${governanceCount === 1 ? 'body' : 'bodies'}`);
+        }
+
+        // Find top revenue initiative
+        const topRevenueInitiative = memberInitiatives
+          .filter(i => i.financial_impact?.projected_annual || i.financial_impact?.actual_revenue)
+          .sort((a, b) => {
+            const aRev = (a.financial_impact?.actual_revenue || a.financial_impact?.projected_annual || 0);
+            const bRev = (b.financial_impact?.actual_revenue || b.financial_impact?.projected_annual || 0);
+            return bRev - aRev;
+          })[0];
+
+        if (topRevenueInitiative) {
+          const revenue = topRevenueInitiative.financial_impact?.actual_revenue || topRevenueInitiative.financial_impact?.projected_annual || 0;
+          const formatCurrency = (value: number) => {
+            if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+            else if (value >= 1000) return `${(value / 1000).toFixed(0)}K`;
+            return `${value.toFixed(0)}`;
+          };
+          memberHighlights.push(`${topRevenueInitiative.initiative_name}: ${formatCurrency(revenue)}`);
+        }
 
         // DELETED ALL CAPACITY CALCULATION - will use workloadCalculator instead
         return {
           ...member,
-          workTypes: combinedWorkTypes,
+          workTypes: memberWorkTypes,
           ehrs: memberEHRs,
           topWork: memberHighlights,
           initiatives: memberInitiatives,
@@ -510,14 +523,20 @@ function App() {
               <div className="text-xl font-bold">{metrics.completedInitiatives}</div>
               <div className="text-[10px] text-white/90 font-medium mt-0.5">Completed Projects</div>
             </button>
-            <div className="bg-white/15 rounded-lg p-2 border border-white/20 text-left">
+            <button
+              onClick={() => setExpandedCard(expandedCard === 'actual-revenue' ? null : 'actual-revenue')}
+              className="bg-white/15 rounded-lg p-2 border border-white/20 hover:bg-white/25 transition-all cursor-pointer text-left"
+            >
               <div className="text-xl font-bold">{formatCurrency(impactMetrics.totalActualRevenue)}</div>
               <div className="text-[10px] text-white/90 font-medium mt-0.5">Actual Revenue</div>
-            </div>
-            <div className="bg-white/15 rounded-lg p-2 border border-white/20 text-left">
+            </button>
+            <button
+              onClick={() => setExpandedCard(expandedCard === 'projected-revenue' ? null : 'projected-revenue')}
+              className="bg-white/15 rounded-lg p-2 border border-white/20 hover:bg-white/25 transition-all cursor-pointer text-left"
+            >
               <div className="text-xl font-bold">{formatCurrency(impactMetrics.totalRevenue)}</div>
               <div className="text-[10px] text-white/90 font-medium mt-0.5">Projected Revenue</div>
-            </div>
+            </button>
           </div>
         </div>
 
@@ -580,6 +599,50 @@ function App() {
                     </div>
                   </div>
                 ))}
+            </div>
+          </div>
+        )}
+
+        {expandedCard === 'actual-revenue' && (
+          <div className="bg-white border rounded-lg p-3">
+            <h3 className="font-semibold text-sm mb-2 text-gray-800">Actual Revenue by Initiative</h3>
+            <div className="space-y-1 max-h-96 overflow-y-auto">
+              {allInitiatives
+                .filter(i => i.financial_impact?.actual_revenue && i.financial_impact.actual_revenue > 0)
+                .sort((a, b) => (b.financial_impact?.actual_revenue || 0) - (a.financial_impact?.actual_revenue || 0))
+                .map((initiative) => (
+                  <div key={initiative.id} className="flex items-center justify-between py-1 px-2 hover:bg-gray-50 rounded">
+                    <span className="text-sm text-gray-700 flex-1">{initiative.initiative_name}</span>
+                    <span className="text-sm font-bold text-green-600">
+                      {formatCurrency(initiative.financial_impact?.actual_revenue || 0)}
+                    </span>
+                  </div>
+                ))}
+              {allInitiatives.filter(i => i.financial_impact?.actual_revenue && i.financial_impact.actual_revenue > 0).length === 0 && (
+                <div className="text-sm text-gray-500 py-2">No initiatives with actual revenue recorded</div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {expandedCard === 'projected-revenue' && (
+          <div className="bg-white border rounded-lg p-3">
+            <h3 className="font-semibold text-sm mb-2 text-gray-800">Projected Revenue by Initiative</h3>
+            <div className="space-y-1 max-h-96 overflow-y-auto">
+              {allInitiatives
+                .filter(i => i.financial_impact?.projected_annual && i.financial_impact.projected_annual > 0)
+                .sort((a, b) => (b.financial_impact?.projected_annual || 0) - (a.financial_impact?.projected_annual || 0))
+                .map((initiative) => (
+                  <div key={initiative.id} className="flex items-center justify-between py-1 px-2 hover:bg-gray-50 rounded">
+                    <span className="text-sm text-gray-700 flex-1">{initiative.initiative_name}</span>
+                    <span className="text-sm font-bold text-blue-600">
+                      {formatCurrency(initiative.financial_impact?.projected_annual || 0)}
+                    </span>
+                  </div>
+                ))}
+              {allInitiatives.filter(i => i.financial_impact?.projected_annual && i.financial_impact.projected_annual > 0).length === 0 && (
+                <div className="text-sm text-gray-500 py-2">No initiatives with projected revenue recorded</div>
+              )}
             </div>
           </div>
         )}
@@ -906,6 +969,16 @@ function App() {
   };
 
   const TeamView = () => {
+    // Format currency helper
+    const formatCurrency = (value: number) => {
+      if (value >= 1000000) {
+        return `$${(value / 1000000).toFixed(1)}M`;
+      } else if (value >= 1000) {
+        return `$${(value / 1000).toFixed(0)}K`;
+      }
+      return `$${value.toFixed(0)}`;
+    };
+
     // Calculate team-wide metrics
     const teamMetrics = useMemo(() => {
       const totalInitiatives = teamMembers.reduce((sum, tm) =>
@@ -1035,12 +1108,65 @@ function App() {
           <div className="border border-[#9B2F6A]/20 rounded-lg p-3 bg-[#9B2F6A]/5">
             <h3 className="font-semibold text-sm mb-2 text-[#9B2F6A]">Key Highlights</h3>
             <div className="space-y-1 text-xs">
-              {selectedMember.topWork.map((work, idx) => (
-                <div key={idx} className="flex items-start gap-2">
-                  <span className="text-[#9B2F6A]">•</span>
-                  <span className="text-[#565658]">{work}</span>
-                </div>
-              ))}
+              {(() => {
+                try {
+                  const highlights: string[] = [];
+                  const initiatives = selectedMember?.initiatives || [];
+
+                  console.log('Key Highlights Debug:', {
+                    memberName: selectedMember?.name,
+                    initiativesCount: initiatives.length,
+                    initiatives: initiatives.map(i => ({ name: i?.initiative_name, type: i?.type, status: i?.status, financial: i?.financial_impact }))
+                  });
+
+                  // Count Epic Gold initiatives
+                  const epicGoldCount = initiatives.filter(i => i?.type === 'Epic Gold' && i?.status !== 'Deleted').length;
+                  if (epicGoldCount > 0) {
+                    highlights.push(`${epicGoldCount} Epic Gold ${epicGoldCount === 1 ? 'CAT' : 'CATs'}`);
+                  }
+
+                  // Count Governance initiatives
+                  const governanceCount = initiatives.filter(i => i?.type === 'Governance' && i?.status !== 'Deleted').length;
+                  if (governanceCount > 0) {
+                    highlights.push(`${governanceCount} Governance ${governanceCount === 1 ? 'body' : 'bodies'}`);
+                  }
+
+                  // Find top revenue initiative
+                  const topRevenueInitiative = initiatives
+                    .filter(i => i?.financial_impact?.projected_annual || i?.financial_impact?.actual_revenue)
+                    .sort((a, b) => {
+                      const aRev = (a?.financial_impact?.actual_revenue || a?.financial_impact?.projected_annual || 0);
+                      const bRev = (b?.financial_impact?.actual_revenue || b?.financial_impact?.projected_annual || 0);
+                      return bRev - aRev;
+                    })[0];
+
+                  if (topRevenueInitiative) {
+                    const revenue = topRevenueInitiative?.financial_impact?.actual_revenue || topRevenueInitiative?.financial_impact?.projected_annual || 0;
+                    highlights.push(`${topRevenueInitiative?.initiative_name}: ${formatCurrency(revenue)}`);
+                  }
+
+                  // If no dynamic highlights, show a default message
+                  if (highlights.length === 0) {
+                    highlights.push('No key initiatives yet');
+                  }
+
+                  return highlights.map((work, idx) => (
+                    <div key={idx} className="flex items-start gap-2">
+                      <span className="text-[#9B2F6A]">•</span>
+                      <span className="text-[#565658]">{work}</span>
+                    </div>
+                  ));
+                } catch (error) {
+                  console.error('Error calculating Key Highlights:', error);
+                  // Fallback to safe display
+                  return (
+                    <div className="flex items-start gap-2">
+                      <span className="text-[#9B2F6A]">•</span>
+                      <span className="text-[#565658]">No highlights available</span>
+                    </div>
+                  );
+                }
+              })()}
             </div>
           </div>
 
@@ -1070,47 +1196,50 @@ function App() {
           {selectedMember.initiatives && selectedMember.initiatives.length > 0 && (
             <div className="mt-4">
               {(() => {
-                // Filter initiatives: Show only active and completed (hide On Hold, Cancelled)
-                const visibleInitiatives = selectedMember.initiatives.filter(
+                // Separate active and completed initiatives
+                const activeInitiatives = selectedMember.initiatives.filter(
                   (i) => i.status === 'Active' || i.status === 'Scaling' || i.status === 'Planning' ||
-                         i.status === 'In Progress' || i.status === 'Not Started' || i.status === 'Completed'
+                         i.status === 'In Progress' || i.status === 'Not Started' || i.status === 'On Hold'
+                );
+                const completedInitiatives = selectedMember.initiatives.filter(
+                  (i) => i.status === 'Completed'
                 );
 
-                if (visibleInitiatives.length === 0) return null;
+                const renderInitiativesByCategory = (initiatives: typeof selectedMember.initiatives, title: string) => {
+                  if (initiatives.length === 0) return null;
 
-                return (
-                  <>
-                    <h3 className="font-semibold text-sm mb-3 flex items-center justify-between">
-                      <span>Major Initiatives & Impact</span>
-                      <span className="text-xs font-normal text-gray-600">
-                        {visibleInitiatives.length} initiative{visibleInitiatives.length !== 1 ? 's' : ''}
-                      </span>
-                    </h3>
+                  const groupedInitiatives = initiatives.reduce((acc, initiative) => {
+                    const type = initiative.type || 'Other';
+                    if (!acc[type]) acc[type] = [];
+                    acc[type].push(initiative);
+                    return acc;
+                  }, {} as Record<string, typeof initiatives>);
 
-                    {/* Group initiatives by work type */}
-                    {(() => {
-                      const groupedInitiatives = visibleInitiatives.reduce((acc, initiative) => {
-                        const type = initiative.type || 'Other';
-                        if (!acc[type]) acc[type] = [];
-                        acc[type].push(initiative);
-                        return acc;
-                      }, {} as Record<string, typeof visibleInitiatives>);
+                  // Define order and colors for categories
+                  const categoryOrder = ['System Project', 'Project', 'System Initiative', 'Policy', 'Epic Gold', 'Governance', 'General Support', 'Other'];
+                  const categoryColors: Record<string, string> = {
+                    'System Project': '#9C5C9D',
+                    'Project': '#9C5C9D',
+                    'System Initiative': '#00A1E0',
+                    'Policy': '#6F47D0',
+                    'Epic Gold': '#9B2F6A',
+                    'Governance': '#6F47D0',
+                    'General Support': '#F58025',
+                    'Other': '#565658'
+                  };
 
-                      // Define order and colors for categories
-                      const categoryOrder = ['Project', 'System Initiative', 'Policy', 'Epic Gold', 'Governance', 'General Support', 'Other'];
-                      const categoryColors: Record<string, string> = {
-                        'Project': '#9C5C9D',
-                        'System Initiative': '#00A1E0',
-                        'Policy': '#6F47D0',
-                        'Epic Gold': '#9B2F6A',
-                        'Governance': '#6F47D0',
-                        'General Support': '#F58025',
-                        'Other': '#565658'
-                      };
+                  return (
+                    <div className="mb-6">
+                      <h3 className="font-semibold text-sm mb-3 flex items-center justify-between">
+                        <span>{title}</span>
+                        <span className="text-xs font-normal text-gray-600">
+                          {initiatives.length} initiative{initiatives.length !== 1 ? 's' : ''}
+                        </span>
+                      </h3>
 
-                      return categoryOrder.map((category) => {
-                        const initiatives = groupedInitiatives[category];
-                        if (!initiatives || initiatives.length === 0) return null;
+                      {categoryOrder.map((category) => {
+                        const categoryInitiatives = groupedInitiatives[category];
+                        if (!categoryInitiatives || categoryInitiatives.length === 0) return null;
 
                         return (
                           <div key={category} className="mb-4">
@@ -1129,18 +1258,25 @@ function App() {
                                 {category}
                               </h4>
                               <span className="text-xs text-gray-600">
-                                ({initiatives.length})
+                                ({categoryInitiatives.length})
                               </span>
                             </div>
                             <div className="space-y-2">
-                              {initiatives.map((initiative) => (
+                              {categoryInitiatives.map((initiative) => (
                                 <InitiativeCard key={initiative.id} initiative={initiative} />
                               ))}
                             </div>
                           </div>
                         );
-                      });
-                    })()}
+                      })}
+                    </div>
+                  );
+                };
+
+                return (
+                  <>
+                    {renderInitiativesByCategory(activeInitiatives, 'Active Initiatives & Impact')}
+                    {renderInitiativesByCategory(completedInitiatives, 'Completed Initiatives')}
                   </>
                 );
               })()}
@@ -1433,10 +1569,12 @@ function App() {
                   setShowGovernanceForm(false);
                   setEditingGovernanceRequest(null);
                 }}
-                onSuccess={() => {
+                onSuccess={async () => {
                   setShowGovernanceForm(false);
                   setEditingGovernanceRequest(null);
                   setGovernanceRefreshKey(prev => prev + 1); // Force portal refresh
+                  // Refresh dashboard data so counts update immediately
+                  await fetchTeamData();
                 }}
                 editingRequest={editingGovernanceRequest}
               />
@@ -1446,9 +1584,11 @@ function App() {
                 key={selectedGovernanceRequest.id}
                 request={selectedGovernanceRequest}
                 onClose={() => setSelectedGovernanceRequest(null)}
-                onUpdate={() => {
+                onUpdate={async () => {
                   setSelectedGovernanceRequest(null);
                   setGovernanceRefreshKey(prev => prev + 1); // Refresh portal after updates/deletes
+                  // Refresh dashboard data so counts update immediately
+                  await fetchTeamData();
                 }}
                 onEdit={(request) => {
                   setEditingGovernanceRequest(request);

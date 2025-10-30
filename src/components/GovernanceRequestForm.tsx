@@ -68,6 +68,7 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
     required_date: string;
     required_date_reason: string;
     additional_comments: string;
+    status: string;
   }>({
     title: editingRequest?.title || '',
     division_region: editingRequest?.division_region || '',
@@ -119,6 +120,9 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
 
     // Additional Comments
     additional_comments: editingRequest?.additional_comments || '',
+
+    // Status
+    status: editingRequest?.status || 'Draft',
   });
 
   // Metrics state (dynamic array)
@@ -282,13 +286,14 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
           .insert({
             ...requestData,
             request_id: requestId,
-            status: 'Draft',
+            status: 'Draft',  // Always set to Draft when saving as draft
           });
 
         if (insertError) throw insertError;
-
-        alert(`Draft SCI consultant request created: ${requestId}`);
       }
+
+      // Update formData status to reflect the save
+      setFormData(prev => ({ ...prev, status: 'Draft' }));
 
       onSuccess();
       onClose();
@@ -385,18 +390,17 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
       };
 
       if (isEditing) {
-        // Update existing request and change status to Submitted
+        // Update existing request and change status to Ready for Review
         const { error: updateError } = await supabase
           .from('governance_requests')
           .update({
             ...requestData,
+            status: 'Ready for Review',
             submitted_date: editingRequest.submitted_date || new Date().toISOString(),
           })
           .eq('id', editingRequest.id);
 
         if (updateError) throw updateError;
-
-        alert('SCI consultant request submitted for review!');
       } else {
         // Create new request and submit
         const requestId = await generateNextRequestId();
@@ -406,13 +410,15 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
           .insert({
             ...requestData,
             request_id: requestId,
+            status: 'Ready for Review',
             submitted_date: new Date().toISOString(),
           });
 
         if (insertError) throw insertError;
-
-        alert(`SCI consultant request submitted for review: ${requestId}`);
       }
+
+      // Update formData status to reflect the submission
+      setFormData(prev => ({ ...prev, status: 'Ready for Review' }));
 
       onSuccess();
       onClose();
@@ -515,12 +521,25 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
               <h2 className="text-2xl font-bold text-gray-900">
                 {isEditing ? 'Edit SCI Consultant Request' : 'New System-Level SCI Consultant Request'}
               </h2>
-              <p className="text-sm text-gray-600 mt-1">
-                {isEditing
-                  ? `Request ID: ${editingRequest.request_id}`
-                  : 'Submit a system-level initiative for review and approval'
-                }
-              </p>
+              <div className="flex items-center gap-3 mt-2">
+                <p className="text-sm text-gray-600">
+                  {isEditing
+                    ? `Request ID: ${editingRequest.request_id}`
+                    : 'Submit a system-level initiative for review and approval'
+                  }
+                </p>
+                {isEditing && (
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    formData.status === 'Draft' ? 'bg-gray-100 text-gray-700' :
+                    formData.status === 'Ready for Review' ? 'bg-blue-100 text-blue-700' :
+                    formData.status === 'Needs Refinement' ? 'bg-yellow-100 text-yellow-700' :
+                    formData.status === 'Ready for Governance' ? 'bg-green-100 text-green-700' :
+                    'bg-gray-100 text-gray-700'
+                  }`}>
+                    {formData.status}
+                  </span>
+                )}
+              </div>
             </div>
             <button
               onClick={onClose}
@@ -1163,7 +1182,7 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
             ) : (
               <Save className="w-4 h-4" />
             )}
-            {isEditing ? 'Update Draft' : 'Save as Draft'}
+            Save as Draft
           </button>
 
           <button
@@ -1176,7 +1195,7 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
             ) : (
               <CheckCircle2 className="w-4 h-4" />
             )}
-            {isEditing ? 'Update & Submit' : 'Submit for Review'}
+            {formData.status === 'Needs Refinement' ? 'Resubmit for Review' : 'Submit for Review'}
           </button>
 
           <button

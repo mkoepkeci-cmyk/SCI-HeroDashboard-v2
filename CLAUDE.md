@@ -17,6 +17,10 @@ A React-based dashboard application for tracking and visualizing the impact of C
 - ✅ Complete metrics tracking with validated data
 - ✅ Initiative management with full CRUD operations
 - ✅ Status standardization across all views
+- ✅ Real-time data refresh across all views (Dashboard, Workload, Governance)
+- ✅ Clickable revenue cards with initiative drilldown
+- ✅ Dynamic Key Highlights with live calculated metrics
+- ✅ Unified form for creating/editing all initiative types
 
 ### Data Status
 - **409 initiatives** populated and active
@@ -369,10 +373,16 @@ Shows 6 productivity metrics in 2x3 grid:
 - **Cancelled** - Initiative discontinued
 
 **Applied to:**
-- Dashboard filtering (Active tab shows: Not Started, In Progress)
+- Dashboard filtering (Active tab shows: Not Started, In Progress, On Hold, Active, Planning, Scaling)
 - Browse Initiatives filtering
-- Effort tracking (only shows active statuses)
+- Effort tracking (shows: Not Started, In Progress, On Hold, Active, Planning, Scaling)
 - Initiative cards and badges
+
+**Note on "On Hold" Status:**
+- Initiatives marked "On Hold" remain visible in all effort tracking views (SCI View, Dashboard Team View)
+- This allows teams to see paused work and manage capacity accordingly
+- "On Hold" initiatives are grouped with active work, not with completed initiatives
+- Use "On Hold" for temporary pauses; use "Cancelled" to permanently discontinue work
 
 ---
 

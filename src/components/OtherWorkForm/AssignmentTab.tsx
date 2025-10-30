@@ -7,12 +7,9 @@ interface TeamMemberAssignment {
   role: string;
 }
 
-interface Tab2Data {
-  teamMemberId: string;
-  role: string;
-  ownerName: string;
-  initiativeName: string;
-  type: string;
+interface AssignmentData {
+  title: string;
+  workType: string;
   status: string;
   phase: string;
   workEffort: string;
@@ -21,30 +18,27 @@ interface Tab2Data {
   startDate: string;
   endDate: string;
   timeframeDisplay: string;
-  clinicalSponsorName: string;
-  clinicalSponsorTitle: string;
-  governanceBodies: string;
-  keyCollaborators: string;
   directHoursPerWeek: string;
 }
 
-interface Tab2ContentProps {
-  data: Tab2Data;
-  setData: (data: Tab2Data) => void;
+interface AssignmentTabProps {
+  data: AssignmentData;
+  setData: (data: AssignmentData) => void;
   teamMembers: TeamMember[];
   loadingMembers: boolean;
   teamMemberAssignments: TeamMemberAssignment[];
   setTeamMemberAssignments: (assignments: TeamMemberAssignment[]) => void;
 }
 
-export const Tab2Content = ({
+export const AssignmentTab = ({
   data,
   setData,
   teamMembers,
   loadingMembers,
   teamMemberAssignments,
   setTeamMemberAssignments
-}: Tab2ContentProps) => {
+}: AssignmentTabProps) => {
+
   const addTeamMember = () => {
     setTeamMemberAssignments([...teamMemberAssignments, {
       teamMemberId: '',
@@ -76,19 +70,25 @@ export const Tab2Content = ({
 
   return (
     <div className="space-y-6">
-      {/* Initiative Name - Read-only display from Tab 1 */}
-      {data.initiativeName && (
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <div className="text-sm text-gray-500 mb-1">Initiative Name</div>
-          <div className="text-lg font-medium text-gray-900">{data.initiativeName}</div>
-        </div>
-      )}
+      {/* Title */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Title <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          value={data.title}
+          onChange={(e) => setData({ ...data, title: e.target.value })}
+          className="w-full border border-gray-300 rounded-lg p-2"
+          placeholder="Brief, descriptive title"
+        />
+      </div>
 
       {/* SCI Assignment */}
       <div>
         <h3 className="text-lg font-semibold mb-4">SCI Assignment</h3>
         <p className="text-sm text-gray-600 mb-4">
-          Assign SCIs to this initiative with their roles (Owner, Co-Owner, Secondary, Support).
+          Assign SCIs to this work item with their roles (Owner, Co-Owner, Secondary, Support).
         </p>
 
         {teamMemberAssignments.map((assignment, index) => (
@@ -142,7 +142,7 @@ export const Tab2Content = ({
 
         <button
           onClick={addTeamMember}
-          className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center gap-2"
+          className="mt-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
           Add Team Member
@@ -153,55 +153,40 @@ export const Tab2Content = ({
       <div>
         <h3 className="text-lg font-semibold mb-4">Work Type Details</h3>
         <div className="space-y-4">
-          {/* Initiative Name - editable field for entering/updating the name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Initiative Name
-            </label>
-            <input
-              type="text"
-              value={data.initiativeName}
-              onChange={(e) => setData({ ...data, initiativeName: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg p-2"
-              placeholder="Enter initiative name"
-            />
-          </div>
-
           <div className="grid grid-cols-2 gap-4">
-            {/* Work Type */}
+            {/* Work Type - FILTERED */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Work Type
+                Work Type <span className="text-red-500">*</span>
               </label>
               <select
-                value={data.type}
-                onChange={(e) => setData({ ...data, type: e.target.value })}
+                value={data.workType}
+                onChange={(e) => setData({ ...data, workType: e.target.value })}
                 className="w-full border border-gray-300 rounded-lg p-2"
               >
                 <option value="">Select work type</option>
                 <option value="Epic Gold">Epic Gold</option>
                 <option value="Governance">Governance</option>
-                <option value="System Initiative">System Initiative</option>
                 <option value="System Project">System Project</option>
                 <option value="Epic Upgrades">Epic Upgrades</option>
                 <option value="General Support">General Support</option>
                 <option value="Policy/Guidelines">Policy/Guidelines</option>
                 <option value="Market Project">Market Project</option>
                 <option value="Ticket">Ticket</option>
+                {/* System Initiative is EXCLUDED */}
               </select>
             </div>
 
             {/* Status */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Status
+                Status <span className="text-red-500">*</span>
               </label>
               <select
                 value={data.status}
                 onChange={(e) => setData({ ...data, status: e.target.value })}
                 className="w-full border border-gray-300 rounded-lg p-2"
               >
-                <option value="">Select status</option>
                 <option value="Not Started">Not Started</option>
                 <option value="In Progress">In Progress</option>
                 <option value="On Hold">On Hold</option>
@@ -241,7 +226,6 @@ export const Tab2Content = ({
                 onChange={(e) => setData({ ...data, workEffort: e.target.value })}
                 className="w-full border border-gray-300 rounded-lg p-2"
               >
-                <option value="">Select effort</option>
                 <option value="XS">XS - Less than 1 hr/wk</option>
                 <option value="S">S - 1-2 hrs/wk</option>
                 <option value="M">M - 2-5 hrs/wk</option>
@@ -249,6 +233,26 @@ export const Tab2Content = ({
                 <option value="XL">XL - More than 10 hrs/wk</option>
               </select>
             </div>
+
+            {/* Governance Direct Hours - Only show if Governance selected */}
+            {data.workType === 'Governance' && (
+              <div className="col-span-2 bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <label className="block text-sm font-medium text-purple-900 mb-1">
+                  Direct Hours Per Week (Governance Only)
+                </label>
+                <input
+                  type="number"
+                  step="0.5"
+                  value={data.directHoursPerWeek}
+                  onChange={(e) => setData({ ...data, directHoursPerWeek: e.target.value })}
+                  className="w-full border border-gray-300 rounded-lg p-2"
+                  placeholder="e.g., 2.5"
+                />
+                <p className="text-xs text-purple-700 mt-1">
+                  For Governance work, specify actual hours per week (bypasses capacity formula)
+                </p>
+              </div>
+            )}
 
             {/* EHRs Impacted */}
             <div>
@@ -258,7 +262,7 @@ export const Tab2Content = ({
                 onChange={(e) => setData({ ...data, ehrsImpacted: e.target.value })}
                 className="w-full border border-gray-300 rounded-lg p-2"
               >
-                <option value="">Select EHR</option>
+                <option value="">Select EHRs</option>
                 <option value="All">All</option>
                 <option value="Epic">Epic</option>
                 <option value="Cerner">Cerner</option>
@@ -291,26 +295,6 @@ export const Tab2Content = ({
               </select>
             </div>
           </div>
-
-          {/* Governance Type - Direct Hours (only show for Governance work type) */}
-          {data.type === 'Governance' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Direct Hours Per Week
-              </label>
-              <input
-                type="number"
-                step="0.5"
-                value={data.directHoursPerWeek}
-                onChange={(e) => setData({ ...data, directHoursPerWeek: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg p-2"
-                placeholder="e.g., 2.5"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                For Governance work, specify actual hours per week (bypasses capacity formula)
-              </p>
-            </div>
-          )}
         </div>
       </div>
 
@@ -339,69 +323,13 @@ export const Tab2Content = ({
           </div>
 
           <div className="col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Timeframe Display (Custom)
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Timeframe Display (Custom)</label>
             <input
               type="text"
               value={data.timeframeDisplay}
               onChange={(e) => setData({ ...data, timeframeDisplay: e.target.value })}
               className="w-full border border-gray-300 rounded-lg p-2"
-              placeholder="e.g., FY25-Q1 to Q3"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Governance & Collaboration */}
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Governance & Collaboration</h3>
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Clinical Sponsor Name</label>
-              <input
-                type="text"
-                value={data.clinicalSponsorName}
-                onChange={(e) => setData({ ...data, clinicalSponsorName: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg p-2"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Clinical Sponsor Title</label>
-              <input
-                type="text"
-                value={data.clinicalSponsorTitle}
-                onChange={(e) => setData({ ...data, clinicalSponsorTitle: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg p-2"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Governance Bodies (comma-separated)
-            </label>
-            <textarea
-              value={data.governanceBodies}
-              onChange={(e) => setData({ ...data, governanceBodies: e.target.value })}
-              rows={2}
-              className="w-full border border-gray-300 rounded-lg p-2"
-              placeholder="e.g., Clinical Informatics Council, Pharmacy Committee"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Key Collaborators (comma-separated)
-            </label>
-            <textarea
-              value={data.keyCollaborators}
-              onChange={(e) => setData({ ...data, keyCollaborators: e.target.value })}
-              rows={2}
-              className="w-full border border-gray-300 rounded-lg p-2"
-              placeholder="e.g., Dr. Smith, Nursing Leadership, IT Team"
+              placeholder="e.g., In Progress - Testing Phase"
             />
           </div>
         </div>

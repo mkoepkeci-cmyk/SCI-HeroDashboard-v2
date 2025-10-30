@@ -75,6 +75,46 @@ Ad-hoc SQL migrations from October 2025 that were run manually (not via Supabase
 **Note**: The official database migrations are in `/supabase/migrations/` (not archived).
 These ad-hoc migrations were applied directly to the database during development.
 
+### `/sql-adhoc/` - Ad-Hoc SQL Scripts (13 files)
+
+One-off SQL queries used for debugging, data fixes, and validation during development sessions.
+
+#### `/sql-adhoc/2025-10-name-sync-debug/` (10 files)
+**Session**: October 29, 2025 - Name display and trigger recursion fix
+**Issue**: Owner column showing "Marty" instead of "Marty Koepke" + infinite trigger recursion
+**Resolution**: Successfully updated 59 initiative records and fixed trigger bug
+
+Scripts from this session:
+- `check-names.sql` - Diagnostic queries to view all current names
+- `debug-marty-name.sql` - Marty-specific debugging queries
+- `disable-trigger-emergency.sql` - Emergency trigger disable to stop recursion
+- `fix-and-sync-names.sql` - Combined trigger fix + name sync attempt
+- `sync-all-owner-names.sql` - Sync all owner names from team_members table
+- `update-marty-name.sql` - Original name update attempt
+- `update-marty-to-full-name.sql` - Direct update for Marty records
+- `update-names-and-fix-trigger.sql` - ✅ **Final working script (run in production)**
+- `verify-final-result.sql` - Post-fix verification
+- `verify-names.sql` - Name verification query
+
+**Other scripts:**
+- `check_van_data.sql` - Data validation queries
+- `cleanup-governance-initiatives.sql` - Governance data cleanup
+- `deduplicate-abridge-metrics.sql` - Metrics deduplication
+
+### `/documentation/session-notes/` - Session Documentation (9 files)
+
+Development session notes providing context for major implementation phases:
+
+- `APPLY_SECURITY_FIX.md` - Security fix implementation notes
+- `DATABASE_STRUCTURE_AUDIT.md` - Database schema audit
+- `FIX_TEAM_MEMBER_EDITING.md` - Team member editing fixes
+- `MIGRATION_STATUS.md` - Migration tracking
+- `SECURITY_FIX_SUMMARY.md` - Security fix summary
+- `SESSION_SUMMARY.md` - Session progress notes
+- `STRATEGIC_DATABASE_ANALYSIS.md` - Database analysis
+- `UNIFIED_FORM_IMPLEMENTATION.md` - Unified form development guide
+- `dev.log` - Development log file
+
 ### `/documentation/` - Historical Documentation (30 files)
 
 Implementation notes, migration guides, testing documentation, and progress tracking from the development phase. These documents chronicle the evolution of the project but are not needed for ongoing operation.
@@ -117,3 +157,7 @@ Keep this archive intact for:
 - Historical project documentation
 - Knowledge transfer to new team members
 - Future reference if similar work is needed
+
+## Recent Cleanup
+
+**October 29, 2025**: Major codebase cleanup performed. See [CLEANUP_SUMMARY_2025-10-29.md](CLEANUP_SUMMARY_2025-10-29.md) for detailed information about files archived, removed, and organized.

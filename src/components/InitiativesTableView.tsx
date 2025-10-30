@@ -72,7 +72,8 @@ export const InitiativesTableView = ({ initiatives, onEdit, expandAll = false }:
     if (type === 'Market Project') return 'Market Projects';
     if (type === 'Ticket') return 'Tickets';
 
-    // Map "Project" to "System Projects"
+    // Map "Project" and "System Project" to "System Projects"
+    if (type === 'System Project') return 'System Projects';
     if (type === 'Project') return 'System Projects';
 
     // Everything else goes to Other (General Support, Policy/ Guideline, Epic Gold, Epic Upgrades, Skip, etc.)

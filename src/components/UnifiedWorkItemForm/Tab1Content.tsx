@@ -1,18 +1,4 @@
-import { Plus, X } from 'lucide-react';
 import { DIVISION_REGIONS } from '../../lib/governanceUtils';
-
-interface Metric {
-  metricName: string;
-  metricType: string;
-  unit: string;
-  baselineValue: string;
-  baselineDate: string;
-  currentValue: string;
-  measurementDate: string;
-  targetValue: string;
-  improvement: string;
-  measurementMethod: string;
-}
 
 interface Tab1Data {
   title: string;
@@ -55,35 +41,9 @@ interface Tab1Data {
 interface Tab1ContentProps {
   data: Tab1Data;
   setData: (data: Tab1Data) => void;
-  metrics: Metric[];
-  setMetrics: (metrics: Metric[]) => void;
 }
 
-export const Tab1Content = ({ data, setData, metrics, setMetrics }: Tab1ContentProps) => {
-  const addMetric = () => {
-    setMetrics([...metrics, {
-      metricName: '',
-      metricType: '',
-      unit: '',
-      baselineValue: '',
-      baselineDate: '',
-      currentValue: '',
-      measurementDate: '',
-      targetValue: '',
-      improvement: '',
-      measurementMethod: ''
-    }]);
-  };
-
-  const removeMetric = (index: number) => {
-    setMetrics(metrics.filter((_, i) => i !== index));
-  };
-
-  const updateMetric = (index: number, field: keyof Metric, value: string) => {
-    const updated = [...metrics];
-    updated[index][field] = value;
-    setMetrics(updated);
-  };
+export const Tab1Content = ({ data, setData }: Tab1ContentProps) => {
 
   return (
     <div className="space-y-6">
@@ -181,112 +141,6 @@ export const Tab1Content = ({ data, setData, metrics, setMetrics }: Tab1ContentP
             />
           </div>
         </div>
-      </div>
-
-      {/* Impact Metrics - Simplified for space */}
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Impact Metrics</h3>
-        <p className="text-sm text-gray-600 mb-4">
-          Add metrics to track the impact of this initiative (optional).
-        </p>
-        {metrics.map((metric, index) => (
-          <div key={index} className="mb-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
-            <div className="flex justify-between items-center mb-3">
-              <h4 className="font-medium text-gray-700">Metric {index + 1}</h4>
-              {metrics.length > 1 && (
-                <button
-                  onClick={() => removeMetric(index)}
-                  className="text-red-600 hover:text-red-800 text-sm"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Metric Name</label>
-                <input
-                  type="text"
-                  value={metric.metricName}
-                  onChange={(e) => updateMetric(index, 'metricName', e.target.value)}
-                  className="w-full border border-gray-300 rounded p-2 text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Type</label>
-                <select
-                  value={metric.metricType}
-                  onChange={(e) => updateMetric(index, 'metricType', e.target.value)}
-                  className="w-full border border-gray-300 rounded p-2 text-sm"
-                >
-                  <option value="">Select</option>
-                  <option value="Quality">Quality</option>
-                  <option value="Efficiency">Efficiency</option>
-                  <option value="Adoption">Adoption</option>
-                  <option value="Financial">Financial</option>
-                  <option value="Safety">Safety</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Unit</label>
-                <select
-                  value={metric.unit}
-                  onChange={(e) => updateMetric(index, 'unit', e.target.value)}
-                  className="w-full border border-gray-300 rounded p-2 text-sm"
-                >
-                  <option value="">Select</option>
-                  <option value="Percentage">%</option>
-                  <option value="Minutes">Minutes</option>
-                  <option value="Hours">Hours</option>
-                  <option value="Count">Count</option>
-                  <option value="Dollars">$</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Baseline Value</label>
-                <input
-                  type="text"
-                  value={metric.baselineValue}
-                  onChange={(e) => updateMetric(index, 'baselineValue', e.target.value)}
-                  className="w-full border border-gray-300 rounded p-2 text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Target Value</label>
-                <input
-                  type="text"
-                  value={metric.targetValue}
-                  onChange={(e) => updateMetric(index, 'targetValue', e.target.value)}
-                  className="w-full border border-gray-300 rounded p-2 text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Measurement Method</label>
-                <input
-                  type="text"
-                  value={metric.measurementMethod}
-                  onChange={(e) => updateMetric(index, 'measurementMethod', e.target.value)}
-                  className="w-full border border-gray-300 rounded p-2 text-sm"
-                  placeholder="How measured?"
-                />
-              </div>
-            </div>
-          </div>
-        ))}
-
-        <button
-          onClick={addMetric}
-          className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          Add Metric
-        </button>
       </div>
 
       {/* Additional Comments */}

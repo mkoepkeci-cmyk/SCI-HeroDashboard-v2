@@ -478,8 +478,9 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
   };
 
   return (
-    <div className="bg-white border rounded-lg p-6 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between mb-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+      <div className="bg-white border rounded-lg shadow-xl w-full max-w-6xl my-8 p-6">
+        <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-xl font-bold text-[#9B2F6A]">{isEditing ? 'Edit Initiative' : 'Submit Initiative Data'}</h2>
           {isEditing && editingInitiative && (
@@ -1293,6 +1294,7 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
           </div>
         </div>
       </form>
+    </div>
     </div>
   );
 };

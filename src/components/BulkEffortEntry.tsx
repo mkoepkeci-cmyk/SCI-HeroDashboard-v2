@@ -264,7 +264,7 @@ export default function BulkEffortEntry({
       let filteredInitiatives = allInitiatives.filter(
         i => (
           i.status === 'Active' || i.status === 'Planning' || i.status === 'Scaling' ||
-          i.status === 'Not Started' || i.status === 'In Progress'
+          i.status === 'Not Started' || i.status === 'In Progress' || i.status === 'On Hold'
         )
       );
 

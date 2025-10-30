@@ -95,19 +95,6 @@ export const UnifiedWorkItemForm = ({
     additional_comments: ''
   });
 
-  const [tab1Metrics, setTab1Metrics] = useState<Metric[]>([{
-    metricName: '',
-    metricType: '',
-    unit: '',
-    baselineValue: '',
-    baselineDate: '',
-    currentValue: '',
-    measurementDate: '',
-    targetValue: '',
-    improvement: '',
-    measurementMethod: ''
-  }]);
-
   // Tab 2: Work Scope & Assignments (Initiative core - REQUIRED FIELDS)
   const [tab2Data, setTab2Data] = useState({
     teamMemberId: '',
@@ -161,14 +148,14 @@ export const UnifiedWorkItemForm = ({
   }]);
 
   const [tab4Financial, setTab4Financial] = useState({
-    actualRevenue: '',
-    actualTimeframe: '',
-    measurementStartDate: '',
-    measurementEndDate: '',
     projectedAnnual: '',
     projectionBasis: '',
     calculationMethodology: '',
-    keyAssumptions: ''
+    keyAssumptions: '',
+    actualRevenue: '',
+    actualTimeframe: '',
+    measurementStartDate: '',
+    measurementEndDate: ''
   });
 
   const [tab4Performance, setTab4Performance] = useState({
@@ -312,6 +299,15 @@ export const UnifiedWorkItemForm = ({
       directHoursPerWeek: (initiative as any).direct_hours_per_week?.toString() || ''
     });
 
+    // Populate team member assignments for Tab 2
+    if (initiative.team_member_id && initiative.owner_name) {
+      setTeamMemberAssignments([{
+        teamMemberId: initiative.team_member_id,
+        teamMemberName: initiative.owner_name,
+        role: initiative.role || 'Owner'
+      }]);
+    }
+
     // Tab 3: Proposed Solution & Journal
     setTab3Data({
       proposedSolution: initiative.proposed_solution || '',
@@ -431,8 +427,9 @@ export const UnifiedWorkItemForm = ({
       additional_comments: request.additional_comments || ''
     });
 
+    // Load metrics into Tab 4 (Outcomes & Results), not Tab 1
     if (request.impact_metrics && request.impact_metrics.length > 0) {
-      setTab1Metrics(request.impact_metrics.map((m: any) => ({
+      setTab4Metrics(request.impact_metrics.map((m: any) => ({
         metricName: m.metric_name || '',
         metricType: m.metric_type || '',
         unit: m.unit || '',
@@ -454,19 +451,12 @@ export const UnifiedWorkItemForm = ({
     }));
   };
 
-  // Validation
+  // Validation - All fields are optional for progressive data entry
   const validateForm = () => {
     const errors: string[] = [];
 
-    if (!tab2Data.initiativeName?.trim()) {
-      errors.push('Initiative name is required (Tab 2)');
-    }
-    if (!tab2Data.type) {
-      errors.push('Work type is required (Tab 2)');
-    }
-    if (!tab2Data.status) {
-      errors.push('Status is required (Tab 2)');
-    }
+    // No required fields - allow saving with any amount of data
+    // Users can progressively fill out the form over time
 
     if (errors.length > 0) {
       setError(errors.join(', '));
@@ -525,22 +515,22 @@ export const UnifiedWorkItemForm = ({
         regions_impacted: tab1Data.regions_impacted,
         required_date: tab1Data.required_date,
         required_date_reason: tab1Data.required_date_reason,
-        additional_comments: tab1Data.additional_comments,
-        impact_metrics: tab1Metrics
-          .filter(m => m.metricName?.trim())
-          .map(m => ({
-            metric_name: m.metricName,
-            metric_type: m.metricType,
-            unit: m.unit,
-            baseline_value: m.baselineValue ? parseFloat(m.baselineValue) : null,
-            baseline_date: m.baselineDate,
-            current_value: m.currentValue ? parseFloat(m.currentValue) : null,
-            measurement_date: m.measurementDate,
-            target_value: m.targetValue ? parseFloat(m.targetValue) : null,
-            improvement: m.improvement,
-            measurement_method: m.measurementMethod
-          }))
+        additional_comments: tab1Data.additional_comments
       };
+
+      // Get primary assignment from teamMemberAssignments array
+      const primaryAssignment = teamMemberAssignments[0];
+      const primaryTeamMemberId = primaryAssignment?.teamMemberId || null;
+      const primaryRole = primaryAssignment?.role || null;
+      const primaryOwnerName = primaryAssignment?.teamMemberName || teamMembers.find(m => m.id === primaryTeamMemberId)?.name || '';
+
+      console.log('💾 Saving with team member data:', {
+        primaryAssignment,
+        primaryTeamMemberId,
+        primaryRole,
+        primaryOwnerName,
+        allAssignments: teamMemberAssignments
+      });
 
       // Prepare initiative data
       const initiativeData = {
@@ -551,10 +541,10 @@ export const UnifiedWorkItemForm = ({
         request_id: linkedGovernanceRequest?.request_id || editingInitiative?.request_id || null,
         governance_request_id: linkedGovernanceRequest?.id || editingInitiative?.governance_request_id || null,
 
-        // Tab 2
-        team_member_id: tab2Data.teamMemberId || null,
-        role: tab2Data.role || null,
-        owner_name: tab2Data.ownerName || teamMembers.find(m => m.id === tab2Data.teamMemberId)?.name || '',
+        // Tab 2 - Use teamMemberAssignments array instead of tab2Data
+        team_member_id: primaryTeamMemberId,
+        role: primaryRole,
+        owner_name: primaryOwnerName,
         initiative_name: tab2Data.initiativeName,
         type: tab2Data.type,
         status: tab2Data.status,
@@ -586,13 +576,19 @@ export const UnifiedWorkItemForm = ({
       let initiativeId = editingInitiative?.id;
 
       if (isEditing) {
+        console.log('📝 Updating initiative with ID:', editingInitiative.id);
         const { error: updateError } = await supabase
           .from('initiatives')
           .update(initiativeData)
           .eq('id', editingInitiative.id);
 
-        if (updateError) throw updateError;
+        if (updateError) {
+          console.error('❌ Update error:', updateError);
+          throw updateError;
+        }
+        console.log('✅ Initiative updated successfully');
       } else {
+        console.log('➕ Inserting new initiative');
         const { data: insertedData, error: insertError } = await supabase
           .from('initiatives')
           .insert({
@@ -602,19 +598,60 @@ export const UnifiedWorkItemForm = ({
           .select('id')
           .single();
 
-        if (insertError) throw insertError;
+        if (insertError) {
+          console.error('❌ Insert error:', insertError);
+          throw insertError;
+        }
         initiativeId = insertedData.id;
+        console.log('✅ Initiative inserted with ID:', initiativeId);
       }
 
       if (!initiativeId) {
         throw new Error('Failed to get initiative ID');
       }
 
-      // Tab 4: Save related tables (simplified for now - full implementation in tab components)
-      // Metrics, financial, performance, projections, stories...
-      // (Full save logic will be in the actual implementation)
+      // Tab 4: Save related tables
+      console.log('💾 Saving Tab 4 related data...');
 
-      await recalculateDashboardMetrics();
+      // 1. Save Financial Impact
+      if (tab4Financial.projectedAnnual || tab4Financial.actualRevenue) {
+        const financialData = {
+          initiative_id: initiativeId,
+          projected_annual: parseFloat(tab4Financial.projectedAnnual) || null,
+          projection_basis: tab4Financial.projectionBasis || null,
+          calculation_methodology: tab4Financial.calculationMethodology || null,
+          key_assumptions: tab4Financial.keyAssumptions || null,
+          actual_revenue: parseFloat(tab4Financial.actualRevenue) || null,
+          actual_timeframe: tab4Financial.actualTimeframe || null,
+          measurement_start_date: tab4Financial.measurementStartDate || null,
+          measurement_end_date: tab4Financial.measurementEndDate || null
+        };
+
+        // Check if financial impact already exists
+        const { data: existingFinancial } = await supabase
+          .from('initiative_financial_impact')
+          .select('id')
+          .eq('initiative_id', initiativeId)
+          .single();
+
+        if (existingFinancial) {
+          // Update existing
+          await supabase
+            .from('initiative_financial_impact')
+            .update(financialData)
+            .eq('initiative_id', initiativeId);
+          console.log('✅ Financial impact updated');
+        } else {
+          // Insert new
+          await supabase
+            .from('initiative_financial_impact')
+            .insert(financialData);
+          console.log('✅ Financial impact inserted');
+        }
+      }
+
+      // Dashboard metrics will update automatically via real-time queries in parent component
+      // No need to manually recalculate - parent's onSuccess() calls loadData() which refreshes everything
 
       onSuccess();
       onClose();
@@ -650,7 +687,6 @@ export const UnifiedWorkItemForm = ({
               onClick={() => setActiveTab('tab1')}
             >
               Request Details
-              <span className="ml-2 text-xs text-gray-400">(optional)</span>
             </button>
             <button
               className={`py-3 px-4 text-sm font-medium border-b-2 transition-colors ${
@@ -659,7 +695,6 @@ export const UnifiedWorkItemForm = ({
               onClick={() => setActiveTab('tab2')}
             >
               Work Scope & Assignments
-              <span className="ml-2 text-xs text-red-500">*</span>
             </button>
             <button
               className={`py-3 px-4 text-sm font-medium border-b-2 transition-colors ${
@@ -697,8 +732,6 @@ export const UnifiedWorkItemForm = ({
             <Tab1Content
               data={tab1Data}
               setData={setTab1Data}
-              metrics={tab1Metrics}
-              setMetrics={setTab1Metrics}
             />
           )}
           {activeTab === 'tab2' && (
