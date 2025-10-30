@@ -8,6 +8,7 @@ interface TeamCapacityCardProps {
   capacityStatus: string;
   initiativeCount: number;
   onClick: () => void;
+  onLoadBalance?: (e: React.MouseEvent) => void;
 }
 
 export function TeamCapacityCard({
@@ -17,6 +18,7 @@ export function TeamCapacityCard({
   capacityStatus,
   initiativeCount,
   onClick,
+  onLoadBalance,
 }: TeamCapacityCardProps) {
   const variance = actualHours - plannedHours;
   const varianceFormatted = variance >= 0 ? `+${variance.toFixed(1)}h` : `${variance.toFixed(1)}h`;
@@ -92,6 +94,19 @@ export function TeamCapacityCard({
           <span className={`font-semibold ${varianceColor}`}>{varianceFormatted}</span>
         </div>
       </div>
+
+      {/* Load Balance Button */}
+      {onLoadBalance && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onLoadBalance(e);
+          }}
+          className="mt-3 w-full text-xs py-1.5 px-2 bg-[#9B2F6A] text-white rounded hover:bg-[#8B2858] flex items-center justify-center gap-1 transition-colors font-semibold"
+        >
+          ⚖️ Load Balance
+        </button>
+      )}
     </div>
   );
 }

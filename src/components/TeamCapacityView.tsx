@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { TeamMemberWithDetails, Manager } from '../lib/supabase';
 import { TeamCapacityCard } from './TeamCapacityCard';
 import { TeamCapacityModal } from './TeamCapacityModal';
+import { LoadBalanceModal } from './LoadBalanceModal';
 import { supabase } from '../lib/supabase';
 import { PieChart, Pie, BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -24,6 +25,7 @@ export default function TeamCapacityView({ teamMembers, managers }: TeamCapacity
   const [loading, setLoading] = useState(true);
   const [selectedMember, setSelectedMember] = useState<TeamMemberWithDetails | null>(null);
   const [showTeamAnalytics, setShowTeamAnalytics] = useState(false);
+  const [loadBalanceFrom, setLoadBalanceFrom] = useState<TeamMemberCapacity | null>(null);
   const [configWeights, setConfigWeights] = useState<{
     effortSizes: Record<string, number>;
     roleWeights: Record<string, number>;
@@ -228,6 +230,10 @@ export default function TeamCapacityView({ teamMembers, managers }: TeamCapacity
               capacityStatus={getCapacityStatus(capacity.plannedPct)}
               initiativeCount={activeInitiatives.length}
               onClick={() => setSelectedMember(capacity.member)}
+              onLoadBalance={(e) => {
+                e.stopPropagation();
+                setLoadBalanceFrom(capacity);
+              }}
             />
           );
         })}
@@ -592,6 +598,61 @@ export default function TeamCapacityView({ teamMembers, managers }: TeamCapacity
           />
         );
       })()}
+
+      {/* Load Balance Modal */}
+      {loadBalanceFrom && (
+        <LoadBalanceModal
+          fromMember={{
+            id: loadBalanceFrom.member.id,
+            name: loadBalanceFrom.member.name,
+            capacity_utilization: loadBalanceFrom.plannedPct / 100,
+            active_hours_per_week: loadBalanceFrom.actualHours,
+            available_hours: 40 - loadBalanceFrom.plannedHours,
+            workTypes: (loadBalanceFrom.member.initiatives || [])
+              .filter(i => ['Active', 'In Progress', 'Not Started', 'Planning', 'Scaling'].includes(i.status || ''))
+              .reduce((acc, init) => {
+                const type = init.type || 'Other';
+                acc[type] = (acc[type] || 0) + 1;
+                return acc;
+              }, {} as Record<string, number>),
+            assignments: (loadBalanceFrom.member.initiatives || [])
+              .filter(i => ['Active', 'In Progress', 'Not Started', 'Planning', 'Scaling'].includes(i.status || ''))
+              .map(i => ({
+                id: i.id,
+                assignment_name: i.initiative_name || 'Unnamed',
+                work_type: i.type || 'Other',
+                work_effort: i.work_effort,
+                status: i.status || 'Unknown',
+                phase: i.phase,
+              })),
+          }}
+          allMembers={capacityData.map(c => ({
+            id: c.member.id,
+            name: c.member.name,
+            capacity_utilization: c.plannedPct / 100,
+            active_hours_per_week: c.actualHours,
+            available_hours: 40 - c.plannedHours,
+            workTypes: (c.member.initiatives || [])
+              .filter(i => ['Active', 'In Progress', 'Not Started', 'Planning', 'Scaling'].includes(i.status || ''))
+              .reduce((acc, init) => {
+                const type = init.type || 'Other';
+                acc[type] = (acc[type] || 0) + 1;
+                return acc;
+              }, {} as Record<string, number>),
+            assignments: (c.member.initiatives || [])
+              .filter(i => ['Active', 'In Progress', 'Not Started', 'Planning', 'Scaling'].includes(i.status || ''))
+              .map(i => ({
+                id: i.id,
+                assignment_name: i.initiative_name || 'Unnamed',
+                work_type: i.type || 'Other',
+                work_effort: i.work_effort,
+                status: i.status || 'Unknown',
+                phase: i.phase,
+              })),
+          }))}
+          onClose={() => setLoadBalanceFrom(null)}
+        />
+      )}
     </>
   );
 }

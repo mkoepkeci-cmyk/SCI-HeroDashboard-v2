@@ -90,7 +90,15 @@ export function LoadBalanceModal({ fromMember, allMembers, onClose }: LoadBalanc
       setAiRecommendations(data.message);
     } catch (err) {
       console.error('Load balance analysis error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to analyze workload');
+
+      // Check if we're in local development (API route doesn't exist)
+      const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+      if (isLocalDev) {
+        setError('🔧 Local Development Mode\n\nThe AI Load Balance API is not available in local development. This feature will work once the app is deployed to Vercel with the ANTHROPIC_API_KEY environment variable configured.\n\nTo enable AI load balancing:\n1. Deploy to Vercel\n2. Add ANTHROPIC_API_KEY in Vercel Environment Variables\n3. The feature will automatically work in production!\n\nFor now, you can see the UI and test the modal functionality.');
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to analyze workload');
+      }
     } finally {
       setIsAnalyzing(false);
     }
