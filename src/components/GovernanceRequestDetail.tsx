@@ -105,7 +105,11 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
 
       // Phase 1: Create initiative when status changes to "Ready for Review" (if SCI is assigned)
       if (newStatus === 'Ready for Review' && formData.assigned_sci_id && !request.linked_initiative_id) {
-        console.log('Phase 1: Creating minimal initiative for Ready for Review status...');
+        console.log('Phase 1: Creating minimal initiative for Ready for Review status...', {
+          request_id: request.request_id,
+          assigned_sci_name: formData.assigned_sci_name,
+          assigned_sci_id: formData.assigned_sci_id
+        });
         const result = await createInitiativeForAssignedRequest(
           request.id,
           formData.assigned_sci_id,
@@ -115,20 +119,64 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
         if (!result.success && !result.error?.includes('already exists')) {
           console.warn('Phase 1 failed:', result.error);
         } else {
-          console.log('Phase 1 complete: Initiative created:', result.initiativeId);
+          console.log('Phase 1 complete: Initiative created:', {
+            initiativeId: result.initiativeId,
+            request_id: request.request_id,
+            owner_name: formData.assigned_sci_name,
+            team_member_id: formData.assigned_sci_id
+          });
         }
       }
 
       // Phase 2: Populate full details when status changes to "Ready for Governance"
-      if (newStatus === 'Ready for Governance' && request.linked_initiative_id) {
-        console.log('Phase 2: Populating full initiative details for Ready for Governance status...');
-        const result = await populateInitiativeDetails(request.id);
+      if (newStatus === 'Ready for Governance') {
+        // Defensive check: If Phase 1 never ran, run it first
+        if (!request.linked_initiative_id && formData.assigned_sci_id) {
+          console.log('Phase 2 blocked: Phase 1 never ran. Running Phase 1 first...', {
+            request_id: request.request_id,
+            assigned_sci_name: formData.assigned_sci_name,
+            assigned_sci_id: formData.assigned_sci_id
+          });
 
-        if (!result.success) {
-          console.warn('Phase 2 failed:', result.error);
-          alert(`Warning: Initiative details could not be populated: ${result.error}`);
+          const phase1Result = await createInitiativeForAssignedRequest(
+            request.id,
+            formData.assigned_sci_id,
+            formData.assigned_sci_name || 'Unknown'
+          );
+
+          if (!phase1Result.success && !phase1Result.error?.includes('already exists')) {
+            console.error('Phase 1 (defensive) failed:', phase1Result.error);
+            alert(`Error: Could not create initiative before populating details: ${phase1Result.error}`);
+            return; // Don't proceed to Phase 2 if Phase 1 failed
+          } else {
+            console.log('Phase 1 (defensive) complete, now proceeding to Phase 2');
+            // Update local state so Phase 2 can proceed
+            request.linked_initiative_id = phase1Result.initiativeId;
+          }
+        }
+
+        // Now run Phase 2 (either initiative existed or was just created)
+        if (request.linked_initiative_id) {
+          console.log('Phase 2: Populating full initiative details for Ready for Governance status...', {
+            request_id: request.request_id,
+            linked_initiative_id: request.linked_initiative_id
+          });
+          const result = await populateInitiativeDetails(request.id);
+
+          if (!result.success) {
+            console.warn('Phase 2 failed:', result.error);
+            alert(`Warning: Initiative details could not be populated: ${result.error}`);
+          } else {
+            console.log('Phase 2 complete: Initiative fully populated:', {
+              initiativeId: result.initiativeId,
+              request_id: request.request_id,
+              status: 'In Progress',
+              phase: 'Discovery/Define'
+            });
+          }
         } else {
-          console.log('Phase 2 complete: Initiative fully populated:', result.initiativeId);
+          console.error('Phase 2 blocked: No initiative exists and no SCI assigned');
+          alert('Error: Cannot move to "Ready for Governance" without assigning an SCI first.');
         }
       }
 
@@ -455,7 +503,36 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
 
                     if (error) throw error;
 
-                    // Call handleStatusChange for Phase 1/2 workflow triggers
+                    // Phase 1: Create initiative when SCI is assigned (at any status: Draft, Ready for Review, Needs Refinement)
+                    const sciWasAssigned = assignedSciId && assignedSciId !== request.assigned_sci_id;
+                    const noInitiativeYet = !request.linked_initiative_id;
+
+                    if (sciWasAssigned && noInitiativeYet) {
+                      console.log('Phase 1: Creating initiative because SCI was assigned', {
+                        request_id: request.request_id,
+                        assigned_sci_name: selectedSci?.name,
+                        assigned_sci_id: assignedSciId,
+                        current_status: formData.status
+                      });
+
+                      const result = await createInitiativeForAssignedRequest(
+                        request.id,
+                        assignedSciId,
+                        selectedSci?.name || 'Unknown'
+                      );
+
+                      if (!result.success && !result.error?.includes('already exists')) {
+                        console.warn('Phase 1 failed:', result.error);
+                        alert(`Warning: Could not create initiative: ${result.error}`);
+                      } else {
+                        console.log('Phase 1 complete: Initiative created for effort tracking', {
+                          initiativeId: result.initiativeId,
+                          request_id: request.request_id
+                        });
+                      }
+                    }
+
+                    // Call handleStatusChange for Phase 2 workflow trigger
                     if (formData.status !== request.status) {
                       await handleStatusChange(formData.status);
                     } else {

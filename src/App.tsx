@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 import { DollarSign, Award, Loader2, Plus, List, TrendingUp, Search, Filter, X, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
-import { supabase, TeamMember, Manager, WorkTypeSummary, EHRPlatformSummary, KeyHighlight, InitiativeWithDetails, Assignment, DashboardMetrics } from './lib/supabase';
+import { supabase, TeamMember, Manager, WorkTypeSummary, EHRPlatformSummary, KeyHighlight, InitiativeWithDetails, DashboardMetrics } from './lib/supabase';
 import { InitiativeSubmissionForm } from './components/InitiativeSubmissionForm';
 import { InitiativeCard } from './components/InitiativeCard';
 import { InitiativesView } from './components/InitiativesView';
@@ -27,7 +27,6 @@ interface TeamMemberWithDetails extends TeamMember {
   ehrs: { [key: string]: number };
   topWork: string[];
   initiatives: InitiativeWithDetails[];
-  assignments: Assignment[];
   dashboard_metrics?: DashboardMetrics;
   // DELETED: calculatedCapacity, capacityUtilization, incompleteCount, activeInitiativeCount
   // Will use getTeamMemberWorkloadData() from workloadCalculator instead
@@ -166,12 +165,6 @@ function App() {
 
       if (storiesError) throw storiesError;
 
-      const { data: assignments, error: assignmentsError} = await supabase
-        .from('assignments')
-        .select('*');
-
-      if (assignmentsError) throw assignmentsError;
-
       // Fetch dashboard metrics (pre-calculated from Excel Dashboard)
       const { data: dashboardMetrics, error: dashboardError } = await supabase
         .from('dashboard_metrics')
@@ -217,10 +210,6 @@ function App() {
         // Get initiatives for this member (filter out deleted)
         const memberInitiatives = initiativesWithDetails.filter(
           (i) => (i.team_member_id === member.id || i.owner_name === member.name) && i.status !== 'Deleted'
-        );
-
-        const memberAssignments = (assignments || []).filter(
-          (a) => a.team_member_id === member.id
         );
 
         // Get dashboard metrics for this member
@@ -290,7 +279,6 @@ function App() {
           ehrs: memberEHRs,
           topWork: memberHighlights,
           initiatives: memberInitiatives,
-          assignments: memberAssignments,
           dashboard_metrics: memberDashboardMetrics,
         };
       });

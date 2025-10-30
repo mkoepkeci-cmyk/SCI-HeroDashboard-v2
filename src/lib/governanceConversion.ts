@@ -7,6 +7,7 @@
  */
 
 import { supabase, GovernanceRequest, Initiative, TeamMember } from './supabase';
+import { recalculateDashboardMetrics } from './workloadCalculator';
 
 /**
  * Phase 1: Create a minimal initiative when an SCI is assigned
@@ -63,8 +64,10 @@ export async function createInitiativeForAssignedRequest(
         type: 'System Initiative',  // System Initiative work type
         status: 'Not Started',  // Will become In Progress in Phase 2
         role: 'Owner',
+        work_effort: govRequest.work_effort,  // Transfer work effort estimate from governance request
         team_member_id: assignedSciId,
         governance_request_id: govRequest.id,  // Link back to governance request
+        request_id: govRequest.request_id,  // GOV-YYYY-XXX display ID for UI
         clinical_sponsor_name: govRequest.system_clinical_leader,
         is_draft: false,
         is_active: true,
@@ -92,6 +95,17 @@ export async function createInitiativeForAssignedRequest(
 
     if (updateError) {
       console.warn('Failed to update governance request:', updateError);
+    }
+
+    // Recalculate dashboard metrics for the assigned SCI
+    if (assignedSciId) {
+      try {
+        await recalculateDashboardMetrics(assignedSciId);
+        console.log('Phase 1: Dashboard metrics recalculated for', assignedSciName);
+      } catch (metricsError) {
+        console.warn('Failed to recalculate dashboard metrics:', metricsError);
+        // Don't fail the whole operation if metrics update fails
+      }
     }
 
     return {
@@ -168,13 +182,60 @@ export async function populateInitiativeDetails(
         owner_name: govRequest.assigned_sci_name || govRequest.owner_name,
         team_member_id: govRequest.assigned_sci_id || govRequest.team_member_id,
 
-        // Data from governance request
+        // Ensure work effort is set (defense-in-depth in case Phase 1 missed it)
+        work_effort: govRequest.work_effort,
+
+        // Ensure display ID is set (defense-in-depth)
+        request_id: govRequest.request_id,  // GOV-YYYY-XXX display ID for UI
+
+        // Core governance data
         problem_statement: govRequest.problem_statement,
         desired_outcomes: govRequest.desired_outcomes,
         governance_bodies: govRequest.governance_bodies,
         key_collaborators: govRequest.key_collaborators,
         start_date: govRequest.submitted_date || new Date().toISOString(),
         timeframe_display: `Target: ${govRequest.target_timeline || 'TBD'}`,
+
+        // Value propositions
+        patient_care_value: govRequest.patient_care_value,
+        compliance_regulatory_value: govRequest.compliance_regulatory_value,
+        estimated_scope: govRequest.estimated_scope,
+
+        // Basic information
+        division_region: govRequest.division_region,
+        submitter_name: govRequest.submitter_name,
+        submitter_email: govRequest.submitter_email,
+
+        // Impact categories (strategic alignment)
+        impact_commonspirit_board_goal: govRequest.impact_commonspirit_board_goal || false,
+        impact_commonspirit_2026_5for25: govRequest.impact_commonspirit_2026_5for25 || false,
+        impact_system_policy: govRequest.impact_system_policy || false,
+        impact_patient_safety: govRequest.impact_patient_safety || false,
+        impact_regulatory_compliance: govRequest.impact_regulatory_compliance || false,
+        impact_financial: govRequest.impact_financial || false,
+        impact_other: govRequest.impact_other,
+
+        // Supporting information
+        supporting_information: govRequest.supporting_information,
+
+        // Groups impacted (stakeholder tracking)
+        groups_nurses: govRequest.groups_nurses || false,
+        groups_physicians_apps: govRequest.groups_physicians_apps || false,
+        groups_therapies: govRequest.groups_therapies || false,
+        groups_lab: govRequest.groups_lab || false,
+        groups_pharmacy: govRequest.groups_pharmacy || false,
+        groups_radiology: govRequest.groups_radiology || false,
+        groups_administration: govRequest.groups_administration || false,
+        groups_other: govRequest.groups_other,
+
+        // Regional impact
+        regions_impacted: govRequest.regions_impacted,
+        required_date: govRequest.required_date,
+        required_date_reason: govRequest.required_date_reason,
+
+        // Additional context
+        additional_comments: govRequest.additional_comments,
+
         updated_at: new Date().toISOString()
       })
       .eq('id', govRequest.linked_initiative_id)
@@ -287,6 +348,17 @@ export async function populateInitiativeDetails(
     }
 
     console.log('Phase 2 complete: Initiative fully populated with metrics, financials, and searchable');
+
+    // Recalculate dashboard metrics for the assigned SCI
+    if (govRequest.assigned_sci_id) {
+      try {
+        await recalculateDashboardMetrics(govRequest.assigned_sci_id);
+        console.log('Phase 2: Dashboard metrics recalculated for', govRequest.assigned_sci_name);
+      } catch (metricsError) {
+        console.warn('Failed to recalculate dashboard metrics:', metricsError);
+        // Don't fail the whole operation if metrics update fails
+      }
+    }
 
     return {
       success: true,

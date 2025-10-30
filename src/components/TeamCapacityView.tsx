@@ -88,7 +88,7 @@ export default function TeamCapacityView({ teamMembers, managers }: TeamCapacity
     const capacities = await Promise.all(
       teamMembers.map(async (member) => {
         // Calculate planned hours
-        const activeStatuses = ['Active', 'Planning', 'Scaling', 'Not Started', 'In Progress'];
+        const activeStatuses = ['Active', 'Planning', 'Scaling', 'Not Started', 'In Progress', 'On Hold'];
         const activeInitiatives = (member.initiatives || []).filter(i =>
           activeStatuses.includes(i.status || '')
         );
@@ -216,7 +216,7 @@ export default function TeamCapacityView({ teamMembers, managers }: TeamCapacity
       <div className="grid gap-3 mb-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
         {filteredCapacityData.map(capacity => {
           // Filter to ONLY active initiatives for the count
-          const activeStatuses = ['Active', 'Planning', 'Scaling', 'Not Started', 'In Progress'];
+          const activeStatuses = ['Active', 'Planning', 'Scaling', 'Not Started', 'In Progress', 'On Hold'];
           const activeInitiatives = (capacity.member.initiatives || []).filter(i =>
             activeStatuses.includes(i.status || '')
           );
@@ -241,7 +241,7 @@ export default function TeamCapacityView({ teamMembers, managers }: TeamCapacity
 
       {/* Team Productivity Dashboard */}
       {(() => {
-        const activeStatuses = ['Active', 'In Progress', 'Not Started', 'Planning', 'Scaling'];
+        const activeStatuses = ['Active', 'In Progress', 'Not Started', 'Planning', 'Scaling', 'On Hold'];
         const allInitiatives = filteredCapacityData.flatMap(c =>
           (c.member.initiatives || []).filter(i => activeStatuses.includes(i.status || ''))
         );
@@ -542,8 +542,8 @@ export default function TeamCapacityView({ teamMembers, managers }: TeamCapacity
         const capacity = capacityData.find(c => c.member.id === selectedMember.id);
         if (!capacity) return null;
 
-        // Filter to ONLY active initiatives (not Completed, Deleted, On Hold)
-        const activeStatuses = ['Active', 'In Progress', 'Not Started', 'Planning', 'Scaling'];
+        // Filter to ONLY active initiatives (not Completed, Deleted)
+        const activeStatuses = ['Active', 'In Progress', 'Not Started', 'Planning', 'Scaling', 'On Hold'];
         const activeInitiatives = (selectedMember.initiatives || []).filter(i =>
           activeStatuses.includes(i.status || '')
         );
@@ -563,7 +563,7 @@ export default function TeamCapacityView({ teamMembers, managers }: TeamCapacity
       {/* Team Analytics Modal */}
       {showTeamAnalytics && (() => {
         // Aggregate all initiatives from filtered team members
-        const activeStatuses = ['Active', 'In Progress', 'Not Started', 'Planning', 'Scaling'];
+        const activeStatuses = ['Active', 'In Progress', 'Not Started', 'Planning', 'Scaling', 'On Hold'];
         const allInitiatives = filteredCapacityData.flatMap(c =>
           (c.member.initiatives || []).filter(i => activeStatuses.includes(i.status || ''))
         );

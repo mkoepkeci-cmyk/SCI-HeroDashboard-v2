@@ -34,20 +34,6 @@ export interface TeamMember {
   updated_at: string;
 }
 
-export interface Assignment {
-  id: string;
-  assignment_name: string;
-  work_type: string;
-  phase?: string;
-  status: string;
-  work_effort?: string;
-  team_member_id: string;
-  team_member_name: string;
-  role_type?: string;
-  created_at: string;
-  updated_at: string;
-}
-
 export interface WorkTypeSummary {
   id: string;
   team_member_id: string;
@@ -128,6 +114,47 @@ export interface Initiative {
   ehr_areas_impacted?: string[];  // EHR areas/modules impacted (Tab 3)
   journal_log?: JournalEntry[];  // Timestamped journal entries (Tab 3)
   direct_hours_per_week?: number; // For Governance work type: actual hours per week (bypasses formula)
+
+  // Value propositions (from governance request form)
+  patient_care_value?: string;  // How initiative improves patient care across system
+  compliance_regulatory_value?: string;  // System-wide regulatory requirements/compliance benefits
+  estimated_scope?: string;  // Resources, timeline, complexity at system scale
+
+  // Basic information (from governance request form)
+  division_region?: string;  // Division/region submitting the request
+  submitter_name?: string;  // Person who submitted the governance request
+  submitter_email?: string;  // Submitter's email address
+
+  // Impact categories (strategic alignment flags)
+  impact_commonspirit_board_goal?: boolean;  // Aligns with CommonSpirit Board goals
+  impact_commonspirit_2026_5for25?: boolean;  // Supports CommonSpirit 2026 or 5 for 25 strategy
+  impact_system_policy?: boolean;  // Affects system-wide policy
+  impact_patient_safety?: boolean;  // Impacts patient safety
+  impact_regulatory_compliance?: boolean;  // Regulatory/compliance requirement
+  impact_financial?: boolean;  // Has financial impact
+  impact_other?: string;  // Other impact category description
+
+  // Supporting information
+  supporting_information?: string;  // Regulatory, policy, or practice guidelines
+
+  // Groups impacted (stakeholder tracking)
+  groups_nurses?: boolean;  // Nurses affected by this initiative
+  groups_physicians_apps?: boolean;  // Physicians/APPs affected
+  groups_therapies?: boolean;  // Therapy services affected
+  groups_lab?: boolean;  // Laboratory services affected
+  groups_pharmacy?: boolean;  // Pharmacy services affected
+  groups_radiology?: boolean;  // Radiology services affected
+  groups_administration?: boolean;  // Administration affected
+  groups_other?: string;  // Other groups affected (description)
+
+  // Regional impact
+  regions_impacted?: string;  // Which regions are affected
+  required_date?: string;  // Required completion date (for regulations/mandates)
+  required_date_reason?: string;  // Reason for required date (e.g., CMS effective date)
+
+  // Additional context
+  additional_comments?: string;  // Any additional information for evaluation
+
   is_draft: boolean;
   is_active?: boolean;
   completion_status: CompletionStatus;
@@ -373,7 +400,6 @@ export interface DashboardMetrics {
 
 export interface TeamMemberWithDashboard extends TeamMember {
   dashboard_metrics?: DashboardMetrics;
-  assignments: Assignment[];
 }
 
 // Governance Portal Types

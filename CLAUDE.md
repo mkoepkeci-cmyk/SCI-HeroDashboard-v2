@@ -4,13 +4,13 @@ A React-based dashboard application for tracking and visualizing the impact of C
 
 ---
 
-## Current Status (October 2025)
+## Current Status (October 30, 2025)
 
-**Production Ready - 409 Active Initiatives Across 16 Team Members**
+**Production Ready - 411+ Active Initiatives Across 16 Team Members**
 
 ### Completed Features
 - ✅ Dashboard with Overview and Team portfolio views
-- ✅ SCI Requests (Governance Portal) - Intake and workflow management
+- ✅ SCI Requests (Governance Portal) - Intake and workflow management with Phase 1/2 auto-triggers
 - ✅ Browse Initiatives - Categorized, searchable initiative library
 - ✅ My Effort - Weekly time tracking with bulk entry
 - ✅ Workload Analytics - Capacity management and trends
@@ -21,12 +21,15 @@ A React-based dashboard application for tracking and visualizing the impact of C
 - ✅ Clickable revenue cards with initiative drilldown
 - ✅ Dynamic Key Highlights with live calculated metrics
 - ✅ Unified form for creating/editing all initiative types
+- ✅ **Assignment-to-Initiatives Migration Complete** (October 30, 2025) - 57 items migrated, 98.3% success
+- ✅ **Legacy Assignments Table Removed** (October 30, 2025) - Single source of truth established
 
 ### Data Status
-- **409 initiatives** populated and active
+- **411+ initiatives** populated and active (includes 2 new governance requests: GOV-2025-004, GOV-2025-005)
 - **16 team members** with complete portfolios
 - **Validated metrics** from PDF documentation
 - **Active effort tracking** for capacity management
+- **Complete end-to-end data flow** validated (governance → initiative → capacity → dashboard)
 
 ---
 
@@ -54,10 +57,17 @@ React Dashboard App (Full CRUD capabilities)
 - **Recommendation during migration**: For authoritative changes, edit in Google Sheets OR coordinate with team to avoid conflicts
 
 **Tables Currently Synced from Google Sheets:**
-- `team_members`, `assignments`, `work_type_summary`
+- `team_members`, `work_type_summary`
 - `ehr_platform_summary`, `key_highlights`, `dashboard_metrics`
 - `initiatives` and all related tables (metrics, financial_impact, performance_data, projections, stories)
 - **Note**: Only rows/records visible in the SCI Workload Tracker Excel document are synced
+
+**⚠️ IMPORTANT - Migration Complete (October 30, 2025):**
+- The `assignments` table has been **permanently removed** from the database
+- 57 unique assignments successfully migrated to `initiatives` table (98.3% success rate)
+- `initiatives` table is now the **single source of truth** for all workload tracking
+- All code references to assignments table removed from application
+- All capacity calculations use initiatives table exclusively
 
 **Tables Created ONLY in Dashboard (NOT synced):**
 - `effort_logs` - Weekly time tracking
@@ -281,11 +291,24 @@ Shows 6 productivity metrics in 2x3 grid:
 - Bidirectional linking between requests and initiatives
 - One-click conversion to standalone initiative (optional)
 
+**✅ Validation Status (October 30, 2025):**
+- **Complete end-to-end data flow validated** with live test cases:
+  - GOV-2025-004 ("Diedre-Here is a new request") - ✅ PASS
+  - GOV-2025-005 ("Melissa - New For you") - ✅ PASS
+- **Phase 1 trigger confirmed** - Minimal initiative created when SCI assigned
+- **Phase 2 trigger confirmed** - Full details populated when status = "Ready for Governance"
+- **Financial records** - Automatically created by Phase 2
+- **Initiative stories** - Problem/outcomes transferred successfully
+- **Bidirectional linking** - governance_requests ↔ initiatives verified intact
+- **Capacity calculations** - Updating correctly with new governance initiatives
+- **All dashboard views** - Synchronized (Browse, Dashboard, Team View, SCI View)
+
 **Components:**
 - `GovernancePortalView.tsx` - Main portal interface
 - `GovernanceRequestForm.tsx` - Comprehensive intake form (51KB)
 - `GovernanceRequestDetail.tsx` - Detail modal with Phase 1/2 triggers (39KB)
 - `SCIRequestsCard.tsx` - Shows assigned requests in SCI View
+- `governanceConversion.ts` - Phase 1/2 workflow logic (748 lines)
 
 ### 3. Browse Initiatives
 
@@ -573,16 +596,16 @@ Shows 6 productivity metrics in 2x3 grid:
 
 ### Core Tables
 
-#### Team & Assignments (Synced from Google Sheets)
+#### Team & Summary Tables (Synced from Google Sheets)
 - `team_members` - Team member profiles
-- `assignments` - Individual work assignments
 - `work_type_summary` - **Aggregate counts** (DO NOT duplicate when adding initiatives!)
 - `ehr_platform_summary` - EHR coverage
 - `key_highlights` - Notable achievements
 - `dashboard_metrics` - Pre-calculated team metrics
+- **DEPRECATED**: `assignments` table removed October 30, 2025 (replaced by `initiatives`)
 
-#### Initiatives (Synced from Google Sheets - 425 rows)
-- `initiatives` - Core initiative tracking
+#### Initiatives (411+ active rows as of October 30, 2025)
+- `initiatives` - Core initiative tracking (single source of truth after assignment migration)
   - **Basic**: owner_name, initiative_name, type, status, team_member_id
   - **Classification**: role, ehrs_impacted, service_line
   - **Timeline**: start_date, end_date, phase, work_effort, timeframe_display
@@ -595,8 +618,8 @@ Shows 6 productivity metrics in 2x3 grid:
 - `initiative_projections` - (2 rows) - Scaling scenarios and ROI calculations
 - `initiative_stories` - (354 rows) - Success stories (challenge, approach, outcome, collaboration)
 
-#### Governance Portal (User-Generated - 3 rows)
-- `governance_requests` - SCI consultation intake with Phase 1/2 workflow
+#### Governance Portal (User-Generated - 5 active rows as of October 30, 2025)
+- `governance_requests` - SCI consultation intake with Phase 1/2 workflow (validated end-to-end)
   - **Requestor**: submitter_name, submitter_email, division_region
   - **Request**: title, problem_statement, desired_outcomes, system_clinical_leader
   - **Impact**: patient_care_value, compliance_regulatory_value, financial_impact
@@ -741,7 +764,7 @@ Output in `/dist/` folder ready for static hosting.
 
 ### Database Migrations
 
-All migrations are in `/supabase/migrations/` (12 timestamped SQL files).
+All migrations are in `/supabase/migrations/` (14 timestamped SQL files, including October 30, 2025 assignments table removal and security fixes).
 
 **To apply to new environment:**
 ```bash
@@ -834,14 +857,21 @@ For deeper technical understanding:
 
 ### Archive Folder
 
-`/archive/` contains development artifacts:
+`/archive/` contains development artifacts and historical migrations:
+
+**Assignment Migration Archive** (October 30, 2025):
+- `/archive/migrations/2025-10-30-assignment-migration/` - Complete migration documentation
+  - 31 SQL scripts organized in 6 folders (analysis, lisa-migration, batch-migrations, validation, debug, governance-fixes)
+  - Comprehensive README documenting 57-item migration (98.3% success rate)
+  - Migration markers: MIGRATION_BATCH1_LOW_PRIORITY, MIGRATION_BATCH2A_MATT_STUART, etc.
+
+**Other Development Artifacts**:
 - 30 TypeScript scripts (data population, validation, audit)
-- 12 ad-hoc SQL migrations (manually applied during development)
 - 30 markdown files (implementation notes, progress tracking)
 
 These are preserved for audit purposes but are not needed for operation.
 
-See `/archive/README.md` for complete inventory.
+See `/archive/README.md` and `/archive/migrations/2025-10-30-assignment-migration/README.md` for complete inventory.
 
 ---
 

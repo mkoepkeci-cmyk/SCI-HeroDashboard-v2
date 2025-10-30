@@ -262,10 +262,19 @@ export default function BulkEffortEntry({
       // ONLY include standard initiative statuses (not governance request statuses)
       // Governance requests (Draft, Ready for Review, Needs Refinement) show in SCIRequestsCard above
       let filteredInitiatives = allInitiatives.filter(
-        i => (
-          i.status === 'Active' || i.status === 'Planning' || i.status === 'Scaling' ||
-          i.status === 'Not Started' || i.status === 'In Progress' || i.status === 'On Hold'
-        )
+        i => {
+          // Exclude governance initiatives that are still "Not Started" (before Phase 2)
+          // These should only appear in "Assigned SCI Requests" card, not in System Initiatives table
+          if (i.governance_request_id && i.status === 'Not Started') {
+            return false;
+          }
+
+          // Include all other active initiative statuses
+          return (
+            i.status === 'Active' || i.status === 'Planning' || i.status === 'Scaling' ||
+            i.status === 'Not Started' || i.status === 'In Progress' || i.status === 'On Hold'
+          );
+        }
       );
 
       // If we have a team member name, filter to only show their initiatives
