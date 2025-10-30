@@ -12,14 +12,27 @@ interface InsightsChatProps {
 }
 
 const SUGGESTED_PROMPTS = [
-  "Which team members are over capacity right now?",
-  "Show me the top 5 revenue-generating initiatives",
-  "What's our team's total capacity utilization?",
-  "Summarize all active Pharmacy initiatives",
-  "Which initiatives are approaching their go-live dates?",
-  "Identify projects that might need additional resources",
+  // Capacity & Workload
+  "Who is over capacity and what are their top 3 initiatives by revenue impact?",
+  "Which team members have under 60% capacity and could take on new Pharmacy work?",
+
+  // Financial & ROI
+  "Show me the top 5 revenue-generating initiatives with their ROI details",
+  "Which service lines have the highest total revenue impact?",
+  "Identify initiatives with over $500K projected revenue that are missing baseline metrics",
+
+  // Risk & Progress
+  "Which active initiatives have data quality scores below 50%?",
+  "Show me team members over 85% capacity who own high-revenue initiatives",
+  "What initiatives are in 'On Hold' status and why might they be paused?",
+
+  // Work Distribution
   "What's the distribution of work types across the team?",
-  "Show me initiatives with missing baseline data",
+  "Show me all active initiatives by service line (Pharmacy, ED, Perioperative, etc.)",
+
+  // Optimization
+  "Recommend workload rebalancing - who can give work, who can take it?",
+  "Which initiatives should we prioritize based on revenue impact and team capacity?",
 ];
 
 export const InsightsChat = ({ contextData }: InsightsChatProps) => {

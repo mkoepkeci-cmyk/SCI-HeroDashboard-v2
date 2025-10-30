@@ -1836,32 +1836,147 @@ function App() {
           <div className="h-[calc(100vh-12rem)] bg-white rounded-lg shadow-sm">
             <InsightsChat
               contextData={JSON.stringify({
-                teamMembers: teamMembers.map(tm => ({
-                  name: tm.name,
-                  totalAssignments: tm.total_assignments,
+                teamMembers: teamMembers.map(tm => {
+                  // Calculate data quality for each initiative
+                  const calculateDataQuality = (initiative: InitiativeWithDetails) => {
+                    const checks = {
+                      basic: !!(initiative.initiative_name && initiative.owner_name && initiative.type && initiative.status),
+                      timeline: !!(initiative.start_date || initiative.end_date || initiative.phase),
+                      workInfo: !!(initiative.work_effort && initiative.role),
+                      metrics: initiative.metrics && initiative.metrics.length > 0 &&
+                               initiative.metrics.some((m: any) => m.baseline_value != null),
+                      financial: !!(initiative.financial_impact?.projected_annual || initiative.financial_impact?.actual_revenue),
+                      performance: !!(initiative.performance_data?.users_deployed || initiative.performance_data?.adoption_rate),
+                    };
+                    const score = Object.values(checks).filter(Boolean).length / Object.keys(checks).length;
+                    const missingFields = Object.entries(checks)
+                      .filter(([_, hasData]) => !hasData)
+                      .map(([field, _]) => field);
 
-                  // Capacity metrics (everything AI needs for capacity queries)
-                  capacityUtilizationPercent: tm.dashboard_metrics?.capacity_utilization ?
-                    Math.round(tm.dashboard_metrics.capacity_utilization * 100) : null,
-                  capacityStatus: tm.dashboard_metrics?.capacity_status,
-                  activeAssignments: tm.dashboard_metrics?.active_assignments,
-                  activeHoursPerWeek: tm.dashboard_metrics?.active_hours_per_week,
-                  availableHours: tm.dashboard_metrics?.available_hours,
+                    return {
+                      completionPct: Math.round(score * 100),
+                      missingFields,
+                      isComplete: score >= 0.85,
+                    };
+                  };
 
-                  // Work type summary (counts only, not full objects)
-                  workTypeCounts: tm.workTypes,
+                  return {
+                    name: tm.name,
+                    totalAssignments: tm.total_assignments,
+                    manager: tm.manager_id ? managers.find(m => m.id === tm.manager_id)?.name : null,
 
-                  // Initiative summary (count only, not full objects)
-                  initiativeCount: tm.initiatives?.length || 0,
-                })),
+                    // Capacity metrics
+                    capacityUtilizationPercent: tm.dashboard_metrics?.capacity_utilization ?
+                      Math.round(tm.dashboard_metrics.capacity_utilization * 100) : null,
+                    capacityStatus: tm.dashboard_metrics?.capacity_status,
+                    activeAssignments: tm.dashboard_metrics?.active_assignments,
+                    activeHoursPerWeek: tm.dashboard_metrics?.active_hours_per_week,
+                    availableHours: tm.dashboard_metrics?.available_hours,
+
+                    // Work type summary
+                    workTypeCounts: tm.workTypes,
+
+                    // Full initiative details
+                    initiatives: (tm.initiatives || [])
+                      .filter(i => i.status !== 'Deleted')
+                      .map(i => {
+                        const dataQuality = calculateDataQuality(i);
+                        return {
+                          id: i.id,
+                          name: i.initiative_name,
+                          type: i.type,
+                          status: i.status,
+                          phase: i.phase,
+                          workEffort: i.work_effort,
+                          role: i.role,
+                          ehrsImpacted: i.ehrs_impacted,
+                          serviceLine: i.service_line,
+                          startDate: i.start_date,
+                          endDate: i.end_date,
+
+                          // Financial data
+                          actualRevenue: i.financial_impact?.actual_revenue || 0,
+                          projectedRevenue: i.financial_impact?.projected_annual || 0,
+                          revenueMethodology: i.financial_impact?.calculation_methodology,
+
+                          // Performance data
+                          usersDeployed: i.performance_data?.users_deployed || 0,
+                          adoptionRate: i.performance_data?.adoption_rate,
+                          outcomes: i.performance_data?.outcomes,
+
+                          // Metrics
+                          metricsCount: i.metrics?.length || 0,
+                          hasBaselineData: i.metrics?.some((m: any) => m.baseline_value != null) || false,
+                          primaryMetric: i.metrics?.[0] ? {
+                            name: i.metrics[0].metric_name,
+                            baseline: i.metrics[0].baseline_value,
+                            current: i.metrics[0].current_value,
+                            target: i.metrics[0].target_value,
+                            improvement: i.metrics[0].improvement_percentage,
+                          } : null,
+
+                          // Completion & quality
+                          completionPercentage: i.completion_percentage,
+                          completionStatus: i.completion_status,
+                          dataQuality,
+
+                          // Governance
+                          isFromGovernance: !!i.governance_request_id,
+                          requestId: i.request_id,
+
+                          // Success story
+                          hasSuccessStory: !!(i.stories && i.stories.length > 0 && i.stories[0].challenge),
+                        };
+                      }),
+                  };
+                }),
+
+                // Financial summary across all initiatives
+                financialSummary: (() => {
+                  const allInitiatives = teamMembers.flatMap(tm => tm.initiatives || [])
+                    .filter(i => i.status !== 'Deleted');
+                  const totalActualRevenue = allInitiatives.reduce((sum, i) =>
+                    sum + (i.financial_impact?.actual_revenue || 0), 0);
+                  const totalProjectedRevenue = allInitiatives.reduce((sum, i) =>
+                    sum + (i.financial_impact?.projected_annual || 0), 0);
+                  const topRevenueInitiatives = allInitiatives
+                    .filter(i => i.financial_impact?.actual_revenue || i.financial_impact?.projected_annual)
+                    .sort((a, b) => {
+                      const aRev = a.financial_impact?.actual_revenue || a.financial_impact?.projected_annual || 0;
+                      const bRev = b.financial_impact?.actual_revenue || b.financial_impact?.projected_annual || 0;
+                      return bRev - aRev;
+                    })
+                    .slice(0, 10)
+                    .map(i => ({
+                      name: i.initiative_name,
+                      owner: i.owner_name,
+                      actualRevenue: i.financial_impact?.actual_revenue || 0,
+                      projectedRevenue: i.financial_impact?.projected_annual || 0,
+                      serviceLine: i.service_line,
+                    }));
+
+                  return {
+                    totalActualRevenue,
+                    totalProjectedRevenue,
+                    topRevenueInitiatives,
+                  };
+                })(),
+
                 summary: {
                   totalTeamMembers: teamMembers.length,
-                  totalInitiatives: teamMembers.reduce((sum, tm) => sum + (tm.initiatives?.length || 0), 0),
+                  totalInitiatives: teamMembers.reduce((sum, tm) => sum + (tm.initiatives?.filter(i => i.status !== 'Deleted').length || 0), 0),
                   activeInitiatives: teamMembers.reduce((sum, tm) =>
-                    sum + (tm.initiatives?.filter(i => i.is_active).length || 0), 0),
+                    sum + (tm.initiatives?.filter(i => ['Active', 'In Progress', 'Not Started', 'Planning', 'Scaling'].includes(i.status || '')).length || 0), 0),
                   completedInitiatives: teamMembers.reduce((sum, tm) =>
-                    sum + (tm.initiatives?.filter(i => !i.is_active).length || 0), 0),
-                }
+                    sum + (tm.initiatives?.filter(i => i.status === 'Completed').length || 0), 0),
+                  onHoldInitiatives: teamMembers.reduce((sum, tm) =>
+                    sum + (tm.initiatives?.filter(i => i.status === 'On Hold').length || 0), 0),
+                  cancelledInitiatives: teamMembers.reduce((sum, tm) =>
+                    sum + (tm.initiatives?.filter(i => i.status === 'Cancelled').length || 0), 0),
+                },
+
+                // Timestamp for context freshness
+                dataAsOf: new Date().toISOString(),
               }, null, 2)}
             />
           </div>
