@@ -1833,7 +1833,7 @@ function App() {
             )}
           </>
         ) : activeView === 'insights' ? (
-          <div className="h-[calc(100vh-12rem)] bg-white rounded-lg shadow-sm">
+          <div className="h-[calc(100vh-8rem)] bg-white rounded-lg shadow-sm">
             <InsightsChat
               contextData={JSON.stringify({
                 teamMembers: teamMembers.map(tm => {
