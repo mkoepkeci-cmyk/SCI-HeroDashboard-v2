@@ -300,12 +300,26 @@ export const UnifiedWorkItemForm = ({
     });
 
     // Populate team member assignments for Tab 2
-    if (initiative.team_member_id && initiative.owner_name) {
+    // First check if we have team_members array from junction table (new way)
+    if (initiative.team_members && initiative.team_members.length > 0) {
+      const assignments = initiative.team_members
+        .sort((a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0))  // Primary first
+        .map(tm => ({
+          teamMemberId: tm.team_member_id,
+          teamMemberName: tm.team_member_name || '',
+          role: tm.role
+        }));
+      setTeamMemberAssignments(assignments);
+      console.log('✅ Loaded', assignments.length, 'team member assignments from junction table');
+    }
+    // Fallback to old way (for backward compatibility with initiatives not yet migrated)
+    else if (initiative.team_member_id && initiative.owner_name) {
       setTeamMemberAssignments([{
         teamMemberId: initiative.team_member_id,
         teamMemberName: initiative.owner_name,
         role: initiative.role || 'Owner'
       }]);
+      console.log('✅ Loaded single team member from initiative.team_member_id (legacy)');
     }
 
     // Tab 3: Proposed Solution & Journal
@@ -608,6 +622,53 @@ export const UnifiedWorkItemForm = ({
 
       if (!initiativeId) {
         throw new Error('Failed to get initiative ID');
+      }
+
+      // Save Team Member Assignments to junction table
+      console.log('💾 Saving team member assignments...');
+
+      // Delete existing team member assignments
+      const { error: deleteError } = await supabase
+        .from('initiative_team_members')
+        .delete()
+        .eq('initiative_id', initiativeId);
+
+      if (deleteError) {
+        console.error('❌ Error deleting old team member assignments:', deleteError);
+        // Don't throw - continue with insert
+      }
+
+      // Insert all team member assignments
+      if (teamMemberAssignments.length > 0) {
+        const assignments = teamMemberAssignments.map((assignment, index) => ({
+          initiative_id: initiativeId,
+          team_member_id: assignment.teamMemberId,
+          role: assignment.role,
+          is_primary: index === 0  // First one is primary owner
+        }));
+
+        console.log('📋 Attempting to insert assignments:', assignments);
+
+        const { data: insertedData, error: assignmentError } = await supabase
+          .from('initiative_team_members')
+          .insert(assignments)
+          .select();
+
+        if (assignmentError) {
+          console.error('❌ Error saving team member assignments:', assignmentError);
+          console.error('❌ Error details:', {
+            message: assignmentError.message,
+            details: assignmentError.details,
+            hint: assignmentError.hint,
+            code: assignmentError.code
+          });
+          console.error('❌ Attempted to insert:', assignments);
+          throw assignmentError;
+        }
+        console.log('✅ Team member assignments saved:', assignments.length);
+        console.log('✅ Inserted data:', insertedData);
+      } else {
+        console.warn('⚠️ No team member assignments to save');
       }
 
       // Tab 4: Save related tables

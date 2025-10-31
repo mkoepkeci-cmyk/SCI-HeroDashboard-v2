@@ -291,6 +291,17 @@ export interface InitiativeEffortTrend {
   total_hours: number;
 }
 
+export interface InitiativeTeamMember {
+  id: string;
+  initiative_id: string;
+  team_member_id: string;
+  team_member_name?: string;  // Joined from team_members table
+  role: 'Owner' | 'Co-Owner' | 'Secondary' | 'Support';
+  is_primary: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface InitiativeWithDetails extends Initiative {
   metrics: InitiativeMetric[];
   financial_impact?: InitiativeFinancialImpact;
@@ -299,6 +310,7 @@ export interface InitiativeWithDetails extends Initiative {
   story?: InitiativeStory;
   effort_logs?: EffortLog[];
   effort_trend?: InitiativeEffortTrend;
+  team_members?: InitiativeTeamMember[];  // All assigned team members (any role)
 }
 
 // ============================================================================
@@ -408,6 +420,7 @@ export type GovernanceStatus =
   | 'Ready for Review'
   | 'Needs Refinement'
   | 'Ready for Governance'
+  | 'In Governance'
   | 'Dismissed';
 
 export interface GovernanceRequest {
@@ -426,6 +439,10 @@ export interface GovernanceRequest {
   system_clinical_leader?: string;
   assigned_sci_id?: string;
   assigned_sci_name?: string;
+  assigned_role?: string;
+  work_effort?: string;
+  work_type?: string;
+  work_phase?: string;
 
   // Value Proposition
   patient_care_value?: string;

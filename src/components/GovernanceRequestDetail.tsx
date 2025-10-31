@@ -24,6 +24,7 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
   // Assignment state (for "Ready for Governance" conversion)
   const [assignedSciId, setAssignedSciId] = useState(request.assigned_sci_id || '');
   const [workEffort, setWorkEffort] = useState(request.work_effort || '');
+  const [workPhase, setWorkPhase] = useState(request.work_phase || '');
   const [converting, setConverting] = useState(false);
 
   // Form state
@@ -409,6 +410,7 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
                       <option value="Ready for Review">Ready for Review</option>
                       <option value="Needs Refinement">Needs Refinement</option>
                       <option value="Ready for Governance">Ready for Governance</option>
+                      <option value="In Governance">In Governance</option>
                       <option value="Dismissed">Dismissed</option>
                     </>
                   )}
@@ -463,6 +465,37 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
                 )}
               </div>
 
+              {/* Work Phase */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Work Phase
+                </label>
+                <select
+                  value={workPhase}
+                  onChange={(e) => setWorkPhase(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg p-2"
+                  disabled={saving}
+                >
+                  <option value="">Select phase...</option>
+                  <option value="Discovery/Define">Discovery/Define</option>
+                  <option value="Design">Design</option>
+                  <option value="Build">Build</option>
+                  <option value="Validate/Test">Validate/Test</option>
+                  <option value="Deploy">Deploy</option>
+                  <option value="Did we Deliver">Did we Deliver</option>
+                  <option value="Post Go Live Support">Post Go Live Support</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Maintenance">Maintenance</option>
+                  <option value="Steady State">Steady State</option>
+                  <option value="N/A">N/A</option>
+                </select>
+                {formData.work_phase && (
+                  <p className="text-sm text-gray-600 mt-1">
+                    Currently: <strong>{formData.work_phase}</strong>
+                  </p>
+                )}
+              </div>
+
               {/* Single Save Button */}
               <button
                 onClick={async () => {
@@ -493,6 +526,11 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
                     // Update work effort if changed
                     if (workEffort && workEffort !== request.work_effort) {
                       updateData.work_effort = workEffort;
+                    }
+
+                    // Update work phase if changed
+                    if (workPhase && workPhase !== request.work_phase) {
+                      updateData.work_phase = workPhase;
                     }
 
                     // Perform the update
@@ -546,7 +584,7 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
                     setSaving(false);
                   }
                 }}
-                disabled={saving || (formData.status === request.status && assignedSciId === request.assigned_sci_id && workEffort === request.work_effort)}
+                disabled={saving || (formData.status === request.status && assignedSciId === request.assigned_sci_id && workEffort === request.work_effort && workPhase === request.work_phase)}
                 className="w-full px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {saving ? (

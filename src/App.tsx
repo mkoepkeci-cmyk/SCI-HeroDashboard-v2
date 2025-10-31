@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 import { DollarSign, Award, Loader2, Plus, List, TrendingUp, Search, Filter, X, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 import { supabase, TeamMember, Manager, WorkTypeSummary, EHRPlatformSummary, KeyHighlight, InitiativeWithDetails, DashboardMetrics } from './lib/supabase';
-import { InitiativeSubmissionForm } from './components/InitiativeSubmissionForm';
+import { InitiativeSubmissionForm } from './components/InitiativeSubmissionForm.OLD';
+import { UnifiedWorkItemForm } from './components/UnifiedWorkItemForm';
 import { InitiativeCard } from './components/InitiativeCard';
 import { InitiativesView } from './components/InitiativesView';
 import { InitiativesTableView } from './components/InitiativesTableView';
@@ -165,6 +166,48 @@ function App() {
 
       if (storiesError) throw storiesError;
 
+      // Fetch initiative team member assignments (junction table)
+      // Try simple query first, then try with join
+      let initiativeTeamMembers: any[] = [];
+      let teamMembersError: any = null;
+
+      // Attempt 1: Try with join to team_members
+      const joinResult = await supabase
+        .from('initiative_team_members')
+        .select('*, team_members!inner(name)');
+
+      if (joinResult.error) {
+        console.warn('⚠️ Join query failed, trying simple query:', joinResult.error.message);
+
+        // Attempt 2: Try without join (we'll look up names separately)
+        const simpleResult = await supabase
+          .from('initiative_team_members')
+          .select('*');
+
+        if (simpleResult.error) {
+          teamMembersError = simpleResult.error;
+        } else {
+          initiativeTeamMembers = simpleResult.data || [];
+          console.log('✅ Fetched initiative_team_members (without join):', initiativeTeamMembers.length);
+        }
+      } else {
+        initiativeTeamMembers = joinResult.data || [];
+        console.log('✅ Fetched initiative_team_members (with join):', initiativeTeamMembers.length);
+      }
+
+      if (teamMembersError) {
+        console.error('❌ Initiative team members table error:', teamMembersError);
+        console.error('❌ Error details:', {
+          message: teamMembersError.message,
+          details: teamMembersError.details,
+          hint: teamMembersError.hint,
+          code: teamMembersError.code
+        });
+        console.warn('⚠️ The initiative_team_members table may not exist. Please run migration: supabase/migrations/20251030000004_create_initiative_team_members.sql');
+      } else {
+        console.log('✅ Fetched initiative_team_members:', initiativeTeamMembers?.length || 0, 'assignments');
+      }
+
       // Fetch dashboard metrics (pre-calculated from Excel Dashboard)
       const { data: dashboardMetrics, error: dashboardError } = await supabase
         .from('dashboard_metrics')
@@ -197,20 +240,53 @@ function App() {
         if (c.config_type === 'phase_weight') phaseWeights[c.key] = value;
       });
 
-      const initiativesWithDetails: InitiativeWithDetails[] = (initiatives || []).map((initiative) => ({
-        ...initiative,
-        metrics: (metrics || []).filter((m) => m.initiative_id === initiative.id),
-        financial_impact: (financialImpact || []).find((f) => f.initiative_id === initiative.id),
-        performance_data: (performanceData || []).find((p) => p.initiative_id === initiative.id),
-        projections: (projections || []).find((p) => p.initiative_id === initiative.id),
-        story: (stories || []).find((s) => s.initiative_id === initiative.id),
-      }));
+      const initiativesWithDetails: InitiativeWithDetails[] = (initiatives || []).map((initiative) => {
+        // Get team member assignments for this initiative
+        const teamMembers = (initiativeTeamMembers || [])
+          .filter((tm: any) => tm.initiative_id === initiative.id)
+          .map((tm: any) => ({
+            ...tm,
+            team_member_name: tm.team_members?.name || ''
+          }));
+
+        // Debug log for initiatives with multiple team members
+        if (teamMembers.length > 1) {
+          console.log(`📋 Initiative "${initiative.initiative_name}" has ${teamMembers.length} team members:`,
+            teamMembers.map(tm => `${tm.team_member_name} (${tm.role})`).join(', ')
+          );
+        }
+
+        return {
+          ...initiative,
+          metrics: (metrics || []).filter((m) => m.initiative_id === initiative.id),
+          financial_impact: (financialImpact || []).find((f) => f.initiative_id === initiative.id),
+          performance_data: (performanceData || []).find((p) => p.initiative_id === initiative.id),
+          projections: (projections || []).find((p) => p.initiative_id === initiative.id),
+          story: (stories || []).find((s) => s.initiative_id === initiative.id),
+          team_members: teamMembers
+        };
+      });
 
       const membersWithDetails: TeamMemberWithDetails[] = (members || []).map((member) => {
         // Get initiatives for this member (filter out deleted)
-        const memberInitiatives = initiativesWithDetails.filter(
-          (i) => (i.team_member_id === member.id || i.owner_name === member.name) && i.status !== 'Deleted'
-        );
+        // Include if member is primary owner OR in team_members array (any role)
+        const memberInitiatives = initiativesWithDetails.filter((i) => {
+          if (i.status === 'Deleted') return false;
+
+          // Check if primary owner
+          if (i.team_member_id === member.id || i.owner_name === member.name) return true;
+
+          // Check if in team_members array (any role)
+          if (i.team_members && i.team_members.length > 0) {
+            const hasAssignment = i.team_members.some(tm => tm.team_member_id === member.id);
+            if (hasAssignment) {
+              console.log(`✅ ${member.name} assigned to "${i.initiative_name}" via team_members array`);
+            }
+            return hasAssignment;
+          }
+
+          return false;
+        });
 
         // Get dashboard metrics for this member
         const memberDashboardMetrics = (dashboardMetrics || []).find(
@@ -286,10 +362,10 @@ function App() {
       setTeamMembers(membersWithDetails);
 
       // Debug: Check if specialty survived the transformation
-      const ashleyWithDetails = membersWithDetails.find(m => m.name === 'Ashley Daily');
-      if (ashleyWithDetails) {
-        console.log('[App] Ashley in membersWithDetails - specialty:', ashleyWithDetails.specialty);
-      }
+      // const ashleyWithDetails = membersWithDetails.find(m => m.name === 'Ashley Daily');
+      // if (ashleyWithDetails) {
+      //   console.log('[App] Ashley in membersWithDetails - specialty:', ashleyWithDetails.specialty);
+      // }
 
       // Set Marty as default current user for demo (in production, use actual auth)
       const marty = membersWithDetails.find(m => m.name === 'Marty');
@@ -1777,7 +1853,14 @@ function App() {
               key={governanceRefreshKey}
               onCreateNew={() => setShowGovernanceForm(true)}
               onViewRequest={(request) => setSelectedGovernanceRequest(request)}
+              onEditRequest={(request) => {
+                setEditingGovernanceRequest(request);
+                setShowGovernanceForm(true);
+              }}
               onViewInitiative={(initiativeId) => {
+                setSelectedInitiativeId(initiativeId);
+              }}
+              onEditInitiative={(initiativeId) => {
                 setSelectedInitiativeId(initiativeId);
               }}
             />
@@ -1975,22 +2058,16 @@ function App() {
       {selectedInitiativeId && (() => {
         const initiative = teamMembers.flatMap(m => m.initiatives || []).find(i => i.id === selectedInitiativeId);
         return initiative ? (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
-            <div className="min-h-screen flex items-start justify-center p-4 py-8">
-              <div className="max-w-6xl w-full">
-                <InitiativeSubmissionForm
-                  key={initiative.id + '-' + initiative.updated_at}
-                  editingInitiative={initiative}
-                  onClose={() => setSelectedInitiativeId(null)}
-                  onSuccess={async () => {
-                    // Refresh data BEFORE closing modal to ensure updates are visible
-                    await fetchTeamData();
-                    setSelectedInitiativeId(null); // Close modal AFTER data refresh
-                  }}
-                />
-              </div>
-            </div>
-          </div>
+          <UnifiedWorkItemForm
+            key={initiative.id + '-' + initiative.updated_at}
+            editingInitiative={initiative}
+            onClose={() => setSelectedInitiativeId(null)}
+            onSuccess={async () => {
+              // Refresh data BEFORE closing modal to ensure updates are visible
+              await fetchTeamData();
+              setSelectedInitiativeId(null); // Close modal AFTER data refresh
+            }}
+          />
         ) : null;
       })()}
     </div>

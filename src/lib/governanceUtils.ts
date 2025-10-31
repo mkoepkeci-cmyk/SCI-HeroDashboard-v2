@@ -54,6 +54,13 @@ export const STATUS_CONFIG: Record<GovernanceStatus, StatusConfig> = {
     label: 'Ready for Governance',
     icon: '✅'
   },
+  'In Governance': {
+    color: '#7C3AED',
+    bgColor: '#F5F3FF',
+    borderColor: '#DDD6FE',
+    label: 'In Governance',
+    icon: '🏛️'
+  },
   'Dismissed': {
     color: '#DC2626',
     bgColor: '#FEF2F2',
@@ -74,7 +81,8 @@ export const VALID_STATUS_TRANSITIONS: Record<GovernanceStatus, GovernanceStatus
   'Draft': ['Ready for Review', 'Dismissed'],
   'Ready for Review': ['Needs Refinement', 'Ready for Governance', 'Dismissed'],
   'Needs Refinement': ['Ready for Review', 'Dismissed'],
-  'Ready for Governance': ['Dismissed'],
+  'Ready for Governance': ['In Governance', 'Dismissed'],
+  'In Governance': ['Dismissed'],
   'Dismissed': []  // Terminal state
 };
 
@@ -333,6 +341,7 @@ export function calculatePipelineMetrics(requests: GovernanceRequest[]): Pipelin
     'Ready for Review': 0,
     'Needs Refinement': 0,
     'Ready for Governance': 0,
+    'In Governance': 0,
     'Dismissed': 0
   };
 

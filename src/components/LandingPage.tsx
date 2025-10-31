@@ -11,11 +11,11 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16">
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold text-gray-900 mb-4">
-            System Clinical Informatics Initiatives Dashboard
+            System Clinical Informatics Dashboard
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Connecting system leaders, clinical informaticists, and senior leadership through
-            integrated request management, capacity tracking, and value demonstration.
+            Managing 411+ active initiatives across 16 team members with real-time capacity tracking,
+            automated governance workflows, and comprehensive impact measurement.
           </p>
           <button
             onClick={onGetStarted}
@@ -35,20 +35,20 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
             </div>
             <h3 className="text-lg font-bold text-gray-900 mb-2">System Leaders</h3>
             <p className="text-sm text-gray-600 mb-4">
-              Clinical executives and operational leaders requesting SCI consultation
+              Clinical executives and operational leaders requesting SCI support
             </p>
             <div className="space-y-2">
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-gray-700">Submit consultation requests</span>
+                <span className="text-sm text-gray-700">Submit requests via governance portal</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-gray-700">Track request status</span>
+                <span className="text-sm text-gray-700">Auto-tracked through governance workflow</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-gray-700">Document impact categories</span>
+                <span className="text-sm text-gray-700">Receive updates & outcome reports</span>
               </div>
             </div>
           </div>
@@ -60,20 +60,20 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
             </div>
             <h3 className="text-lg font-bold text-gray-900 mb-2">SCIs</h3>
             <p className="text-sm text-gray-600 mb-4">
-              Clinical informatics consultants executing initiatives and tracking work
+              System Clinical Informaticists executing initiatives and tracking work
             </p>
             <div className="space-y-2">
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-gray-700">View new assignments</span>
+                <span className="text-sm text-gray-700">View all assignments (Owner/Co-Owner/Support)</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-gray-700">Log weekly effort</span>
+                <span className="text-sm text-gray-700">Bulk effort logging (5 min/week)</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-gray-700">Document outcomes & value</span>
+                <span className="text-sm text-gray-700">Track metrics, outcomes & financial impact</span>
               </div>
             </div>
           </div>
@@ -90,15 +90,15 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
             <div className="space-y-2">
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-gray-700">Review & assign requests</span>
+                <span className="text-sm text-gray-700">Review governance requests & assign SCIs</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-gray-700">Monitor team capacity</span>
+                <span className="text-sm text-gray-700">Real-time team capacity dashboard</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-gray-700">Reassign work dynamically</span>
+                <span className="text-sm text-gray-700">Workload rebalancing & multi-team assignments</span>
               </div>
             </div>
           </div>
@@ -115,15 +115,15 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
             <div className="space-y-2">
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-gray-700">View all initiatives</span>
+                <span className="text-sm text-gray-700">411+ initiatives with full visibility</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-gray-700">Track impact metrics</span>
+                <span className="text-sm text-gray-700">Comprehensive impact tracking & metrics</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-gray-700">Demonstrate ROI to Board</span>
+                <span className="text-sm text-gray-700">Executive reports & Board presentations</span>
               </div>
             </div>
           </div>
@@ -142,7 +142,7 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
               </div>
               <h4 className="font-semibold text-gray-900 mb-2">Request Submitted</h4>
               <p className="text-sm text-gray-600">
-                System leaders submit consultation requests via SCI Request Portal
+                System leaders submit requests via Governance Portal with auto-assigned GOV-ID
               </p>
             </div>
 
@@ -155,7 +155,7 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
               </div>
               <h4 className="font-semibold text-gray-900 mb-2">Review & Assign</h4>
               <p className="text-sm text-gray-600">
-                SCI managers review requests, assess capacity, and assign to team members
+                Managers assign SCI → Phase 1 auto-creates initiative for immediate effort tracking
               </p>
             </div>
 
@@ -168,7 +168,7 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
               </div>
               <h4 className="font-semibold text-gray-900 mb-2">Work & Track</h4>
               <p className="text-sm text-gray-600">
-                SCIs log weekly effort, document progress, and update initiative status
+                SCIs log effort, Phase 2 auto-populates full details when Ready for Governance
               </p>
             </div>
 
@@ -327,7 +327,7 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">Track ROI</p>
-                  <p className="text-sm text-gray-600">Review value metrics: revenue impact, cost savings, time efficiency, and patient outcomes</p>
+                  <p className="text-sm text-gray-600">Review value metrics: cost savings, time efficiency, quality improvements, and patient outcomes</p>
                 </div>
               </div>
             </div>
@@ -351,21 +351,21 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
             <div>
               <h4 className="font-bold text-xl mb-3">⚖️ Capacity Management</h4>
               <ul className="space-y-2 text-purple-100">
-                <li>• Weekly effort tracking</li>
-                <li>• Workload visualization</li>
-                <li>• Capacity utilization insights</li>
-                <li>• Historical trend analysis</li>
-                <li>• Data-driven assignment decisions</li>
+                <li>• Bulk weekly effort logging (5 min/week)</li>
+                <li>• Real-time capacity dashboard with color-coded alerts</li>
+                <li>• Multi-team member assignments (Owner/Co-Owner/Support)</li>
+                <li>• Dynamic workload rebalancing</li>
+                <li>• Planned vs actual variance tracking</li>
               </ul>
             </div>
             <div>
-              <h4 className="font-bold text-xl mb-3">🔄 Integrated Workflow</h4>
+              <h4 className="font-bold text-xl mb-3">🔄 Automated Governance</h4>
               <ul className="space-y-2 text-purple-100">
-                <li>• Digital intake portal</li>
-                <li>• Request pipeline visibility</li>
-                <li>• Auto-assignment to effort tracking</li>
-                <li>• Status tracking & updates</li>
-                <li>• End-to-end transparency</li>
+                <li>• Digital governance portal (GOV-YYYY-XXX IDs)</li>
+                <li>• Phase 1: Auto-create initiative on SCI assignment</li>
+                <li>• Phase 2: Auto-populate details for governance readiness</li>
+                <li>• Bidirectional request ↔ initiative linking</li>
+                <li>• Complete end-to-end transparency</li>
               </ul>
             </div>
           </div>
@@ -377,7 +377,8 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
             Ready to Get Started?
           </h2>
           <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-            Transform how your organization demonstrates SCI value, manages capacity, and delivers impact.
+            Join 16 team members managing 411+ initiatives with automated governance workflows,
+            real-time capacity tracking, and comprehensive impact measurement.
           </p>
           <button
             onClick={onGetStarted}

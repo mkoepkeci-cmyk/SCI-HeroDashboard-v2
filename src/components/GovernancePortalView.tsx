@@ -18,10 +18,12 @@ import {
 interface GovernancePortalViewProps {
   onCreateNew: () => void;
   onViewRequest: (request: GovernanceRequest) => void;
+  onEditRequest?: (request: GovernanceRequest) => void;
   onViewInitiative?: (initiativeId: string) => void;
+  onEditInitiative?: (initiativeId: string) => void;
 }
 
-export const GovernancePortalView = ({ onCreateNew, onViewRequest, onViewInitiative }: GovernancePortalViewProps) => {
+export const GovernancePortalView = ({ onCreateNew, onViewRequest, onEditRequest, onViewInitiative, onEditInitiative }: GovernancePortalViewProps) => {
   const [requests, setRequests] = useState<GovernanceRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
@@ -29,7 +31,7 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest, onViewInitiat
   const [filters, setFilters] = useState<RequestFilters>({});
   const [sortField, setSortField] = useState<SortField>('updated_at');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const [quickFilter, setQuickFilter] = useState<'all' | 'needsSci' | 'readyForReview' | 'needsRefinement' | 'readyForGovernance'>('all');
+  const [quickFilter, setQuickFilter] = useState<'all' | 'needsSci' | 'readyForReview' | 'needsRefinement' | 'readyForGovernance' | 'inGovernance'>('all');
   const [showSystemLevelModal, setShowSystemLevelModal] = useState(false);
 
   useEffect(() => {
@@ -71,9 +73,24 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest, onViewInitiat
       filtered = filtered.filter(r => r.status === 'Needs Refinement');
     } else if (quickFilter === 'readyForGovernance') {
       filtered = filtered.filter(r => r.status === 'Ready for Governance');
+    } else if (quickFilter === 'inGovernance') {
+      filtered = filtered.filter(r => r.status === 'In Governance');
     }
 
     return sortRequests(filtered, sortField, sortDirection);
+  }, [requests, filters, searchQuery, quickFilter, sortField, sortDirection]);
+
+  // Separate lists for readiness dashboard and "In Governance" table
+  const readinessDashboardRequests = useMemo(() => {
+    if (quickFilter === 'inGovernance') return [];
+    return filteredAndSortedRequests.filter(r => r.status !== 'In Governance');
+  }, [filteredAndSortedRequests, quickFilter]);
+
+  const inGovernanceRequests = useMemo(() => {
+    if (quickFilter !== 'all' && quickFilter !== 'inGovernance') return [];
+    const filtered = filterRequests(requests, { ...filters, search: searchQuery });
+    const inGov = filtered.filter(r => r.status === 'In Governance');
+    return sortRequests(inGov, sortField, sortDirection);
   }, [requests, filters, searchQuery, quickFilter, sortField, sortDirection]);
 
   // Get unique values for filter dropdowns
@@ -294,13 +311,11 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest, onViewInitiat
               >
                 <option value="">All Statuses</option>
                 <option value="Draft">Draft</option>
-                <option value="Submitted">Submitted</option>
-                <option value="Under Review">Under Review</option>
-                <option value="Refinement">Refinement</option>
+                <option value="Ready for Review">Ready for Review</option>
+                <option value="Needs Refinement">Needs Refinement</option>
                 <option value="Ready for Governance">Ready for Governance</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Completed">Completed</option>
-                <option value="Declined">Declined</option>
+                <option value="In Governance">In Governance</option>
+                <option value="Dismissed">Dismissed</option>
               </select>
             </div>
 
@@ -350,10 +365,10 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest, onViewInitiat
                 className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                 onClick={() => handleSort('title')}
               >
-                Title / Submitter
+                Title
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                Division
+                Requestor
               </th>
               <th
                 className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
@@ -376,7 +391,7 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest, onViewInitiat
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {filteredAndSortedRequests.length === 0 ? (
+            {readinessDashboardRequests.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
                   <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
@@ -385,7 +400,7 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest, onViewInitiat
                 </td>
               </tr>
             ) : (
-              filteredAndSortedRequests.map((request) => {
+              readinessDashboardRequests.map((request) => {
                 const statusConfig = getStatusConfig(request.status);
                 return (
                   <tr
@@ -393,19 +408,18 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest, onViewInitiat
                     className="hover:bg-gray-50 cursor-pointer transition-colors"
                     onClick={() => onViewRequest(request)}
                   >
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-2 whitespace-nowrap">
                       <span className="text-sm font-mono font-medium text-purple-700">
                         {request.request_id}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-2">
                       <div className="text-sm font-medium text-gray-900">{request.title}</div>
-                      <div className="text-sm text-gray-500">{request.submitter_name}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {request.division_region}
+                    <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-600">
+                      {request.submitter_name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-2 whitespace-nowrap">
                       <span
                         className="px-3 py-1 rounded-full text-xs font-medium"
                         style={{
@@ -417,15 +431,15 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest, onViewInitiat
                         {statusConfig.icon} {statusConfig.label}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-600">
                       {request.assigned_sci_name || (
                         <span className="text-gray-400 italic">Not assigned</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500">
                       {getTimeAgo(request.updated_at)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <td className="px-6 py-2 whitespace-nowrap text-right text-sm font-medium">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -446,8 +460,125 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest, onViewInitiat
 
       {/* Results Summary */}
       <div className="text-sm text-gray-600 text-center">
-        Showing {filteredAndSortedRequests.length} of {requests.length} requests
+        Showing {readinessDashboardRequests.length} of {requests.filter(r => r.status !== 'In Governance').length} readiness requests
       </div>
+
+      {/* In Governance Table */}
+      {(quickFilter === 'all' || quickFilter === 'inGovernance') && inGovernanceRequests.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold text-purple-900">In Governance</h2>
+            <span className="text-sm text-gray-600">{inGovernanceRequests.length} request{inGovernanceRequests.length !== 1 ? 's' : ''}</span>
+          </div>
+
+          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-purple-50 border-b border-purple-200">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-purple-700 uppercase tracking-wider">
+                    Request ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-purple-700 uppercase tracking-wider">
+                    Title
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-purple-700 uppercase tracking-wider">
+                    Requestor
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-purple-700 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-purple-700 uppercase tracking-wider">
+                    Work Phase
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-purple-700 uppercase tracking-wider">
+                    Assigned SCI
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-purple-700 uppercase tracking-wider">
+                    Last Updated
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-purple-700 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {inGovernanceRequests.map((request) => {
+                  const statusConfig = getStatusConfig(request.status);
+                  return (
+                    <tr
+                      key={request.id}
+                      className="hover:bg-purple-50 cursor-pointer transition-colors"
+                      onClick={() => {
+                        if (request.linked_initiative_id && onEditInitiative) {
+                          console.log('Opening initiative form for:', request.linked_initiative_id);
+                          onEditInitiative(request.linked_initiative_id);
+                        } else {
+                          console.warn('No linked_initiative_id found for:', request.request_id, request);
+                          alert(`This governance request doesn't have a linked initiative yet. Please ensure it went through "Ready for Review" → "Ready for Governance" workflow first.`);
+                        }
+                      }}
+                    >
+                      <td className="px-6 py-2 whitespace-nowrap">
+                        <span className="text-sm font-mono font-medium text-purple-700">
+                          {request.request_id}
+                        </span>
+                      </td>
+                      <td className="px-6 py-2">
+                        <div className="text-sm font-medium text-gray-900">{request.title}</div>
+                      </td>
+                      <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-600">
+                        {request.submitter_name}
+                      </td>
+                      <td className="px-6 py-2 whitespace-nowrap">
+                        <span
+                          className="px-3 py-1 rounded-full text-xs font-medium"
+                          style={{
+                            color: statusConfig.color,
+                            backgroundColor: statusConfig.bgColor,
+                            border: `1px solid ${statusConfig.borderColor}`
+                          }}
+                        >
+                          {statusConfig.icon} {statusConfig.label}
+                        </span>
+                      </td>
+                      <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-600">
+                        {request.work_phase || (
+                          <span className="text-gray-400 italic">Not set</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-600">
+                        {request.assigned_sci_name || (
+                          <span className="text-gray-400 italic">Not assigned</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500">
+                        {getTimeAgo(request.updated_at)}
+                      </td>
+                      <td className="px-6 py-2 whitespace-nowrap text-right text-sm font-medium">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (request.linked_initiative_id && onEditInitiative) {
+                              console.log('Opening initiative form for:', request.linked_initiative_id);
+                              onEditInitiative(request.linked_initiative_id);
+                            } else {
+                              console.warn('No linked_initiative_id found for:', request.request_id, request);
+                              alert(`This governance request doesn't have a linked initiative yet. Please ensure it went through "Ready for Review" → "Ready for Governance" workflow first.`);
+                            }
+                          }}
+                          className="text-purple-600 hover:text-purple-900"
+                        >
+                          Edit →
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* System-Level Information Modal */}
       {showSystemLevelModal && (

@@ -138,15 +138,33 @@ export const EffortTrackingView = ({
       const { data: projections } = await supabase.from('initiative_projections').select('*');
       const { data: stories } = await supabase.from('initiative_stories').select('*');
 
+      // Fetch initiative team member assignments
+      const { data: initiativeTeamMembers } = await supabase
+        .from('initiative_team_members')
+        .select('*, team_members!inner(name)');
+
+      console.log('✅ EffortTrackingView fetched initiative_team_members:', initiativeTeamMembers?.length || 0);
+
       // Join initiatives with related data
-      const allInitiatives: InitiativeWithDetails[] = (fetchedInitiatives || []).map((initiative) => ({
-        ...initiative,
-        metrics: (metrics || []).filter((m) => m.initiative_id === initiative.id),
-        financial_impact: (financialImpact || []).find((f) => f.initiative_id === initiative.id),
-        performance_data: (performanceData || []).find((p) => p.initiative_id === initiative.id),
-        projections: (projections || []).find((p) => p.initiative_id === initiative.id),
-        story: (stories || []).find((s) => s.initiative_id === initiative.id),
-      }));
+      const allInitiatives: InitiativeWithDetails[] = (fetchedInitiatives || []).map((initiative) => {
+        // Get team member assignments for this initiative
+        const teamMembers = (initiativeTeamMembers || [])
+          .filter((tm: any) => tm.initiative_id === initiative.id)
+          .map((tm: any) => ({
+            ...tm,
+            team_member_name: tm.team_members?.name || ''
+          }));
+
+        return {
+          ...initiative,
+          metrics: (metrics || []).filter((m) => m.initiative_id === initiative.id),
+          financial_impact: (financialImpact || []).find((f) => f.initiative_id === initiative.id),
+          performance_data: (performanceData || []).find((p) => p.initiative_id === initiative.id),
+          projections: (projections || []).find((p) => p.initiative_id === initiative.id),
+          story: (stories || []).find((s) => s.initiative_id === initiative.id),
+          team_members: teamMembers,
+        };
+      });
 
       // Load existing logs for selected week
       const { data: currentLogs, error: currentError } = await supabase
@@ -191,9 +209,44 @@ export const EffortTrackingView = ({
       );
 
       if (teamMemberName) {
-        filteredInitiatives = filteredInitiatives.filter(
-          i => i.owner_name === teamMemberName || i.team_member_id === teamMemberId
-        );
+        console.log(`🔍 Filtering initiatives for: ${teamMemberName} (ID: ${teamMemberId})`);
+        console.log(`📊 Total initiatives before filter: ${filteredInitiatives.length}`);
+
+        // Debug: Check if "Melissa - New For you" is in the list
+        const melissaInit = filteredInitiatives.find(i => i.initiative_name?.includes('Melissa - New For you'));
+        if (melissaInit) {
+          console.log(`🔍 Found "Melissa - New For you" initiative:`, {
+            id: melissaInit.id,
+            owner_name: melissaInit.owner_name,
+            team_member_id: melissaInit.team_member_id,
+            team_members: melissaInit.team_members,
+            team_members_count: melissaInit.team_members?.length || 0
+          });
+        } else {
+          console.log(`❌ "Melissa - New For you" NOT found in filteredInitiatives before team member filter`);
+        }
+
+        filteredInitiatives = filteredInitiatives.filter(i => {
+          // Show if user is primary owner
+          if (i.owner_name === teamMemberName || i.team_member_id === teamMemberId) {
+            return true;
+          }
+
+          // Show if user is in team_members array (any role: Owner, Co-Owner, Secondary, Support)
+          if (i.team_members && i.team_members.length > 0) {
+            const hasAssignment = i.team_members.some(tm => tm.team_member_id === teamMemberId);
+            if (hasAssignment) {
+              console.log(`✅ Including "${i.initiative_name}" - ${teamMemberName} found in team_members:`,
+                i.team_members.filter(tm => tm.team_member_id === teamMemberId).map(tm => tm.role)
+              );
+            }
+            return hasAssignment;
+          }
+
+          return false;
+        });
+
+        console.log(`📊 Total initiatives after filter: ${filteredInitiatives.length}`);
       }
 
       // Sort initiatives
