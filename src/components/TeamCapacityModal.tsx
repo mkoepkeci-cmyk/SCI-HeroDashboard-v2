@@ -314,7 +314,7 @@ export function TeamCapacityModal({
               <div className="grid grid-cols-2 gap-2">
                 {Object.entries(statusCounts).map(([status, count]) => (
                   <div key={status} className="bg-white rounded p-2 text-center border border-gray-200">
-                    <div className="text-2xl font-bold text-[#9B2F6A]">{count}</div>
+                    <div className="text-2xl font-bold text-brand">{count}</div>
                     <div className="text-xs text-gray-600 truncate" title={status}>{status}</div>
                   </div>
                 ))}

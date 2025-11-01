@@ -190,7 +190,7 @@ export default function TeamCapacityView({ teamMembers, managers }: TeamCapacity
             onClick={() => setSelectedManagerFilter(null)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               selectedManagerFilter === null
-                ? 'bg-[#9B2F6A] text-white shadow-md'
+                ? 'bg-brand text-white shadow-md'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -202,7 +202,7 @@ export default function TeamCapacityView({ teamMembers, managers }: TeamCapacity
               onClick={() => setSelectedManagerFilter(manager.id)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 selectedManagerFilter === manager.id
-                  ? 'bg-[#9B2F6A] text-white shadow-md'
+                  ? 'bg-brand text-white shadow-md'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -351,11 +351,11 @@ export default function TeamCapacityView({ teamMembers, managers }: TeamCapacity
 
             {/* Team Capacity Summary */}
             <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 mb-4 border border-purple-200">
-              <h4 className="font-semibold text-gray-900 mb-3 text-sm">Team Capacity Summary ({teamCount} SCIs)</h4>
+              <h4 className="font-semibold text-gray-900 mb-3 text-sm">Team Capacity Summary ({teamCount} Staff Members)</h4>
               <div className="grid grid-cols-3 gap-4">
                 <div className="text-center">
                   <div className="text-xs text-gray-600 mb-1">Planned Capacity</div>
-                  <div className="text-2xl font-bold text-[#9B2F6A]">{totalPlannedHours.toFixed(1)}h</div>
+                  <div className="text-2xl font-bold text-brand">{totalPlannedHours.toFixed(1)}h</div>
                   <div className="text-sm font-semibold text-purple-600">({plannedPct.toFixed(0)}% of {totalAvailableHours}h)</div>
                 </div>
                 <div className="text-center">
@@ -471,7 +471,7 @@ export default function TeamCapacityView({ teamMembers, managers }: TeamCapacity
                 <div className="grid grid-cols-2 gap-1">
                   {Object.entries(statusCounts).map(([status, count]) => (
                     <div key={status} className="bg-white rounded p-1 text-center border border-gray-200">
-                      <div className="text-lg font-bold text-[#9B2F6A]">{count}</div>
+                      <div className="text-lg font-bold text-brand">{count}</div>
                       <div className="text-xs text-gray-600 truncate" title={status}>{status}</div>
                     </div>
                   ))}

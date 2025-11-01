@@ -12,7 +12,7 @@ const getStatusColor = (status: string): string => {
     'Planning': 'bg-gray-100 text-gray-700 border-gray-300',
     'Active': 'bg-green-100 text-green-700 border-green-300',
     'Scaling': 'bg-blue-100 text-blue-700 border-blue-300',
-    'Completed': 'bg-[#9B2F6A]/10 text-[#9B2F6A] border-[#9B2F6A]/30',
+    'Completed': 'bg-brand/10 text-brand border-brand/30',
     'On Hold': 'bg-yellow-100 text-yellow-700 border-yellow-300',
   };
   return colors[status] || 'bg-gray-100 text-gray-700 border-gray-300';
@@ -75,7 +75,7 @@ export const InitiativeModal = ({ initiative, onClose, onEdit }: InitiativeModal
             </div>
             {initiative.service_line && (
               <div className="text-sm text-gray-600 mt-1">
-                <strong>Service Line:</strong> {initiative.service_line}
+                <strong>Dept/Service Line:</strong> {initiative.service_line}
               </div>
             )}
           </div>
@@ -98,7 +98,7 @@ export const InitiativeModal = ({ initiative, onClose, onEdit }: InitiativeModal
               <div className="space-y-2 text-xs">
                 {initiative.clinical_sponsor_name && (
                   <div>
-                    <span className="font-medium text-gray-700">Clinical Sponsor: </span>
+                    <span className="font-medium text-gray-700">Request Sponsor: </span>
                     <span className="text-gray-600">
                       {initiative.clinical_sponsor_name}
                       {initiative.clinical_sponsor_title && `, ${initiative.clinical_sponsor_title}`}
@@ -330,8 +330,8 @@ export const InitiativeModal = ({ initiative, onClose, onEdit }: InitiativeModal
           )}
 
           {hasStory && initiative.story && (
-            <div className="bg-white rounded-lg p-3 border border-[#9B2F6A]/30">
-              <h5 className="font-semibold text-sm mb-3 flex items-center gap-2 text-[#9B2F6A]">
+            <div className="bg-white rounded-lg p-3 border border-brand/30">
+              <h5 className="font-semibold text-sm mb-3 flex items-center gap-2 text-brand">
                 <Award className="w-4 h-4" />
                 Impact Story
               </h5>
@@ -339,25 +339,25 @@ export const InitiativeModal = ({ initiative, onClose, onEdit }: InitiativeModal
                 {initiative.story.challenge && (
                   <div>
                     <div className="font-semibold text-gray-700 mb-1">Challenge</div>
-                    <div className="text-gray-600 bg-[#9B2F6A]/5 rounded p-2">{initiative.story.challenge}</div>
+                    <div className="text-gray-600 bg-brand/5 rounded p-2">{initiative.story.challenge}</div>
                   </div>
                 )}
                 {initiative.story.approach && (
                   <div>
                     <div className="font-semibold text-gray-700 mb-1">Approach</div>
-                    <div className="text-gray-600 bg-[#9B2F6A]/5 rounded p-2">{initiative.story.approach}</div>
+                    <div className="text-gray-600 bg-brand/5 rounded p-2">{initiative.story.approach}</div>
                   </div>
                 )}
                 {initiative.story.outcome && (
                   <div>
                     <div className="font-semibold text-gray-700 mb-1">Outcome</div>
-                    <div className="text-gray-600 bg-[#9B2F6A]/5 rounded p-2">{initiative.story.outcome}</div>
+                    <div className="text-gray-600 bg-brand/5 rounded p-2">{initiative.story.outcome}</div>
                   </div>
                 )}
                 {initiative.story.collaboration_detail && (
                   <div>
                     <div className="font-semibold text-gray-700 mb-1">Collaboration</div>
-                    <div className="text-gray-600 bg-[#9B2F6A]/5 rounded p-2">{initiative.story.collaboration_detail}</div>
+                    <div className="text-gray-600 bg-brand/5 rounded p-2">{initiative.story.collaboration_detail}</div>
                   </div>
                 )}
               </div>
@@ -376,7 +376,7 @@ export const InitiativeModal = ({ initiative, onClose, onEdit }: InitiativeModal
           {onEdit && (
             <button
               onClick={() => onEdit(initiative)}
-              className="px-4 py-2 bg-[#9B2F6A] hover:bg-[#8a2a5e] text-white rounded text-sm font-medium transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-brand hover:bg-[#8a2a5e] text-white rounded text-sm font-medium transition-colors flex items-center gap-2"
             >
               <Edit className="w-4 h-4" />
               Edit Initiative

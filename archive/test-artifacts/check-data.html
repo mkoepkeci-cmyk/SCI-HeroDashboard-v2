@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCI Dashboard - Data Check</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 { color: #9B2F6A; }
+    h2 { color: #333; margin-top: 0; }
+    .status {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-weight: 500;
+      font-size: 14px;
+    }
+    .success { background: #10b981; color: white; }
+    .error { background: #ef4444; color: white; }
+    .loading { background: #f59e0b; color: white; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      text-align: left;
+      padding: 8px;
+      border-bottom: 1px solid #ddd;
+    }
+    th { background: #f9fafb; font-weight: 600; }
+    .count { font-size: 24px; font-weight: bold; color: #9B2F6A; }
+    button {
+      background: #9B2F6A;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    button:hover { background: #7d2556; }
+  </style>
+</head>
+<body>
+  <h1>🔍 SCI Dashboard - Data Verification</h1>
+
+  <div class="card">
+    <h2>Connection Status</h2>
+    <div id="connection-status">
+      <span class="status loading">Connecting...</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Data Summary</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Table</th>
+          <th>Count</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="data-summary">
+        <tr><td colspan="3">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Sample Data</h2>
+    <div id="sample-data">Loading...</div>
+  </div>
+
+  <div class="card">
+    <h2>Actions</h2>
+    <button onclick="window.location.href='http://localhost:5173'">Open Dashboard App</button>
+    <button onclick="location.reload()">Refresh</button>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://fiyaolxiarzkihlbhtmz.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpeWFvbHhpYXJ6a2lobGJodG16Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5NjQ5MzQsImV4cCI6MjA3NTU0MDkzNH0.u11vd2-k-8XeGJtehIYedN7KV9YO8oal3NKo7UhVu_w';
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function checkData() {
+      const tables = [
+        'team_members',
+        'managers',
+        'initiatives',
+        'governance_requests',
+        'initiative_metrics',
+        'initiative_financial_impact',
+        'initiative_stories'
+      ];
+
+      const results = [];
+
+      for (const table of tables) {
+        try {
+          const { data, error, count } = await supabase
+            .from(table)
+            .select('*', { count: 'exact', head: false });
+
+          if (error) throw error;
+
+          results.push({
+            table,
+            count: data?.length || 0,
+            status: 'success',
+            sampleData: data?.[0] || null
+          });
+        } catch (error) {
+          results.push({
+            table,
+            count: 0,
+            status: 'error',
+            error: error.message
+          });
+        }
+      }
+
+      // Update UI
+      document.getElementById('connection-status').innerHTML =
+        '<span class="status success">✓ Connected to Supabase</span>';
+
+      const summaryHtml = results.map(r => `
+        <tr>
+          <td><strong>${r.table}</strong></td>
+          <td><span class="count">${r.count}</span></td>
+          <td><span class="status ${r.status}">${r.status === 'success' ? '✓' : '✗'}</span></td>
+        </tr>
+      `).join('');
+      document.getElementById('data-summary').innerHTML = summaryHtml;
+
+      // Show sample team members and initiatives
+      const teamMembers = results.find(r => r.table === 'team_members');
+      const initiatives = results.find(r => r.table === 'initiatives');
+
+      let sampleHtml = '<h3>Team Members</h3>';
+      if (teamMembers && teamMembers.count > 0) {
+        const { data } = await supabase.from('team_members').select('*').limit(5);
+        sampleHtml += '<ul>';
+        data.forEach(m => {
+          sampleHtml += `<li><strong>${m.name}</strong> - ${m.role} (${m.total_assignments} assignments)</li>`;
+        });
+        sampleHtml += '</ul>';
+      }
+
+      sampleHtml += '<h3>Recent Initiatives</h3>';
+      if (initiatives && initiatives.count > 0) {
+        const { data } = await supabase.from('initiatives').select('*').order('created_at', { ascending: false }).limit(5);
+        sampleHtml += '<ul>';
+        data.forEach(i => {
+          sampleHtml += `<li><strong>${i.initiative_name}</strong> - ${i.owner_name} (${i.status})</li>`;
+        });
+        sampleHtml += '</ul>';
+      }
+
+      document.getElementById('sample-data').innerHTML = sampleHtml;
+    }
+
+    checkData();
+  </script>
+</body>
+</html>

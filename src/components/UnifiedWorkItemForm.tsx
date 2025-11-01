@@ -64,7 +64,8 @@ export const UnifiedWorkItemForm = ({
     submitter_email: '',
     problem_statement: '',
     desired_outcomes: '',
-    system_clinical_leader: '',
+    sponsor_name: '',
+    sponsor_title: '',
     patient_care_value: '',
     compliance_regulatory_value: '',
     target_timeline: '',
@@ -123,11 +124,11 @@ export const UnifiedWorkItemForm = ({
     role: ''
   }]);
 
-  // Tab 3: Proposed Solution & Journal Log (NEW)
+  // Tab 3: Solution & Journal Log
   const [tab3Data, setTab3Data] = useState({
     proposedSolution: '',
     votingStatement: '',
-    ehrAreasImpacted: [] as string[]
+    decision: ''
   });
 
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
@@ -231,7 +232,8 @@ export const UnifiedWorkItemForm = ({
       submitter_email: govMeta.submitter?.email || '',
       problem_statement: initiative.problem_statement || '',
       desired_outcomes: initiative.desired_outcomes || '',
-      system_clinical_leader: govMeta.system_clinical_leader || '',
+      sponsor_name: govMeta.sponsor_name || '',
+      sponsor_title: govMeta.sponsor_title || '',
       patient_care_value: govMeta.patient_care_value || '',
       compliance_regulatory_value: govMeta.compliance_regulatory_value || '',
       target_timeline: govMeta.target_timeline || '',
@@ -322,11 +324,11 @@ export const UnifiedWorkItemForm = ({
       console.log('✅ Loaded single team member from initiative.team_member_id (legacy)');
     }
 
-    // Tab 3: Proposed Solution & Journal
+    // Tab 3: Solution & Journal
     setTab3Data({
       proposedSolution: initiative.proposed_solution || '',
       votingStatement: initiative.voting_statement || '',
-      ehrAreasImpacted: initiative.ehr_areas_impacted || []
+      decision: initiative.decision || ''
     });
     setJournalEntries(initiative.journal_log || []);
 
@@ -410,7 +412,8 @@ export const UnifiedWorkItemForm = ({
       submitter_email: request.submitter_email || '',
       problem_statement: request.problem_statement || '',
       desired_outcomes: request.desired_outcomes || '',
-      system_clinical_leader: request.system_clinical_leader || '',
+      sponsor_name: request.sponsor_name || '',
+      sponsor_title: request.sponsor_title || '',
       patient_care_value: request.patient_care_value || '',
       compliance_regulatory_value: request.compliance_regulatory_value || '',
       target_timeline: request.target_timeline || '',
@@ -497,7 +500,8 @@ export const UnifiedWorkItemForm = ({
           name: tab1Data.submitter_name,
           email: tab1Data.submitter_email
         },
-        system_clinical_leader: tab1Data.system_clinical_leader,
+        sponsor_name: tab1Data.sponsor_name,
+        sponsor_title: tab1Data.sponsor_title,
         patient_care_value: tab1Data.patient_care_value,
         compliance_regulatory_value: tab1Data.compliance_regulatory_value,
         target_timeline: tab1Data.target_timeline,
@@ -578,7 +582,7 @@ export const UnifiedWorkItemForm = ({
         // Tab 3
         proposed_solution: tab3Data.proposedSolution || null,
         voting_statement: tab3Data.votingStatement || null,
-        ehr_areas_impacted: tab3Data.ehrAreasImpacted.length > 0 ? tab3Data.ehrAreasImpacted : null,
+        decision: tab3Data.decision || null,
         journal_log: journalEntries,
 
         // Metadata
@@ -714,7 +718,8 @@ export const UnifiedWorkItemForm = ({
       // Dashboard metrics will update automatically via real-time queries in parent component
       // No need to manually recalculate - parent's onSuccess() calls loadData() which refreshes everything
 
-      onSuccess();
+      // Wait for onSuccess to complete before closing (it refreshes data)
+      await onSuccess();
       onClose();
 
     } catch (err: any) {
@@ -763,7 +768,7 @@ export const UnifiedWorkItemForm = ({
               }`}
               onClick={() => setActiveTab('tab3')}
             >
-              Proposed Solution
+              Solution
             </button>
             <button
               className={`py-3 px-4 text-sm font-medium border-b-2 transition-colors ${

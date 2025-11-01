@@ -166,7 +166,7 @@ export const InitiativesTableView = ({ initiatives, onEdit, expandAll = false }:
                     <div className="col-span-2">Owner</div>
                     <div className="col-span-1">Role</div>
                     <div className="col-span-2">EHR</div>
-                    <div className="col-span-2">Service Line</div>
+                    <div className="col-span-2">Dept/Service Line</div>
                     <div className="col-span-1 text-right">Revenue</div>
                   </div>
 

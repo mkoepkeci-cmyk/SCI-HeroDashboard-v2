@@ -1,5 +1,6 @@
 import { Plus, X } from 'lucide-react';
 import { TeamMember } from '../../lib/supabase';
+import { useFieldOptions } from '../../lib/useFieldOptions';
 
 interface TeamMemberAssignment {
   teamMemberId: string;
@@ -45,6 +46,13 @@ export const Tab2Content = ({
   teamMemberAssignments,
   setTeamMemberAssignments
 }: Tab2ContentProps) => {
+  const { serviceLines } = useFieldOptions('service_line');
+  const { options: workTypes } = useFieldOptions('work_type');
+  const { options: roles } = useFieldOptions('role');
+  const { options: phases } = useFieldOptions('phase');
+  const { options: workEfforts } = useFieldOptions('work_effort');
+  const { options: statuses } = useFieldOptions('status');
+
   const addTeamMember = () => {
     setTeamMemberAssignments([...teamMemberAssignments, {
       teamMemberId: '',
@@ -130,10 +138,11 @@ export const Tab2Content = ({
                   className="w-full border border-gray-300 rounded-lg p-2"
                 >
                   <option value="">Select role</option>
-                  <option value="Owner">Owner</option>
-                  <option value="Co-Owner">Co-Owner</option>
-                  <option value="Secondary">Secondary</option>
-                  <option value="Support">Support</option>
+                  {roles.map(option => (
+                    <option key={option.key} value={option.label}>
+                      {option.label}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -179,15 +188,11 @@ export const Tab2Content = ({
                 className="w-full border border-gray-300 rounded-lg p-2"
               >
                 <option value="">Select work type</option>
-                <option value="Epic Gold">Epic Gold</option>
-                <option value="Governance">Governance</option>
-                <option value="System Initiative">System Initiative</option>
-                <option value="System Project">System Project</option>
-                <option value="Epic Upgrades">Epic Upgrades</option>
-                <option value="General Support">General Support</option>
-                <option value="Policy/Guidelines">Policy/Guidelines</option>
-                <option value="Market Project">Market Project</option>
-                <option value="Ticket">Ticket</option>
+                {workTypes.map(option => (
+                  <option key={option.key} value={option.label}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -202,11 +207,11 @@ export const Tab2Content = ({
                 className="w-full border border-gray-300 rounded-lg p-2"
               >
                 <option value="">Select status</option>
-                <option value="Not Started">Not Started</option>
-                <option value="In Progress">In Progress</option>
-                <option value="On Hold">On Hold</option>
-                <option value="Completed">Completed</option>
-                <option value="Cancelled">Cancelled</option>
+                {statuses.map(option => (
+                  <option key={option.key} value={option.label}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -219,17 +224,11 @@ export const Tab2Content = ({
                 className="w-full border border-gray-300 rounded-lg p-2"
               >
                 <option value="">Select phase</option>
-                <option value="Discovery/Define">Discovery/Define</option>
-                <option value="Design">Design</option>
-                <option value="Build">Build</option>
-                <option value="Validate/Test">Validate/Test</option>
-                <option value="Deploy">Deploy</option>
-                <option value="Did we Deliver">Did we Deliver</option>
-                <option value="Post Go Live Support">Post Go Live Support</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Maintenance">Maintenance</option>
-                <option value="Steady State">Steady State</option>
-                <option value="N/A">N/A</option>
+                {phases.map(option => (
+                  <option key={option.key} value={option.label}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -242,11 +241,11 @@ export const Tab2Content = ({
                 className="w-full border border-gray-300 rounded-lg p-2"
               >
                 <option value="">Select effort</option>
-                <option value="XS">XS - Less than 1 hr/wk</option>
-                <option value="S">S - 1-2 hrs/wk</option>
-                <option value="M">M - 2-5 hrs/wk</option>
-                <option value="L">L - 5-10 hrs/wk</option>
-                <option value="XL">XL - More than 10 hrs/wk</option>
+                {workEfforts.map(option => (
+                  <option key={option.key} value={option.key}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -267,27 +266,20 @@ export const Tab2Content = ({
               </select>
             </div>
 
-            {/* Service Line */}
+            {/* Dept/Service Line */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Service Line</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Dept/Service Line</label>
               <select
                 value={data.serviceLine}
                 onChange={(e) => setData({ ...data, serviceLine: e.target.value })}
                 className="w-full border border-gray-300 rounded-lg p-2"
               >
-                <option value="">Select service line</option>
-                <option value="Ambulatory">Ambulatory</option>
-                <option value="Pharmacy">Pharmacy</option>
-                <option value="Nursing">Nursing</option>
-                <option value="Pharmacy & Oncology">Pharmacy & Oncology</option>
-                <option value="Cardiology">Cardiology</option>
-                <option value="Emergency Department">Emergency Department</option>
-                <option value="Inpatient">Inpatient</option>
-                <option value="Perioperative">Perioperative</option>
-                <option value="Laboratory">Laboratory</option>
-                <option value="Radiology">Radiology</option>
-                <option value="Revenue Cycle">Revenue Cycle</option>
-                <option value="Other">Other</option>
+                <option value="">Select dept/service line</option>
+                {serviceLines.map(option => (
+                  <option key={option.key} value={option.label}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -359,7 +351,7 @@ export const Tab2Content = ({
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Clinical Sponsor Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Executive Sponsor Name</label>
               <input
                 type="text"
                 value={data.clinicalSponsorName}
@@ -369,7 +361,7 @@ export const Tab2Content = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Clinical Sponsor Title</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Executive Sponsor Title</label>
               <input
                 type="text"
                 value={data.clinicalSponsorTitle}

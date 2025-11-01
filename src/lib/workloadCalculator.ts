@@ -16,6 +16,7 @@
 
 import { supabase, InitiativeWithDetails, EffortLog } from './supabase';
 import { getWeekStartDate } from './effortUtils';
+import { loadCapacityThresholds, getThresholdForPercentage, type CapacityThreshold } from './useCapacityThresholds';
 
 // ============================================================================
 // Configuration Types
@@ -26,14 +27,11 @@ export interface WorkloadCalculatorConfig {
   roleWeights: Record<string, number>;      // 'Owner' → 1.0, 'Secondary' → 0.5
   workTypeWeights: Record<string, number>;  // 'System Initiative' → 1.0, 'Policy' → 0.5
   phaseWeights: Record<string, number>;     // 'Design' → 1.0, 'Discovery' → 0.3
-  capacityThresholds: {
-    under: number;   // 0.60 (< 60%)
-    near: number;    // 0.75 (60-74%)
-    at: number;      // 0.85 (75-84%)
-    over: number;    // 0.85 (>= 85%)
-  };
+  // NOTE: capacityThresholds moved to capacity_thresholds table (dynamic 7-level system)
+  // Use loadCapacityThresholds() and getThresholdForPercentage() instead
 }
 
+// DEPRECATED: Old 4-level status enum - use CapacityThreshold type instead
 export type CapacityStatus = 'under' | 'near' | 'at' | 'over';
 
 export interface DataQualityWarnings {
@@ -111,12 +109,6 @@ export async function loadCalculatorConfig(): Promise<WorkloadCalculatorConfig> 
     roleWeights: {},
     workTypeWeights: {},
     phaseWeights: {},
-    capacityThresholds: {
-      under: 0.60,
-      near: 0.75,
-      at: 0.85,
-      over: 0.85,
-    },
   };
 
   for (const row of data) {
@@ -135,12 +127,7 @@ export async function loadCalculatorConfig(): Promise<WorkloadCalculatorConfig> 
       case 'phase_weight':
         config.phaseWeights[row.key] = value;
         break;
-      case 'capacity_threshold':
-        if (row.key === 'under') config.capacityThresholds.under = value;
-        else if (row.key === 'near') config.capacityThresholds.near = value;
-        else if (row.key === 'at') config.capacityThresholds.at = value;
-        else if (row.key === 'over') config.capacityThresholds.over = value;
-        break;
+      // capacity_threshold: No longer loaded here - use capacity_thresholds table instead
     }
   }
 
@@ -418,29 +405,42 @@ export async function calculateMemberCapacity(
 }
 
 /**
- * Determine capacity status based on utilization percentage
+ * Get capacity threshold information for a given utilization percentage
+ * Uses the NEW dynamic 7-level capacity_thresholds table
+ *
+ * @param capacityPct - Capacity percentage (0-200, e.g., 85 for 85%)
+ * @returns CapacityThreshold object with label, color, emoji
+ */
+export async function getCapacityInfo(capacityPct: number): Promise<CapacityThreshold> {
+  const thresholds = await loadCapacityThresholds();
+  return getThresholdForPercentage(capacityPct, thresholds);
+}
+
+/**
+ * DEPRECATED: Old 4-level capacity status determination
+ * Use getCapacityInfo() instead for dynamic 7-level thresholds
+ *
+ * Kept for backward compatibility during migration
  */
 export function determineCapacityStatus(
   utilization: number,
   config: WorkloadCalculatorConfig
 ): CapacityStatus {
-  if (utilization >= config.capacityThresholds.over) {
-    return 'over';  // >= 85%
-  } else if (utilization >= config.capacityThresholds.at) {
-    return 'at';    // 75-84%
-  } else if (utilization >= config.capacityThresholds.near) {
-    return 'near';  // 60-74%
-  } else {
-    return 'under'; // < 60%
-  }
+  // Fallback to hardcoded 4-level system if config doesn't have thresholds
+  const pct = utilization * 100;
+  if (pct >= 85) return 'over';  // >= 85%
+  if (pct >= 75) return 'at';    // 75-84%
+  if (pct >= 60) return 'near';  // 60-74%
+  return 'under';                // < 60%
 }
 
 // ============================================================================
-// Helper Functions
+// Helper Functions (DEPRECATED - Use getCapacityInfo() instead)
 // ============================================================================
 
 /**
- * Get capacity status emoji
+ * DEPRECATED: Get capacity status emoji
+ * Use getCapacityInfo(pct).then(t => t.emoji) instead for dynamic thresholds
  */
 export function getCapacityStatusEmoji(status: CapacityStatus): string {
   switch (status) {
@@ -452,7 +452,8 @@ export function getCapacityStatusEmoji(status: CapacityStatus): string {
 }
 
 /**
- * Get capacity status label
+ * DEPRECATED: Get capacity status label
+ * Use getCapacityInfo(pct).then(t => t.label) instead for dynamic thresholds
  */
 export function getCapacityStatusLabel(status: CapacityStatus): string {
   switch (status) {
@@ -464,7 +465,8 @@ export function getCapacityStatusLabel(status: CapacityStatus): string {
 }
 
 /**
- * Get capacity status color
+ * DEPRECATED: Get capacity status color
+ * Use getCapacityInfo(pct).then(t => t.color) instead for dynamic thresholds
  */
 export function getCapacityStatusColor(status: CapacityStatus): string {
   switch (status) {

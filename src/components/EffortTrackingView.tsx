@@ -685,7 +685,7 @@ export const EffortTrackingView = ({
             <button
               onClick={handleSaveAll}
               disabled={saving || changedCount === 0}
-              className="px-4 py-2 bg-[#9B2F6A] text-white rounded-lg hover:bg-[#8B2858] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-4 py-2 bg-brand text-white rounded-lg hover:bg-[#8B2858] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               <Save className="w-4 h-4" />
               {saving ? 'Saving...' : `Save ${changedCount > 0 ? `(${changedCount})` : 'All'}`}
@@ -724,7 +724,7 @@ export const EffortTrackingView = ({
             </button>
             <button
               onClick={() => setShowAddOtherWork(true)}
-              className="px-4 py-2 bg-[#9B2F6A] text-white rounded-lg hover:bg-[#8B2858] transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-brand text-white rounded-lg hover:bg-[#8B2858] transition-colors flex items-center gap-2"
             >
               <UserPlus className="w-4 h-4" />
               Add Work Item

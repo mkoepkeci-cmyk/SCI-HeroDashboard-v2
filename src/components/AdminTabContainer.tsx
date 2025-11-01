@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Settings, Users, UserCog, Calculator } from 'lucide-react';
+import { Settings, Users, UserCog, Calculator, Sliders } from 'lucide-react';
 import { TeamMember, Manager } from '../lib/supabase';
 import { TeamManagementPanel } from './TeamManagementPanel';
 import { ManagersPanel } from './ManagersPanel';
 import { WorkloadCalculatorSettings } from './WorkloadCalculatorSettings';
+import { FieldOptionsSettings } from './FieldOptionsSettings';
 
-type AdminSubView = 'team' | 'managers' | 'calculator';
+type AdminSubView = 'team' | 'managers' | 'calculator' | 'configurations';
 
 interface AdminTabContainerProps {
   teamMembers: TeamMember[];
@@ -20,7 +21,7 @@ export function AdminTabContainer({ teamMembers, managers, onTeamMemberUpdate, o
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-[#9B2F6A] text-white rounded-lg p-6">
+      <div className="bg-brand text-white rounded-lg p-6">
         <div className="flex items-center gap-3 mb-2">
           <Settings className="w-6 h-6" />
           <h2 className="text-2xl font-bold">Administration</h2>
@@ -35,7 +36,7 @@ export function AdminTabContainer({ teamMembers, managers, onTeamMemberUpdate, o
             onClick={() => setSubView('team')}
             className={`px-6 py-3 text-sm font-semibold border-b-2 transition-colors flex items-center gap-2 ${
               subView === 'team'
-                ? 'border-[#9B2F6A] text-[#9B2F6A] bg-pink-50'
+                ? 'border-brand text-brand bg-brand-soft'
                 : 'border-transparent text-gray-600 hover:bg-gray-50'
             }`}
           >
@@ -46,7 +47,7 @@ export function AdminTabContainer({ teamMembers, managers, onTeamMemberUpdate, o
             onClick={() => setSubView('managers')}
             className={`px-6 py-3 text-sm font-semibold border-b-2 transition-colors flex items-center gap-2 ${
               subView === 'managers'
-                ? 'border-[#9B2F6A] text-[#9B2F6A] bg-pink-50'
+                ? 'border-brand text-brand bg-brand-soft'
                 : 'border-transparent text-gray-600 hover:bg-gray-50'
             }`}
           >
@@ -57,12 +58,23 @@ export function AdminTabContainer({ teamMembers, managers, onTeamMemberUpdate, o
             onClick={() => setSubView('calculator')}
             className={`px-6 py-3 text-sm font-semibold border-b-2 transition-colors flex items-center gap-2 ${
               subView === 'calculator'
-                ? 'border-[#9B2F6A] text-[#9B2F6A] bg-pink-50'
+                ? 'border-brand text-brand bg-brand-soft'
                 : 'border-transparent text-gray-600 hover:bg-gray-50'
             }`}
           >
             <Calculator className="w-4 h-4" />
             Calculator Settings
+          </button>
+          <button
+            onClick={() => setSubView('configurations')}
+            className={`px-6 py-3 text-sm font-semibold border-b-2 transition-colors flex items-center gap-2 ${
+              subView === 'configurations'
+                ? 'border-brand text-brand bg-brand-soft'
+                : 'border-transparent text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            <Sliders className="w-4 h-4" />
+            System Configuration
           </button>
         </div>
 
@@ -83,6 +95,7 @@ export function AdminTabContainer({ teamMembers, managers, onTeamMemberUpdate, o
             />
           )}
           {subView === 'calculator' && <WorkloadCalculatorSettings />}
+          {subView === 'configurations' && <FieldOptionsSettings />}
         </div>
       </div>
     </div>

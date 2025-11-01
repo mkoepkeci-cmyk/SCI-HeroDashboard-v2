@@ -11,11 +11,11 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16">
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold text-gray-900 mb-4">
-            System Clinical Informatics Dashboard
+            GovernIQ Enterprise Management Platform
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Managing 411+ active initiatives across 16 team members with real-time capacity tracking,
-            automated governance workflows, and comprehensive impact measurement.
+            Managing 400+ active initiatives across your team with real-time capacity tracking,
+            automated request workflows, and comprehensive impact measurement.
           </p>
           <button
             onClick={onGetStarted}
@@ -28,14 +28,14 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
 
         {/* User Personas Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-          {/* System Leaders */}
+          {/* Department Leaders */}
           <div className="bg-white rounded-xl shadow-lg p-6 border-t-4 border-blue-500 hover:shadow-xl transition-shadow">
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
               <Users className="w-6 h-6 text-blue-600" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">System Leaders</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Department Leaders</h3>
             <p className="text-sm text-gray-600 mb-4">
-              Clinical executives and operational leaders requesting SCI support
+              Department heads and service line leaders requesting team support
             </p>
             <div className="space-y-2">
               <div className="flex items-start gap-2">
@@ -53,14 +53,14 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
             </div>
           </div>
 
-          {/* System Clinical Informaticists */}
+          {/* Team Members / Staff */}
           <div className="bg-white rounded-xl shadow-lg p-6 border-t-4 border-purple-500 hover:shadow-xl transition-shadow">
             <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
               <ClipboardList className="w-6 h-6 text-purple-600" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">SCIs</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Team Members</h3>
             <p className="text-sm text-gray-600 mb-4">
-              System Clinical Informaticists executing initiatives and tracking work
+              Staff members executing initiatives and tracking workload
             </p>
             <div className="space-y-2">
               <div className="flex items-start gap-2">
@@ -78,19 +78,19 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
             </div>
           </div>
 
-          {/* SCI Managers */}
+          {/* Team Managers */}
           <div className="bg-white rounded-xl shadow-lg p-6 border-t-4 border-green-500 hover:shadow-xl transition-shadow">
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
               <BarChart3 className="w-6 h-6 text-green-600" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">SCI Managers</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Team Managers</h3>
             <p className="text-sm text-gray-600 mb-4">
               Directors managing team workload, capacity, and assignments
             </p>
             <div className="space-y-2">
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-gray-700">Review governance requests & assign SCIs</span>
+                <span className="text-sm text-gray-700">Review team requests & assign staff</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
@@ -110,12 +110,12 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
             </div>
             <h3 className="text-lg font-bold text-gray-900 mb-2">Senior Leadership</h3>
             <p className="text-sm text-gray-600 mb-4">
-              CNO, CIO, and executive team monitoring SCI value and impact
+              Executive team monitoring team performance, value and strategic impact
             </p>
             <div className="space-y-2">
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-gray-700">411+ initiatives with full visibility</span>
+                <span className="text-sm text-gray-700">400+ initiatives with full visibility</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
@@ -168,7 +168,7 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
               </div>
               <h4 className="font-semibold text-gray-900 mb-2">Work & Track</h4>
               <p className="text-sm text-gray-600">
-                SCIs log effort, Phase 2 auto-populates full details when Ready for Governance
+                Staff log effort, Phase 2 auto-populates full details when Ready for Governance
               </p>
             </div>
 
@@ -192,7 +192,7 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
           {/* For Requesters */}
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6">
             <h3 className="text-xl font-bold text-gray-900 mb-4">
-              📋 For System Leaders
+              📋 For Department Leaders
             </h3>
             <div className="space-y-3">
               <div className="flex items-start gap-3">
@@ -200,8 +200,8 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
                   1
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900">Navigate to SCI Requests</p>
-                  <p className="text-sm text-gray-600">Click "SCI Requests" in the navigation menu</p>
+                  <p className="font-medium text-gray-900">Navigate to Team Requests</p>
+                  <p className="text-sm text-gray-600">Click "Request Intake" in the navigation menu</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -225,10 +225,10 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
             </div>
           </div>
 
-          {/* For SCIs */}
+          {/* For Team Members */}
           <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6">
             <h3 className="text-xl font-bold text-gray-900 mb-4">
-              ⚡ For SCIs
+              ⚡ For Team Members
             </h3>
             <div className="space-y-3">
               <div className="flex items-start gap-3">
@@ -264,7 +264,7 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
           {/* For Managers */}
           <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6">
             <h3 className="text-xl font-bold text-gray-900 mb-4">
-              📊 For SCI Managers
+              📊 For Team Managers
             </h3>
             <div className="space-y-3">
               <div className="flex items-start gap-3">
@@ -273,7 +273,7 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">Review Requests</p>
-                  <p className="text-sm text-gray-600">Check SCI Requests portal for new submissions and pending requests</p>
+                  <p className="text-sm text-gray-600">Check Team Requests portal for new submissions and pending requests</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">

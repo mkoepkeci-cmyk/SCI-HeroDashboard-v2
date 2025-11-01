@@ -22,6 +22,8 @@ import { LoadBalanceModal } from './components/LoadBalanceModal';
 import { TeamCapacityCard } from './components/TeamCapacityCard';
 import { TeamCapacityModal } from './components/TeamCapacityModal';
 import TeamCapacityView from './components/TeamCapacityView';
+import { useApplicationConfig } from './lib/useApplicationConfig';
+import { useBrandColor } from './lib/useBrandColor';
 
 interface TeamMemberWithDetails extends TeamMember {
   workTypes: { [key: string]: number };
@@ -34,6 +36,12 @@ interface TeamMemberWithDetails extends TeamMember {
 }
 
 function App() {
+  // Load application configuration
+  const { config: appConfig } = useApplicationConfig();
+
+  // Load and apply brand color
+  useBrandColor();
+
   // Get initial view from URL hash or default to 'landing'
   const getInitialView = (): 'landing' | 'dashboard' | 'workload' | 'governance' | 'insights' | 'addData' => {
     const hash = window.location.hash.slice(1); // Remove the '#'
@@ -557,11 +565,11 @@ function App() {
     return (
       <div className="space-y-2">
         {/* Hero Banner */}
-        <div className="bg-[#9B2F6A] rounded-lg p-3 text-white shadow-lg">
+        <div className="bg-brand rounded-lg p-3 text-white shadow-lg">
           <div className="flex items-center justify-between mb-2">
             <div className="flex-1">
               <div className="inline-block bg-white/10 px-2 py-0.5 rounded-full mb-1">
-                <span className="text-[10px] font-semibold tracking-wide">CommonSpirit Health</span>
+                <span className="text-[10px] font-semibold tracking-wide">{appConfig.organization_name}</span>
               </div>
               <p className="text-white/90 text-[10px] font-medium">
                 {teamMembers.length} Team Members
@@ -1023,7 +1031,7 @@ function App() {
                   <div className="grid grid-cols-2 gap-2">
                     {Object.entries(statusCounts).map(([status, count]) => (
                       <div key={status} className="bg-white rounded p-2 text-center border border-gray-200">
-                        <div className="text-2xl font-bold text-[#9B2F6A]">{count}</div>
+                        <div className="text-2xl font-bold text-brand">{count}</div>
                         <div className="text-xs text-gray-600 truncate" title={status}>{status}</div>
                       </div>
                     ))}
@@ -1058,13 +1066,13 @@ function App() {
               onClick={() => setActiveTab('active')}
               className={`px-4 py-2 text-sm font-semibold transition-all ${
                 activeTab === 'active'
-                  ? 'text-[#9B2F6A] border-b-2 border-[#9B2F6A]'
+                  ? 'text-brand border-b-2 border-brand'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               Active
               <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-                activeTab === 'active' ? 'bg-[#9B2F6A] text-white' : 'bg-gray-200 text-gray-700'
+                activeTab === 'active' ? 'bg-brand text-white' : 'bg-gray-200 text-gray-700'
               }`}>
                 {metrics.activeInitiatives}
               </span>
@@ -1073,13 +1081,13 @@ function App() {
               onClick={() => setActiveTab('completed')}
               className={`px-4 py-2 text-sm font-semibold transition-all ${
                 activeTab === 'completed'
-                  ? 'text-[#9B2F6A] border-b-2 border-[#9B2F6A]'
+                  ? 'text-brand border-b-2 border-brand'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               Completed
               <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-                activeTab === 'completed' ? 'bg-[#9B2F6A] text-white' : 'bg-gray-200 text-gray-700'
+                activeTab === 'completed' ? 'bg-brand text-white' : 'bg-gray-200 text-gray-700'
               }`}>
                 {metrics.completedInitiatives}
               </span>
@@ -1088,13 +1096,13 @@ function App() {
               onClick={() => setActiveTab('all')}
               className={`px-4 py-2 text-sm font-semibold transition-all ${
                 activeTab === 'all'
-                  ? 'text-[#9B2F6A] border-b-2 border-[#9B2F6A]'
+                  ? 'text-brand border-b-2 border-brand'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               All
               <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-                activeTab === 'all' ? 'bg-[#9B2F6A] text-white' : 'bg-gray-200 text-gray-700'
+                activeTab === 'all' ? 'bg-brand text-white' : 'bg-gray-200 text-gray-700'
               }`}>
                 {metrics.totalInitiatives}
               </span>
@@ -1109,7 +1117,7 @@ function App() {
                 <input
                   type="text"
                   placeholder="Search initiatives by name, owner, or service line..."
-                  className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#9B2F6A] focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -1118,14 +1126,14 @@ function App() {
                 onClick={() => setShowFilters(!showFilters)}
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
                   showFilters || hasActiveFilters
-                    ? 'bg-[#9B2F6A] text-white'
+                    ? 'bg-brand text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
                 <Filter className="w-4 h-4" />
                 Filters
                 {hasActiveFilters && !showFilters && (
-                  <span className="bg-white text-[#9B2F6A] rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+                  <span className="bg-white text-brand rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
                     {[filterOwner, filterStatus, filterType, filterEHR, filterServiceLine, filterGovernance !== 'all'].filter(Boolean).length}
                   </span>
                 )}
@@ -1140,7 +1148,7 @@ function App() {
                     onClick={() => setFilterGovernance('all')}
                     className={`px-3 py-1.5 rounded text-xs font-medium transition-all ${
                       filterGovernance === 'all'
-                        ? 'bg-[#9B2F6A] text-white'
+                        ? 'bg-brand text-white'
                         : 'bg-white text-gray-700 hover:bg-gray-100 border'
                     }`}
                   >
@@ -1157,7 +1165,7 @@ function App() {
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    From SCI Requests
+                    From Request Intake
                   </button>
                   <button
                     onClick={() => setFilterGovernance('non-governance')}
@@ -1225,7 +1233,7 @@ function App() {
                 {hasActiveFilters && (
                   <button
                     onClick={clearFilters}
-                    className="flex items-center gap-1 px-2 py-1 text-xs text-[#9B2F6A] hover:bg-white rounded transition-all"
+                    className="flex items-center gap-1 px-2 py-1 text-xs text-brand hover:bg-white rounded transition-all"
                   >
                     <X className="w-3 h-3" />
                     Clear all filters
@@ -1240,7 +1248,7 @@ function App() {
             <div className="text-center py-8 text-gray-500">
               <p className="mb-2">No initiatives found</p>
               {hasActiveFilters && (
-                <button onClick={clearFilters} className="text-sm text-[#9B2F6A] hover:underline">
+                <button onClick={clearFilters} className="text-sm text-brand hover:underline">
                   Clear filters to see all initiatives
                 </button>
               )}
@@ -1298,10 +1306,10 @@ function App() {
           <div
             key={member.id}
             onClick={() => setSelectedMember(member)}
-            className="bg-white border rounded-lg p-2 hover:shadow-md transition-all cursor-pointer hover:border-[#9B2F6A]"
+            className="bg-white border rounded-lg p-2 hover:shadow-md transition-all cursor-pointer hover:border-brand"
           >
             <div className="flex items-center gap-2 mb-1.5">
-              <div className="w-8 h-8 bg-[#9B2F6A] rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm">
+              <div className="w-8 h-8 bg-brand rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm">
                 {member.name.charAt(0)}
               </div>
               <div className="flex-1 min-w-0">
@@ -1352,7 +1360,7 @@ function App() {
             </div>
             <button
               onClick={() => setSelectedMember(null)}
-              className="text-sm text-[#9B2F6A] hover:text-[#8F2561] font-semibold"
+              className="text-sm text-brand hover:text-[#8F2561] font-semibold"
             >
               Close
             </button>
@@ -1392,15 +1400,15 @@ function App() {
                   .map(([ehr, count]) => (
                     <div key={ehr} className="flex items-center justify-between p-2 bg-gray-50 rounded">
                       <span className="text-sm font-medium">{ehr}</span>
-                      <span className="text-lg font-bold text-[#9B2F6A]">{count}</span>
+                      <span className="text-lg font-bold text-brand">{count}</span>
                     </div>
                   ))}
               </div>
             </div>
           </div>
 
-          <div className="border border-[#9B2F6A]/20 rounded-lg p-3 bg-[#9B2F6A]/5">
-            <h3 className="font-semibold text-sm mb-2 text-[#9B2F6A]">Key Highlights</h3>
+          <div className="border border-brand/20 rounded-lg p-3 bg-brand/5">
+            <h3 className="font-semibold text-sm mb-2 text-brand">Key Highlights</h3>
             <div className="space-y-1 text-xs">
               {(() => {
                 try {
@@ -1446,7 +1454,7 @@ function App() {
 
                   return highlights.map((work, idx) => (
                     <div key={idx} className="flex items-start gap-2">
-                      <span className="text-[#9B2F6A]">•</span>
+                      <span className="text-brand">•</span>
                       <span className="text-[#565658]">{work}</span>
                     </div>
                   ));
@@ -1455,7 +1463,7 @@ function App() {
                   // Fallback to safe display
                   return (
                     <div className="flex items-start gap-2">
-                      <span className="text-[#9B2F6A]">•</span>
+                      <span className="text-brand">•</span>
                       <span className="text-[#565658]">No highlights available</span>
                     </div>
                   );
@@ -1683,27 +1691,27 @@ function App() {
             onClick={() => setWorkloadSubView('sci')}
             className={`flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
               workloadSubView === 'sci'
-                ? 'bg-[#9B2F6A] text-white shadow-md'
+                ? 'bg-brand text-white shadow-md'
                 : 'text-gray-600 hover:bg-gray-100'
             }`}
           >
-            SCI View
+            {appConfig.workload_staff_view_label}
           </button>
           <button
             onClick={() => setWorkloadSubView('team')}
             className={`flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
               workloadSubView === 'team'
-                ? 'bg-[#9B2F6A] text-white shadow-md'
+                ? 'bg-brand text-white shadow-md'
                 : 'text-gray-600 hover:bg-gray-100'
             }`}
           >
-            Team View
+            {appConfig.workload_manager_view_label}
           </button>
           <button
             onClick={() => setWorkloadSubView('admin')}
             className={`flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
               workloadSubView === 'admin'
-                ? 'bg-[#9B2F6A] text-white shadow-md'
+                ? 'bg-brand text-white shadow-md'
                 : 'text-gray-600 hover:bg-gray-100'
             }`}
           >
@@ -1741,7 +1749,7 @@ function App() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 animate-spin text-[#9B2F6A]" />
+          <Loader2 className="w-8 h-8 animate-spin text-brand" />
           <p className="text-[#565658] font-medium">Loading team data...</p>
         </div>
       </div>
@@ -1757,10 +1765,34 @@ function App() {
               className="cursor-pointer hover:opacity-80 transition-opacity"
               onClick={() => setActiveView('landing')}
             >
-              <h1 className="text-xl font-bold text-[#9B2F6A]">System Clinical Informatics</h1>
-              <p className="text-xs text-[#565658] font-medium">CommonSpirit Health • Excellence & Innovation</p>
+              <h1 className="text-xl font-bold text-brand">{appConfig.banner_title}</h1>
+              <p className="text-xs text-[#565658] font-medium">{appConfig.organization_name} • Excellence & Innovation</p>
             </div>
             <div className="flex gap-2">
+              <button
+                onClick={() => setActiveView('governance')}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1 ${
+                  activeView === 'governance'
+                    ? 'bg-brand text-white shadow-md'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Request Intake
+              </button>
+              <button
+                onClick={() => setActiveView('workload')}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1 ${
+                  activeView === 'workload'
+                    ? 'bg-brand text-white shadow-md'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                <TrendingUp size={16} />
+                Workforce
+              </button>
               <button
                 onClick={() => {
                   setActiveView('dashboard');
@@ -1768,41 +1800,17 @@ function App() {
                 }}
                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
                   activeView === 'dashboard'
-                    ? 'bg-[#9B2F6A] text-white shadow-md'
+                    ? 'bg-brand text-white shadow-md'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
                 Dashboard
               </button>
               <button
-                onClick={() => setActiveView('governance')}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1 ${
-                  activeView === 'governance'
-                    ? 'bg-[#9B2F6A] text-white shadow-md'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                System Intake
-              </button>
-              <button
-                onClick={() => setActiveView('workload')}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1 ${
-                  activeView === 'workload'
-                    ? 'bg-[#9B2F6A] text-white shadow-md'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                <TrendingUp size={16} />
-                Workload
-              </button>
-              <button
                 onClick={() => setActiveView('insights')}
                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1 ${
                   activeView === 'insights'
-                    ? 'bg-[#9B2F6A] text-white shadow-md'
+                    ? 'bg-brand text-white shadow-md'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
@@ -1825,7 +1833,7 @@ function App() {
                 onClick={() => setDashboardSubView('overview')}
                 className={`px-4 py-2 rounded-t-lg text-sm font-semibold transition-all ${
                   dashboardSubView === 'overview'
-                    ? 'bg-white text-[#9B2F6A] border-b-2 border-[#9B2F6A]'
+                    ? 'bg-white text-brand border-b-2 border-brand'
                     : 'bg-gray-50 text-[#565658] hover:bg-gray-100'
                 }`}
               >
@@ -1835,7 +1843,7 @@ function App() {
                 onClick={() => setDashboardSubView('team')}
                 className={`px-4 py-2 rounded-t-lg text-sm font-semibold transition-all ${
                   dashboardSubView === 'team'
-                    ? 'bg-white text-[#9B2F6A] border-b-2 border-[#9B2F6A]'
+                    ? 'bg-white text-brand border-b-2 border-brand'
                     : 'bg-gray-50 text-[#565658] hover:bg-gray-100'
                 }`}
               >

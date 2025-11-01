@@ -260,11 +260,11 @@ export default function BulkEffortEntry({
       // Filter initiatives for this team member
       // Match by owner_name (from initiatives table) to team member name
       // ONLY include standard initiative statuses (not governance request statuses)
-      // Governance requests (Draft, Ready for Review, Needs Refinement) show in SCIRequestsCard above
+      // Governance requests (Draft, Ready for Review, Needs Refinement) show in TeamRequestsCard above
       let filteredInitiatives = allInitiatives.filter(
         i => {
           // Exclude governance initiatives that are still "Not Started" (before Phase 2)
-          // These should only appear in "Assigned SCI Requests" card, not in System Initiatives table
+          // These should only appear in "Assigned Team Requests" card, not in System Initiatives table
           if (i.governance_request_id && i.status === 'Not Started') {
             return false;
           }
@@ -839,7 +839,7 @@ export default function BulkEffortEntry({
             {onAddInitiative && (
               <button
                 onClick={onAddInitiative}
-                className="px-4 py-2 bg-[#9B2F6A] text-white rounded-lg hover:bg-[#8B2858] transition-colors flex items-center gap-2"
+                className="px-4 py-2 bg-brand text-white rounded-lg hover:bg-[#8B2858] transition-colors flex items-center gap-2"
                 title="Add a new initiative to your workload"
               >
                 <span className="text-lg">+</span>
@@ -865,7 +865,7 @@ export default function BulkEffortEntry({
             <button
               onClick={handleSaveAll}
               disabled={saving || changedCount === 0}
-              className="px-4 py-2 bg-[#9B2F6A] text-white rounded-lg hover:bg-[#8B2858] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-4 py-2 bg-brand text-white rounded-lg hover:bg-[#8B2858] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               <Save className="w-4 h-4" />
               {saving ? 'Saving...' : `Save ${changedCount > 0 ? `(${changedCount})` : 'All'}`}
@@ -1104,7 +1104,7 @@ export default function BulkEffortEntry({
                   Total Hours (unsaved):
                 </td>
                 <td className="px-4 py-3 text-center">
-                  <span className="text-xl font-bold text-[#9B2F6A]">{totalHours.toFixed(1)}</span>
+                  <span className="text-xl font-bold text-brand">{totalHours.toFixed(1)}</span>
                 </td>
                 <td colSpan={3} className="px-4 py-3 text-sm text-gray-600">
                   This total updates as you enter hours above
@@ -1138,7 +1138,7 @@ export default function BulkEffortEntry({
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Initiative</th>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Type</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Service Line</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Dept/Service Line</th>
                       <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Edit</th>
                     </tr>
                   </thead>

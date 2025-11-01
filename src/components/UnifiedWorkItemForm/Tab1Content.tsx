@@ -7,7 +7,8 @@ interface Tab1Data {
   submitter_email: string;
   problem_statement: string;
   desired_outcomes: string;
-  system_clinical_leader: string;
+  sponsor_name: string;
+  sponsor_title: string;
   patient_care_value: string;
   compliance_regulatory_value: string;
   target_timeline: string;
@@ -103,21 +104,33 @@ export const Tab1Content = ({ data, setData }: Tab1ContentProps) => {
             />
           </div>
 
-          <div className="col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">System Clinical Leader/Sponsor</label>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Executive Sponsor Name</label>
             <input
               type="text"
-              value={data.system_clinical_leader}
-              onChange={(e) => setData({ ...data, system_clinical_leader: e.target.value })}
+              value={data.sponsor_name}
+              onChange={(e) => setData({ ...data, sponsor_name: e.target.value })}
               className="w-full border border-gray-300 rounded-lg p-2"
+              placeholder="e.g., Dr. Sarah Johnson"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Executive Sponsor Title</label>
+            <input
+              type="text"
+              value={data.sponsor_title}
+              onChange={(e) => setData({ ...data, sponsor_title: e.target.value })}
+              className="w-full border border-gray-300 rounded-lg p-2"
+              placeholder="e.g., SVP Clinical Excellence"
             />
           </div>
         </div>
       </div>
 
-      {/* System-Level Need */}
+      {/* Enterprise Need */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">System-Level Need</h3>
+        <h3 className="text-lg font-semibold mb-4">Enterprise Need</h3>
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Problem Statement</label>
@@ -126,7 +139,7 @@ export const Tab1Content = ({ data, setData }: Tab1ContentProps) => {
               onChange={(e) => setData({ ...data, problem_statement: e.target.value })}
               rows={6}
               className="w-full border border-gray-300 rounded-lg p-2"
-              placeholder="Describe the system-level problem or opportunity"
+              placeholder="Describe the enterprise-level problem or opportunity"
             />
           </div>
 
@@ -137,7 +150,7 @@ export const Tab1Content = ({ data, setData }: Tab1ContentProps) => {
               onChange={(e) => setData({ ...data, desired_outcomes: e.target.value })}
               rows={5}
               className="w-full border border-gray-300 rounded-lg p-2"
-              placeholder="Specific system-wide outcomes expected"
+              placeholder="Specific enterprise-wide outcomes expected"
             />
           </div>
         </div>

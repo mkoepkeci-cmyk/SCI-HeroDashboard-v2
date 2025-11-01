@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Save, RotateCcw, Settings, Info, TrendingUp, AlertCircle, Eye, Edit3, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { loadCalculatorConfig, clearConfigCache } from '../lib/workloadCalculator';
+import { CapacityThresholdsSettings } from './CapacityThresholdsSettings';
 
 interface ConfigItem {
   id: string;
@@ -14,7 +15,7 @@ interface ConfigItem {
 }
 
 // FIXED: Changed from plural to singular to match database
-type TabView = 'effort_size' | 'role_weight' | 'work_type_weight' | 'phase_weight' | 'capacity_threshold';
+type TabView = 'effort_size' | 'role_weight' | 'work_type_weight' | 'phase_weight' | 'capacity_colors';
 
 type ViewMode = 'view' | 'draft';
 
@@ -137,7 +138,8 @@ export function WorkloadCalculatorSettings() {
     setDraftValues(new Map());
   };
 
-  const filteredConfig = config.filter(item => item.config_type === activeTab);
+  // For capacity_colors tab, we don't filter from workload_calculator_config (uses separate table)
+  const filteredConfig = activeTab === 'capacity_colors' ? [] : config.filter(item => item.config_type === activeTab);
 
   // Calculate impact preview
   const affectedCount = draftValues.size;
@@ -156,15 +158,15 @@ export function WorkloadCalculatorSettings() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="bg-[#9B2F6A] text-white rounded-lg p-6">
+      <div className="bg-brand text-white rounded-lg p-6">
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-3 mb-2">
               <Settings className="w-6 h-6" />
-              <h2 className="text-2xl font-bold">SCI Capacity Definition Calculator</h2>
+              <h2 className="text-2xl font-bold">Staff Capacity Calculator</h2>
             </div>
             <p className="text-white/80 text-sm">
-              Configure weights and thresholds for System Clinical Informatics capacity calculations
+              Configure weights and thresholds for staff capacity calculations
             </p>
           </div>
 
@@ -173,7 +175,7 @@ export function WorkloadCalculatorSettings() {
             {mode === 'view' ? (
               <button
                 onClick={handleEnterDraftMode}
-                className="px-4 py-2 bg-white text-[#9B2F6A] rounded-lg hover:bg-pink-50 transition-colors flex items-center gap-2 font-semibold"
+                className="px-4 py-2 bg-white text-brand rounded-lg hover:bg-brand-soft transition-colors flex items-center gap-2 font-semibold"
               >
                 <Edit3 className="w-4 h-4" />
                 Enter Draft Mode
@@ -189,17 +191,6 @@ export function WorkloadCalculatorSettings() {
           </div>
         </div>
       </div>
-
-      {/* Debug Panel */}
-      {config.length > 0 && (
-        <div className="bg-gray-50 border border-gray-300 rounded-lg p-3 text-xs font-mono text-gray-600">
-          <strong>Debug:</strong> Loaded {config.length} config items |
-          Active Tab: {activeTab} |
-          Filtered: {filteredConfig.length} items |
-          Mode: {mode === 'view' ? '👁️ View' : '✏️ Draft'} |
-          Draft Changes: {draftValues.size}
-        </div>
-      )}
 
       {/* Draft Mode Banner */}
       {mode === 'draft' && (
@@ -281,7 +272,7 @@ export function WorkloadCalculatorSettings() {
             onClick={() => setActiveTab('effort_size')}
             className={`px-4 py-3 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors ${
               activeTab === 'effort_size'
-                ? 'border-[#9B2F6A] text-[#9B2F6A] bg-pink-50'
+                ? 'border-brand text-brand bg-brand-soft'
                 : 'border-transparent text-gray-600 hover:bg-gray-50'
             }`}
           >
@@ -291,7 +282,7 @@ export function WorkloadCalculatorSettings() {
             onClick={() => setActiveTab('role_weight')}
             className={`px-4 py-3 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors ${
               activeTab === 'role_weight'
-                ? 'border-[#9B2F6A] text-[#9B2F6A] bg-pink-50'
+                ? 'border-brand text-brand bg-brand-soft'
                 : 'border-transparent text-gray-600 hover:bg-gray-50'
             }`}
           >
@@ -301,7 +292,7 @@ export function WorkloadCalculatorSettings() {
             onClick={() => setActiveTab('work_type_weight')}
             className={`px-4 py-3 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors ${
               activeTab === 'work_type_weight'
-                ? 'border-[#9B2F6A] text-[#9B2F6A] bg-pink-50'
+                ? 'border-brand text-brand bg-brand-soft'
                 : 'border-transparent text-gray-600 hover:bg-gray-50'
             }`}
           >
@@ -311,27 +302,30 @@ export function WorkloadCalculatorSettings() {
             onClick={() => setActiveTab('phase_weight')}
             className={`px-4 py-3 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors ${
               activeTab === 'phase_weight'
-                ? 'border-[#9B2F6A] text-[#9B2F6A] bg-pink-50'
+                ? 'border-brand text-brand bg-brand-soft'
                 : 'border-transparent text-gray-600 hover:bg-gray-50'
             }`}
           >
             🔄 Phase Weights
           </button>
           <button
-            onClick={() => setActiveTab('capacity_threshold')}
+            onClick={() => setActiveTab('capacity_colors')}
             className={`px-4 py-3 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors ${
-              activeTab === 'capacity_threshold'
-                ? 'border-[#9B2F6A] text-[#9B2F6A] bg-pink-50'
+              activeTab === 'capacity_colors'
+                ? 'border-brand text-brand bg-brand-soft'
                 : 'border-transparent text-gray-600 hover:bg-gray-50'
             }`}
           >
-            📈 Capacity Thresholds
+            🎨 Capacity Colors
           </button>
         </div>
 
         {/* Table Content - FIXED: All singular checks */}
         <div className="p-6">
-          {filteredConfig.length === 0 ? (
+          {/* Special handling for capacity_colors tab (uses separate component) */}
+          {activeTab === 'capacity_colors' ? (
+            <CapacityThresholdsSettings />
+          ) : filteredConfig.length === 0 ? (
             <div className="border-2 border-dashed rounded-lg p-12 text-center">
               <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
               <div className="text-lg font-semibold text-gray-900 mb-2">No data found for this tab</div>
@@ -343,7 +337,7 @@ export function WorkloadCalculatorSettings() {
               </div>
               <button
                 onClick={loadConfig}
-                className="mt-4 px-4 py-2 bg-[#9B2F6A] text-white rounded-lg hover:bg-[#8B2858]"
+                className="mt-4 px-4 py-2 bg-brand text-white rounded-lg hover:bg-[#8B2858]"
               >
                 Retry Loading
               </button>
@@ -522,59 +516,6 @@ export function WorkloadCalculatorSettings() {
                   </table>
                 </div>
               )}
-
-              {activeTab === 'capacity_threshold' && (
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Capacity Utilization Thresholds</h3>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Define the utilization percentages for capacity status indicators. Values are minimums for each status.
-                  </p>
-                  <table className="w-full">
-                    <thead className="bg-gray-50 border-b">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Threshold (%)</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Description</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Indicator</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y">
-                      {filteredConfig.map((item) => {
-                        const emoji = item.key === 'over' ? '🔴' : item.key === 'at' ? '🟠' : item.key === 'near' ? '🟡' : '🟢';
-                        return (
-                          <tr key={item.id} className={draftValues.has(item.id) ? 'bg-yellow-50' : ''}>
-                            <td className="px-4 py-3 font-medium text-gray-900 capitalize">{item.key}</td>
-                            <td className="px-4 py-3">
-                              {mode === 'draft' ? (
-                                <>
-                                  <input
-                                    type="number"
-                                    step="0.05"
-                                    min="0"
-                                    max="1"
-                                    value={getDisplayValue(item)}
-                                    onChange={(e) => handleDraftChange(item.id, e.target.value)}
-                                    className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                  />
-                                  <span className="ml-2 text-sm text-gray-600">
-                                    ({(getDisplayValue(item) * 100).toFixed(0)}%)
-                                  </span>
-                                </>
-                              ) : (
-                                <span className="text-gray-700">
-                                  {getDisplayValue(item).toFixed(2)} ({(getDisplayValue(item) * 100).toFixed(0)}%)
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-4 py-3 text-sm text-gray-600">{item.label}</td>
-                            <td className="px-4 py-3 text-2xl">{emoji}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
             </>
           )}
         </div>
@@ -588,7 +529,7 @@ export function WorkloadCalculatorSettings() {
             <div className="text-sm text-gray-700">
               <div className="font-semibold mb-2">About this Configuration:</div>
               <ul className="space-y-1 text-gray-600">
-                <li>• These weights define how workload is calculated for System Clinical Informatics</li>
+                <li>• These weights define how workload is calculated for your team members</li>
                 <li>• Click <strong>"Enter Draft Mode"</strong> to test weight changes safely</li>
                 <li>• Changes only apply after you save in draft mode</li>
                 <li>• This is designed for iterative refinement as you learn what works best</li>

@@ -4,7 +4,7 @@ import { JournalEntry } from '../../lib/supabase';
 interface Tab3Data {
   proposedSolution: string;
   votingStatement: string;
-  ehrAreasImpacted: string[];
+  decision: string;
 }
 
 interface Tab3ContentProps {
@@ -53,16 +53,32 @@ export const Tab3Content = ({
 
   return (
     <div className="space-y-6">
-      {/* Proposed Solution */}
+      {/* Solution */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">Proposed Solution</h3>
+        <h3 className="text-lg font-semibold mb-4">Solution</h3>
         <textarea
           value={data.proposedSolution}
           onChange={(e) => setData({ ...data, proposedSolution: e.target.value })}
           rows={6}
           className="w-full border border-gray-300 rounded-lg p-2"
-          placeholder="Describe the proposed solution for governance review"
+          placeholder="Describe the solution for governance review"
         />
+      </div>
+
+      {/* Decision */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Decision</h3>
+        <select
+          value={data.decision}
+          onChange={(e) => setData({ ...data, decision: e.target.value })}
+          className="w-full border border-gray-300 rounded-lg p-2"
+        >
+          <option value="">Select decision</option>
+          <option value="Approved">Approved</option>
+          <option value="Denied">Denied</option>
+          <option value="Sent Back">Sent Back</option>
+          <option value="Dismissed">Dismissed</option>
+        </select>
       </div>
 
       {/* Voting Statement */}
@@ -75,22 +91,6 @@ export const Tab3Content = ({
           className="w-full border border-gray-300 rounded-lg p-2"
           placeholder="Statement for governance committee voting"
         />
-      </div>
-
-      {/* EHR Areas Impacted */}
-      <div>
-        <h3 className="text-lg font-semibold mb-4">EHR Areas/Modules Impacted</h3>
-        <textarea
-          value={data.ehrAreasImpacted.join('\n')}
-          onChange={(e) => setData({
-            ...data,
-            ehrAreasImpacted: e.target.value.split('\n').filter(a => a.trim())
-          })}
-          rows={4}
-          className="w-full border border-gray-300 rounded-lg p-2"
-          placeholder="List EHR areas or modules (one per line)&#10;e.g.,&#10;Orders&#10;Medication Administration&#10;Clinical Documentation"
-        />
-        <p className="text-xs text-gray-500 mt-1">Enter one EHR area per line</p>
       </div>
 
       {/* Journal Log */}

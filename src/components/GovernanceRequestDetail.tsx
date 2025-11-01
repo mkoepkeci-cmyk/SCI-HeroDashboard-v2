@@ -24,7 +24,6 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
   // Assignment state (for "Ready for Governance" conversion)
   const [assignedSciId, setAssignedSciId] = useState(request.assigned_sci_id || '');
   const [workEffort, setWorkEffort] = useState(request.work_effort || '');
-  const [workPhase, setWorkPhase] = useState(request.work_phase || '');
   const [converting, setConverting] = useState(false);
 
   // Form state
@@ -420,7 +419,7 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
               {/* SCI Assignment Dropdown */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Assigned SCI
+                  Assigned Team Member
                 </label>
                 <select
                   value={assignedSciId}
@@ -428,7 +427,7 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
                   className="w-full border border-gray-300 rounded-lg p-2"
                   disabled={saving}
                 >
-                  <option value="">Select SCI...</option>
+                  <option value="">Select team member...</option>
                   {teamMembers.map(tm => (
                     <option key={tm.id} value={tm.id}>{tm.name}</option>
                   ))}
@@ -465,37 +464,6 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
                 )}
               </div>
 
-              {/* Work Phase */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Work Phase
-                </label>
-                <select
-                  value={workPhase}
-                  onChange={(e) => setWorkPhase(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg p-2"
-                  disabled={saving}
-                >
-                  <option value="">Select phase...</option>
-                  <option value="Discovery/Define">Discovery/Define</option>
-                  <option value="Design">Design</option>
-                  <option value="Build">Build</option>
-                  <option value="Validate/Test">Validate/Test</option>
-                  <option value="Deploy">Deploy</option>
-                  <option value="Did we Deliver">Did we Deliver</option>
-                  <option value="Post Go Live Support">Post Go Live Support</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Maintenance">Maintenance</option>
-                  <option value="Steady State">Steady State</option>
-                  <option value="N/A">N/A</option>
-                </select>
-                {formData.work_phase && (
-                  <p className="text-sm text-gray-600 mt-1">
-                    Currently: <strong>{formData.work_phase}</strong>
-                  </p>
-                )}
-              </div>
-
               {/* Single Save Button */}
               <button
                 onClick={async () => {
@@ -526,11 +494,6 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
                     // Update work effort if changed
                     if (workEffort && workEffort !== request.work_effort) {
                       updateData.work_effort = workEffort;
-                    }
-
-                    // Update work phase if changed
-                    if (workPhase && workPhase !== request.work_phase) {
-                      updateData.work_phase = workPhase;
                     }
 
                     // Perform the update
@@ -584,7 +547,7 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
                     setSaving(false);
                   }
                 }}
-                disabled={saving || (formData.status === request.status && assignedSciId === request.assigned_sci_id && workEffort === request.work_effort && workPhase === request.work_phase)}
+                disabled={saving || (formData.status === request.status && assignedSciId === request.assigned_sci_id && workEffort === request.work_effort)}
                 className="w-full px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {saving ? (
@@ -616,14 +579,14 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
               <div className="space-y-3">
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    System Clinical Informaticist <span className="text-red-500">*</span>
+                    Assigned Team Member <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={assignedSciId}
                     onChange={(e) => setAssignedSciId(e.target.value)}
                     className="w-full border border-gray-300 rounded-lg p-2"
                   >
-                    <option value="">Select SCI...</option>
+                    <option value="">Select team member...</option>
                     {teamMembers.map(tm => (
                       <option key={tm.id} value={tm.id}>{tm.name}</option>
                     ))}
@@ -680,7 +643,7 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
                   <p className="text-sm text-blue-700">
                     {formData.status === 'Completed'
                       ? `This request was approved on ${formatDate(request.approved_date)}. The initiative is now active for implementation.`
-                      : `An initiative was created on ${formatDate(request.converted_at)} for ${request.assigned_sci_name} to prepare the governance materials.`
+                      : `An initiative was created on ${formatDate(request.converted_at)} for ${teamMembers.find(tm => tm.id === request.assigned_sci_id)?.name || request.assigned_sci_name} to prepare the governance materials.`
                     }
                   </p>
                   <p className="text-sm font-medium text-blue-900 mt-2">
@@ -932,12 +895,12 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
             <h3 className="font-semibold text-gray-900 mb-4">Leadership & Timeline</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Clinical Sponsor</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Request Sponsor</label>
                 <p className="text-gray-900">{formData.system_clinical_leader || 'Not assigned'}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Assigned SCI</label>
-                <p className="text-gray-900">{formData.assigned_sci_name || 'Not assigned'}</p>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Assigned Staff Member</label>
+                <p className="text-gray-900">{teamMembers.find(tm => tm.id === formData.assigned_sci_id)?.name || formData.assigned_sci_name || 'Not assigned'}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Target Timeline</label>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Search, Filter, Plus, X, FileText, AlertCircle, CheckCircle2, Clock, Users } from 'lucide-react';
-import { supabase, GovernanceRequest, GovernanceRequestWithDetails } from '../lib/supabase';
+import { supabase, GovernanceRequest, GovernanceRequestWithDetails, TeamMember } from '../lib/supabase';
 import {
   filterRequests,
   sortRequests,
@@ -33,10 +33,27 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest, onEditRequest
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [quickFilter, setQuickFilter] = useState<'all' | 'needsSci' | 'readyForReview' | 'needsRefinement' | 'readyForGovernance' | 'inGovernance'>('all');
   const [showSystemLevelModal, setShowSystemLevelModal] = useState(false);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
 
   useEffect(() => {
     fetchGovernanceRequests();
+    fetchTeamMembers();
   }, []);
+
+  const fetchTeamMembers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('team_members')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
+
+      if (error) throw error;
+      setTeamMembers(data || []);
+    } catch (error) {
+      console.error('Error fetching team members:', error);
+    }
+  };
 
   const fetchGovernanceRequests = async () => {
     try {
@@ -182,9 +199,9 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest, onEditRequest
           <p className="text-xl font-bold text-gray-900 mt-1">{metrics.byStatus['Draft']}</p>
         </div>
 
-        {/* Needs SCI Assigned */}
+        {/* Needs Staff Assignment */}
         <div className="bg-orange-50 border border-orange-200 rounded-lg p-2">
-          <p className="text-xs text-orange-700 uppercase font-medium">Needs SCI</p>
+          <p className="text-xs text-orange-700 uppercase font-medium">Needs Staff Assignment</p>
           <p className="text-xl font-bold text-orange-900 mt-1">
             {requests.filter(r => !r.assigned_sci_id && r.status !== 'Dismissed').length}
           </p>
@@ -229,7 +246,7 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest, onEditRequest
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
-          Needs SCI ({requests.filter(r => !r.assigned_sci_id && r.status !== 'Dismissed').length})
+          Needs Staff ({requests.filter(r => !r.assigned_sci_id && r.status !== 'Dismissed').length})
         </button>
         <button
           onClick={() => setQuickFilter('readyForReview')}
@@ -334,13 +351,13 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest, onEditRequest
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Assigned SCI</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Assigned Staff</label>
               <select
                 value={filters.assignedSci || ''}
                 onChange={(e) => setFilters({ ...filters, assignedSci: e.target.value })}
                 className="w-full border border-gray-300 rounded-lg p-2"
               >
-                <option value="">All SCIs</option>
+                <option value="">All Staff</option>
                 {uniqueAssignedScis.map(sci => (
                   <option key={sci} value={sci}>{sci}</option>
                 ))}
@@ -377,7 +394,7 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest, onEditRequest
                 Status
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                Assigned SCI
+                Assigned Staff
               </th>
               <th
                 className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
@@ -432,9 +449,10 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest, onEditRequest
                       </span>
                     </td>
                     <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-600">
-                      {request.assigned_sci_name || (
-                        <span className="text-gray-400 italic">Not assigned</span>
-                      )}
+                      {request.assigned_sci_id
+                        ? (teamMembers.find(tm => tm.id === request.assigned_sci_id)?.name || request.assigned_sci_name || 'Not assigned')
+                        : (<span className="text-gray-400 italic">Not assigned</span>)
+                      }
                     </td>
                     <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500">
                       {getTimeAgo(request.updated_at)}
@@ -488,10 +506,7 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest, onEditRequest
                     Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-purple-700 uppercase tracking-wider">
-                    Work Phase
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-purple-700 uppercase tracking-wider">
-                    Assigned SCI
+                    Assigned Staff
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-purple-700 uppercase tracking-wider">
                     Last Updated
@@ -542,14 +557,10 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest, onEditRequest
                         </span>
                       </td>
                       <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-600">
-                        {request.work_phase || (
-                          <span className="text-gray-400 italic">Not set</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-600">
-                        {request.assigned_sci_name || (
-                          <span className="text-gray-400 italic">Not assigned</span>
-                        )}
+                        {request.assigned_sci_id
+                          ? (teamMembers.find(tm => tm.id === request.assigned_sci_id)?.name || request.assigned_sci_name || 'Not assigned')
+                          : (<span className="text-gray-400 italic">Not assigned</span>)
+                        }
                       </td>
                       <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500">
                         {getTimeAgo(request.updated_at)}

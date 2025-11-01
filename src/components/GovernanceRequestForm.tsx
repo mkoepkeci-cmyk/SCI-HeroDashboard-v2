@@ -38,7 +38,8 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
     submitter_email: string;
     problem_statement: string;
     desired_outcomes: string;
-    system_clinical_leader: string;
+    sponsor_name: string;
+    sponsor_title: string;
     patient_care_value: string;
     compliance_regulatory_value: string;
     financial_impact: string;
@@ -76,7 +77,8 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
     submitter_email: editingRequest?.submitter_email || '',
     problem_statement: editingRequest?.problem_statement || '',
     desired_outcomes: editingRequest?.desired_outcomes || '',
-    system_clinical_leader: editingRequest?.system_clinical_leader || '',
+    sponsor_name: editingRequest?.sponsor_name || '',
+    sponsor_title: editingRequest?.sponsor_title || '',
     patient_care_value: editingRequest?.patient_care_value || '',
     compliance_regulatory_value: editingRequest?.compliance_regulatory_value || '',
     financial_impact: editingRequest?.financial_impact?.toString() || '', // Legacy field
@@ -225,7 +227,8 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
         submitter_email: formData.submitter_email,
         problem_statement: formData.problem_statement,
         desired_outcomes: formData.desired_outcomes,
-        system_clinical_leader: formData.system_clinical_leader || null,
+        sponsor_name: formData.sponsor_name || null,
+        sponsor_title: formData.sponsor_title || null,
         patient_care_value: formData.patient_care_value || null,
         compliance_regulatory_value: formData.compliance_regulatory_value || null,
         financial_impact: formData.financial_impact ? parseFloat(formData.financial_impact) : null,
@@ -276,7 +279,7 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
 
         if (updateError) throw updateError;
 
-        alert('SCI consultant request updated successfully!');
+        alert('Enterprise consultant request updated successfully!');
       } else {
         // Create new request
         const requestId = await generateNextRequestId();
@@ -346,7 +349,8 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
         submitter_email: formData.submitter_email,
         problem_statement: formData.problem_statement,
         desired_outcomes: formData.desired_outcomes,
-        system_clinical_leader: formData.system_clinical_leader || null,
+        sponsor_name: formData.sponsor_name || null,
+        sponsor_title: formData.sponsor_title || null,
         patient_care_value: formData.patient_care_value || null,
         compliance_regulatory_value: formData.compliance_regulatory_value || null,
         financial_impact: formData.financial_impact ? parseFloat(formData.financial_impact) : null,
@@ -437,12 +441,12 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
         <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            System-Level SCI Consultant Request
+            Enterprise System Request
           </h2>
 
           <div className="mb-6">
             <p className="text-gray-700 mb-4">
-              This portal is exclusively for <strong>system-level requests</strong> that:
+              This portal is exclusively for <strong>enterprise-level requests</strong> that:
             </p>
             <ul className="space-y-2 text-gray-700">
               <li className="flex items-start gap-2">
@@ -451,11 +455,11 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <span>Require system-level governance approval and CI number assignment</span>
+                <span>Require enterprise-level governance approval</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <span>Utilize enterprise resources (system clinical informatics team, IT infrastructure)</span>
+                <span>Utilize enterprise resources (central team, IT infrastructure)</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
@@ -480,7 +484,7 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
                 className="w-4 h-4 text-purple-600"
               />
               <span className="text-gray-900 font-medium">
-                I confirm this is a system-level request that requires system governance approval
+                I confirm this is an enterprise-level request that requires enterprise governance approval
               </span>
             </label>
           </div>
@@ -519,13 +523,13 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
           <div className="flex items-start justify-between">
             <div>
               <h2 className="text-2xl font-bold text-gray-900">
-                {isEditing ? 'Edit SCI Consultant Request' : 'New System-Level SCI Consultant Request'}
+                {isEditing ? 'Edit Enterprise Consultant Request' : 'New Enterprise System Request'}
               </h2>
               <div className="flex items-center gap-3 mt-2">
                 <p className="text-sm text-gray-600">
                   {isEditing
                     ? `Request ID: ${editingRequest.request_id}`
-                    : 'Submit a system-level initiative for review and approval'
+                    : 'Submit an enterprise-level initiative for review and approval'
                   }
                 </p>
                 {isEditing && (
@@ -576,7 +580,7 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
                 required
               />
               <p className="text-xs text-gray-500 mt-1">
-                Clear, descriptive title for your system-level initiative
+                Clear, descriptive title for your enterprise-level initiative
               </p>
             </div>
 
@@ -620,33 +624,45 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
                   type="email"
                   value={formData.submitter_email}
                   onChange={(e) => handleChange('submitter_email', e.target.value)}
-                  placeholder="your.email@commonspirit.org"
+                  placeholder="your.email@organization.org"
                   className="w-full border border-gray-300 rounded-lg p-2"
                   required
                 />
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                System Clinical Leader/Sponsor
-              </label>
-              <input
-                type="text"
-                value={formData.system_clinical_leader}
-                onChange={(e) => handleChange('system_clinical_leader', e.target.value)}
-                placeholder="e.g., Dr. Sarah Johnson, SVP Clinical Excellence"
-                className="w-full border border-gray-300 rounded-lg p-2"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Clinical leader sponsoring this initiative
-              </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Executive Sponsor Name
+                </label>
+                <input
+                  type="text"
+                  value={formData.sponsor_name}
+                  onChange={(e) => handleChange('sponsor_name', e.target.value)}
+                  placeholder="e.g., Dr. Sarah Johnson"
+                  className="w-full border border-gray-300 rounded-lg p-2"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Executive Sponsor Title
+                </label>
+                <input
+                  type="text"
+                  value={formData.sponsor_title}
+                  onChange={(e) => handleChange('sponsor_title', e.target.value)}
+                  placeholder="e.g., SVP Clinical Excellence"
+                  className="w-full border border-gray-300 rounded-lg p-2"
+                />
+              </div>
             </div>
           </div>
 
           {/* Problem Statement & Outcomes */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-lg text-gray-900">System-Level Need</h3>
+            <h3 className="font-semibold text-lg text-gray-900">Enterprise Need</h3>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -656,12 +672,12 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
                 rows={6}
                 value={formData.problem_statement}
                 onChange={(e) => handleChange('problem_statement', e.target.value)}
-                placeholder="What system-level problem or opportunity is being addressed? Clearly articulate why this requires system-level governance and affects multiple markets or the entire organization..."
+                placeholder="Why this requires an enterprise-level solution? Clearly articulate how this affects multiple divisions/regions or the entire organization..."
                 className="w-full border border-gray-300 rounded-lg p-2"
                 required
               />
               <p className="text-xs text-gray-500 mt-1">
-                <strong>Important:</strong> Clearly indicate this is system-level (affects multiple markets, requires enterprise resources, organization-wide impact)
+                <strong>Important:</strong> Clearly indicate this is enterprise-level (affects multiple divisions, requires enterprise resources, organization-wide impact)
               </p>
             </div>
 
@@ -673,7 +689,7 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
                 rows={5}
                 value={formData.desired_outcomes}
                 onChange={(e) => handleChange('desired_outcomes', e.target.value)}
-                placeholder="What specific system-wide outcomes are you trying to achieve? Be as specific as possible..."
+                placeholder="What specific enterprise-wide outcomes are you trying to achieve? Be as specific as possible..."
                 className="w-full border border-gray-300 rounded-lg p-2"
                 required
               />
@@ -692,7 +708,7 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
                 rows={3}
                 value={formData.patient_care_value}
                 onChange={(e) => handleChange('patient_care_value', e.target.value)}
-                placeholder="How does this improve patient care across the system or multiple markets?"
+                placeholder="How does this improve patient care across the enterprise or multiple divisions?"
                 className="w-full border border-gray-300 rounded-lg p-2"
               />
             </div>
@@ -705,7 +721,7 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
                 rows={3}
                 value={formData.compliance_regulatory_value}
                 onChange={(e) => handleChange('compliance_regulatory_value', e.target.value)}
-                placeholder="System-wide regulatory requirements, compliance benefits (e.g., CMS mandates affecting all facilities)"
+                placeholder="Enterprise-wide regulatory requirements, compliance benefits (e.g., mandates affecting all facilities)"
                 className="w-full border border-gray-300 rounded-lg p-2"
               />
             </div>
@@ -731,7 +747,7 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
                 rows={3}
                 value={formData.estimated_scope}
                 onChange={(e) => handleChange('estimated_scope', e.target.value)}
-                placeholder="Brief description of resources, timeline, complexity at system scale..."
+                placeholder="Brief description of resources, timeline, complexity at enterprise scale..."
                 className="w-full border border-gray-300 rounded-lg p-2"
               />
             </div>
@@ -960,7 +976,7 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
                   onChange={(e) => handleChange('impact_system_policy', e.target.checked)}
                   className="w-4 h-4 text-purple-600"
                 />
-                <span className="text-sm text-gray-900">System Policy</span>
+                <span className="text-sm text-gray-900">Enterprise Policy</span>
               </label>
 
               <label className="flex items-center gap-2">

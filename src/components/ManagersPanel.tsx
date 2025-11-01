@@ -115,7 +115,7 @@ export function ManagersPanel({ managers, teamMembers, onManagerUpdate }: Manage
         </div>
         <button
           onClick={handleOpenAddForm}
-          className="px-4 py-2 bg-[#9B2F6A] text-white rounded-lg hover:bg-[#8B2858] transition-colors flex items-center gap-2"
+          className="px-4 py-2 bg-brand text-white rounded-lg hover:bg-[#8B2858] transition-colors flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
           Add Manager
@@ -225,7 +225,7 @@ export function ManagersPanel({ managers, teamMembers, onManagerUpdate }: Manage
                   type="text"
                   value={formData.firstName}
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9B2F6A] focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-transparent"
                   placeholder="Carrie"
                 />
               </div>
@@ -238,7 +238,7 @@ export function ManagersPanel({ managers, teamMembers, onManagerUpdate }: Manage
                   type="text"
                   value={formData.lastName}
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9B2F6A] focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-transparent"
                   placeholder="Rodriguez"
                 />
               </div>
@@ -249,7 +249,7 @@ export function ManagersPanel({ managers, teamMembers, onManagerUpdate }: Manage
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9B2F6A] focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-transparent"
                   placeholder="carrie.rodriguez@example.com (optional)"
                 />
               </div>
@@ -267,7 +267,7 @@ export function ManagersPanel({ managers, teamMembers, onManagerUpdate }: Manage
               </button>
               <button
                 onClick={handleSaveManager}
-                className="flex-1 px-4 py-2 bg-[#9B2F6A] text-white rounded-lg hover:bg-[#8B2858] transition-colors"
+                className="flex-1 px-4 py-2 bg-brand text-white rounded-lg hover:bg-[#8B2858] transition-colors"
               >
                 {editingManager ? 'Save Changes' : 'Add Manager'}
               </button>
@@ -449,7 +449,7 @@ function TeamAssignmentModal({ manager, teamMembers, onClose, onSave }: TeamAssi
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex-1 px-4 py-2 bg-[#9B2F6A] text-white rounded-lg hover:bg-[#8B2858] transition-colors disabled:opacity-50"
+            className="flex-1 px-4 py-2 bg-brand text-white rounded-lg hover:bg-[#8B2858] transition-colors disabled:opacity-50"
           >
             {saving ? 'Saving...' : 'Save Team Assignments'}
           </button>

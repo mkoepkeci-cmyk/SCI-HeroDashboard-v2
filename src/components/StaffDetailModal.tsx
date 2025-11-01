@@ -183,7 +183,7 @@ export default function StaffDetailModal({ member, onClose }: StaffDetailModalPr
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="bg-[#9B2F6A] text-white p-6 flex justify-between items-start">
+        <div className="bg-brand text-white p-6 flex justify-between items-start">
           <div className="flex-1">
             <h2 className="text-3xl font-bold mb-2">{member.name}</h2>
             <div className="flex items-center gap-6 text-sm">
@@ -307,7 +307,7 @@ export default function StaffDetailModal({ member, onClose }: StaffDetailModalPr
             {/* Work Type Breakdown - Hours */}
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <Briefcase className="w-5 h-5 text-[#9B2F6A]" />
+                <Briefcase className="w-5 h-5 text-brand" />
                 Work Type Distribution (Hours/Week)
               </h3>
               <ResponsiveContainer width="100%" height={300}>
@@ -502,7 +502,7 @@ export default function StaffDetailModal({ member, onClose }: StaffDetailModalPr
           </div>
           <button
             onClick={onClose}
-            className="px-6 py-2 bg-[#9B2F6A] text-white rounded-lg hover:bg-[#7d2555] transition-colors"
+            className="px-6 py-2 bg-brand text-white rounded-lg hover:bg-brand-dark transition-colors"
           >
             Close
           </button>

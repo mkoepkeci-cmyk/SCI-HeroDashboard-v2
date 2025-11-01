@@ -15,7 +15,7 @@ import {
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { EffortTrackingView } from './EffortTrackingView';
 import { UnifiedWorkItemForm } from './UnifiedWorkItemForm';
-import { SCIRequestsCard } from './SCIRequestsCard';
+import { TeamRequestsCard } from './TeamRequestsCard';
 import { GovernanceRequestDetail } from './GovernanceRequestDetail';
 import { GovernanceRequestForm } from './GovernanceRequestForm';
 
@@ -172,8 +172,8 @@ export default function PersonalWorkloadDashboard({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-[#9B2F6A] text-white rounded-lg p-6">
-        <h2 className="text-2xl font-bold mb-2">SCI Effort Tracking</h2>
+      <div className="bg-brand text-white rounded-lg p-6">
+        <h2 className="text-2xl font-bold mb-2">Time and Effort Tracking</h2>
         <p className="text-white/80">Log your time, manage capacity, and stay balanced</p>
       </div>
 
@@ -226,7 +226,7 @@ export default function PersonalWorkloadDashboard({
               onClick={() => setView('entry')}
               className={`flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${
                 view === 'entry'
-                  ? 'bg-[#9B2F6A] text-white'
+                  ? 'bg-brand text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -237,7 +237,7 @@ export default function PersonalWorkloadDashboard({
               onClick={() => setView('summary')}
               className={`flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${
                 view === 'summary'
-                  ? 'bg-[#9B2F6A] text-white'
+                  ? 'bg-brand text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -248,9 +248,9 @@ export default function PersonalWorkloadDashboard({
         </div>
       </div>
 
-      {/* SCI Requests Card - Only show if team member has assigned requests */}
+      {/* Team Requests Card - Only show if team member has assigned requests */}
       {teamMember && (
-        <SCIRequestsCard
+        <TeamRequestsCard
           teamMemberId={teamMember.id}
           onRequestClick={(request) => {
             setSelectedGovernanceRequest(request);

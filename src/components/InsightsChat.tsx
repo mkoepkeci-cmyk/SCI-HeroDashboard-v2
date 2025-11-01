@@ -37,7 +37,7 @@ export const InsightsChat = ({ contextData }: InsightsChatProps) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: "Hi! I'm your SCI team insights assistant. I have access to all your team's initiatives, workload data, and metrics. Ask me anything about capacity, initiatives, impact, or team performance!",
+      content: "Hi! I'm your team insights assistant. I have access to all your team's initiatives, workload data, and metrics. Ask me anything about capacity, initiatives, impact, or team performance!",
       timestamp: new Date(),
     },
   ]);
@@ -142,7 +142,7 @@ export const InsightsChat = ({ contextData }: InsightsChatProps) => {
               <button
                 key={idx}
                 onClick={() => useSuggestedPrompt(prompt)}
-                className="text-left text-xs p-2 bg-white border border-gray-200 rounded hover:border-[#9B2F6A] hover:bg-[#9B2F6A]/5 transition-all"
+                className="text-left text-xs p-2 bg-white border border-gray-200 rounded hover:border-brand hover:bg-brand/5 transition-all"
               >
                 {prompt}
               </button>
@@ -161,7 +161,7 @@ export const InsightsChat = ({ contextData }: InsightsChatProps) => {
             <div
               className={`max-w-[80%] rounded-lg p-3 ${
                 message.role === 'user'
-                  ? 'bg-[#9B2F6A] text-white'
+                  ? 'bg-brand text-white'
                   : 'bg-gray-100 text-gray-800'
               }`}
             >
@@ -183,7 +183,7 @@ export const InsightsChat = ({ contextData }: InsightsChatProps) => {
         {isLoading && (
           <div className="flex justify-start">
             <div className="bg-gray-100 rounded-lg p-3 flex items-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin text-[#9B2F6A]" />
+              <Loader2 className="w-4 h-4 animate-spin text-brand" />
               <span className="text-sm text-gray-600">Thinking...</span>
             </div>
           </div>
@@ -198,13 +198,13 @@ export const InsightsChat = ({ contextData }: InsightsChatProps) => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about team capacity, initiatives, impact..."
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9B2F6A] focus:border-transparent text-sm"
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent text-sm"
             disabled={isLoading}
           />
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="px-4 py-2 bg-[#9B2F6A] text-white rounded-lg hover:bg-[#8F2561] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+            className="px-4 py-2 bg-brand text-white rounded-lg hover:bg-[#8F2561] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
           >
             <Send className="w-4 h-4" />
             <span className="text-sm font-semibold">Send</span>

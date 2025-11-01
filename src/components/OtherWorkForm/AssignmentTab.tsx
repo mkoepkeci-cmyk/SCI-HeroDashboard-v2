@@ -1,5 +1,6 @@
 import { Plus, X } from 'lucide-react';
 import { TeamMember } from '../../lib/supabase';
+import { useFieldOptions } from '../../lib/useFieldOptions';
 
 interface TeamMemberAssignment {
   teamMemberId: string;
@@ -38,6 +39,12 @@ export const AssignmentTab = ({
   teamMemberAssignments,
   setTeamMemberAssignments
 }: AssignmentTabProps) => {
+  const { serviceLines } = useFieldOptions('service_line');
+  const { options: workTypes } = useFieldOptions('work_type');
+  const { options: roles } = useFieldOptions('role');
+  const { options: phases } = useFieldOptions('phase');
+  const { options: workEfforts } = useFieldOptions('work_effort');
+  const { options: statuses } = useFieldOptions('status');
 
   const addTeamMember = () => {
     setTeamMemberAssignments([...teamMemberAssignments, {
@@ -271,27 +278,20 @@ export const AssignmentTab = ({
               </select>
             </div>
 
-            {/* Service Line */}
+            {/* Dept/Service Line */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Service Line</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Dept/Service Line</label>
               <select
                 value={data.serviceLine}
                 onChange={(e) => setData({ ...data, serviceLine: e.target.value })}
                 className="w-full border border-gray-300 rounded-lg p-2"
               >
-                <option value="">Select service line</option>
-                <option value="Ambulatory">Ambulatory</option>
-                <option value="Pharmacy">Pharmacy</option>
-                <option value="Nursing">Nursing</option>
-                <option value="Pharmacy & Oncology">Pharmacy & Oncology</option>
-                <option value="Cardiology">Cardiology</option>
-                <option value="Emergency Department">Emergency Department</option>
-                <option value="Inpatient">Inpatient</option>
-                <option value="Perioperative">Perioperative</option>
-                <option value="Laboratory">Laboratory</option>
-                <option value="Radiology">Radiology</option>
-                <option value="Revenue Cycle">Revenue Cycle</option>
-                <option value="Other">Other</option>
+                <option value="">Select dept/service line</option>
+                {serviceLines.map(option => (
+                  <option key={option.key} value={option.label}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

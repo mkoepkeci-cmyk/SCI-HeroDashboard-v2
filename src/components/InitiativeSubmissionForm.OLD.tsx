@@ -482,7 +482,7 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
       <div className="bg-white border rounded-lg shadow-xl w-full max-w-6xl my-8 p-6">
         <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-xl font-bold text-[#9B2F6A]">{isEditing ? 'Edit Initiative' : 'Submit Initiative Data'}</h2>
+          <h2 className="text-xl font-bold text-brand">{isEditing ? 'Edit Initiative' : 'Submit Initiative Data'}</h2>
           {isEditing && editingInitiative && (
             <p className="text-sm text-gray-600 mt-1">Last updated {new Date(editingInitiative.updated_at).toLocaleDateString()}</p>
           )}
@@ -1205,7 +1205,7 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
         </div>
 
         <div className="pb-4">
-          <h3 className="font-bold text-lg mb-3 text-[#9B2F6A]">Impact Story</h3>
+          <h3 className="font-bold text-lg mb-3 text-brand">Impact Story</h3>
           <div className="space-y-3">
             <div>
               <label className="block text-sm font-semibold mb-1">Challenge</label>
@@ -1255,7 +1255,7 @@ export const InitiativeSubmissionForm = ({ onClose, onSuccess, editingInitiative
             type="submit"
             onClick={(e) => handleSubmit(e, false)}
             disabled={submitting}
-            className="flex-1 bg-[#9B2F6A] text-white py-3 rounded hover:bg-[#8F2561] font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="flex-1 bg-brand text-white py-3 rounded hover:bg-[#8F2561] font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             <Save className="w-4 h-4" />
             {submitting ? (isEditing ? 'Updating...' : 'Saving...') : (isEditing ? 'Update Initiative' : 'Save & Publish')}

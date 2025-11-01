@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { supabase, TeamMember, Manager, TEAM_MEMBER_ROLES, getTeamMemberDisplayName, getManagerDisplayName } from '../lib/supabase';
+import { supabase, TeamMember, Manager, getTeamMemberDisplayName, getManagerDisplayName } from '../lib/supabase';
+import { useTeamRoles, loadFieldOptions } from '../lib/useFieldOptions';
 import { Users, Edit, Trash2, Plus, X, Save } from 'lucide-react';
 
 interface TeamManagementPanelProps {
@@ -15,6 +16,21 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
   const [error, setError] = useState<string | null>(null);
   const editFormRef = useRef<HTMLDivElement>(null);
 
+  // Load team roles dynamically
+  const { teamRoles } = useTeamRoles();
+
+  // Load service lines dynamically
+  const [serviceLines, setServiceLines] = useState<string[]>([]);
+
+  useEffect(() => {
+    const loadServiceLines = async () => {
+      const options = await loadFieldOptions('service_line');
+      const lines = options.map(opt => opt.label);
+      setServiceLines(lines);
+    };
+    loadServiceLines();
+  }, []);
+
   // Form state
   const [formData, setFormData] = useState<{
     first_name: string;
@@ -25,7 +41,7 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
   }>({
     first_name: '',
     last_name: '',
-    role: 'System CI',
+    role: teamRoles[0] || 'Enterprise Team',
     specialty: [],
     is_active: true,
   });
@@ -81,7 +97,7 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
     setFormData({
       first_name: '',
       last_name: '',
-      role: 'System CI',
+      role: teamRoles[0] || 'Enterprise Team',
       specialty: [],
       is_active: true,
     });
@@ -94,7 +110,7 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
     setFormData({
       first_name: '',
       last_name: '',
-      role: 'System CI',
+      role: teamRoles[0] || 'Enterprise Team',
       specialty: [],
       is_active: true,
     });
@@ -221,7 +237,7 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Users className="w-6 h-6 text-[#9B2F6A]" />
+          <Users className="w-6 h-6 text-brand" />
           <div>
             <h3 className="text-xl font-semibold text-gray-900">Team Members</h3>
             <p className="text-sm text-gray-600">{teamMembers.length} active team members</p>
@@ -229,7 +245,7 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
         </div>
         <button
           onClick={handleAddNew}
-          className="flex items-center gap-2 px-4 py-2 bg-[#9B2F6A] text-white rounded-lg hover:bg-[#7d2555] transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand-dark transition-colors"
         >
           <Plus className="w-4 h-4" />
           Add Team Member
@@ -245,7 +261,7 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
 
       {/* Edit/Add Form */}
       {(editingMember || isAddingNew) && (
-        <div ref={editFormRef} className="bg-white border-2 border-[#9B2F6A] rounded-lg p-6 space-y-4">
+        <div ref={editFormRef} className="bg-white border-2 border-brand rounded-lg p-6 space-y-4">
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-lg font-semibold text-gray-900">
               {isAddingNew ? 'Add New Team Member' : `Edit ${getTeamMemberDisplayName(editingMember!)}`}
@@ -265,7 +281,7 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
                 type="text"
                 value={formData.first_name}
                 onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9B2F6A] focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-transparent"
                 placeholder="First name"
               />
             </div>
@@ -279,7 +295,7 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
                 type="text"
                 value={formData.last_name}
                 onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9B2F6A] focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-transparent"
                 placeholder="Last name"
               />
             </div>
@@ -292,9 +308,9 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
               <select
                 value={formData.role}
                 onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9B2F6A] focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-transparent"
               >
-                {TEAM_MEMBER_ROLES.map(role => (
+                {teamRoles.map(role => (
                   <option key={role} value={role}>{role}</option>
                 ))}
               </select>
@@ -308,7 +324,7 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
               <select
                 value={formData.is_active ? 'active' : 'inactive'}
                 onChange={(e) => setFormData(prev => ({ ...prev, is_active: e.target.value === 'active' }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9B2F6A] focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-transparent"
               >
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
@@ -329,29 +345,16 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
             )}
           </div>
 
-          {/* Service Lines Multi-Select */}
+          {/* Department/Service Lines Multi-Select */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Service Lines
+              Department/Service Lines
               <span className="text-xs text-gray-500 ml-2 font-normal">
-                (Select service lines this team member supports - does not create initiatives)
+                (Select departments/service lines this team member supports - does not create initiatives)
               </span>
             </label>
             <div className="grid grid-cols-3 gap-2 max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50">
-              {[
-                'Ambulatory',
-                'Pharmacy',
-                'Nursing',
-                'Pharmacy & Oncology',
-                'Cardiology',
-                'Emergency Department',
-                'Inpatient',
-                'Perioperative',
-                'Laboratory',
-                'Radiology',
-                'Revenue Cycle',
-                'Other'
-              ].map(serviceLine => (
+              {serviceLines.map(serviceLine => (
                 <label
                   key={serviceLine}
                   className="flex items-center gap-2 text-sm text-gray-700 hover:bg-white px-2 py-1 rounded cursor-pointer"
@@ -360,11 +363,18 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
                     type="checkbox"
                     checked={formData.specialty.includes(serviceLine)}
                     onChange={() => toggleSpecialty(serviceLine)}
-                    className="rounded border-gray-300 text-[#9B2F6A] focus:ring-[#9B2F6A]"
+                    className="rounded border-gray-300 text-brand focus:ring-brand"
                   />
                   {serviceLine}
                 </label>
               ))}
+              {serviceLines.length === 0 && (
+                <div className="col-span-3 text-center text-gray-400 py-4">
+                  No department/service line options configured.
+                  <br />
+                  <span className="text-xs">Configure in Admin → Field Options → Service Lines</span>
+                </div>
+              )}
             </div>
             {formData.specialty.length > 0 && (
               <p className="text-xs text-gray-600 mt-1">
@@ -378,7 +388,7 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center gap-2 px-4 py-2 bg-[#9B2F6A] text-white rounded-lg hover:bg-[#7d2555] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save className="w-4 h-4" />
               {saving ? 'Saving...' : 'Save Changes'}
@@ -405,7 +415,7 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
                 Role
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Service Lines
+                Department/Service Lines
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status

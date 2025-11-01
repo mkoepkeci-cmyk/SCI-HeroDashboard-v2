@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  /* Brand colors - these will be overridden by useBrandColor hook */
+  --primary-brand-color: #9B2F6A;
+  --primary-brand-color-light: #b04a85;
+  --primary-brand-color-soft: #fce7f3;
+  --primary-brand-color-dark: #7d2555;
+}

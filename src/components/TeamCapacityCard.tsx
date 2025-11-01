@@ -1,5 +1,6 @@
 import { TeamMember } from '../lib/supabase';
 import { getCapacityColor, getCapacityEmoji } from '../lib/workloadUtils';
+import { useCapacityThresholds } from '../lib/useCapacityThresholds';
 
 interface TeamCapacityCardProps {
   teamMember: TeamMember;
@@ -20,6 +21,8 @@ export function TeamCapacityCard({
   onClick,
   onLoadBalance,
 }: TeamCapacityCardProps) {
+  const { getColorForPct } = useCapacityThresholds();
+
   const variance = actualHours - plannedHours;
   const varianceFormatted = variance >= 0 ? `+${variance.toFixed(1)}h` : `${variance.toFixed(1)}h`;
   const varianceColor = variance > 0 ? 'text-red-600' : variance < 0 ? 'text-blue-600' : 'text-gray-600';
@@ -39,32 +42,25 @@ export function TeamCapacityCard({
   const plannedPct = Math.round((plannedHours / baseHours) * 100);
   const actualPct = Math.round((actualHours / baseHours) * 100);
 
-  // Get capacity color based on planned percentage
-  const getColorForPct = (pct: number): string => {
-    if (pct >= 85) return '#dc2626'; // red-600 - over
-    if (pct >= 75) return '#f97316'; // orange-500 - at
-    if (pct >= 60) return '#f59e0b'; // amber-500 - near
-    return '#10b981'; // emerald-500 - under
-  };
-
+  // Get capacity colors from dynamic thresholds
   const plannedColor = getColorForPct(plannedPct);
   const actualColor = getColorForPct(actualPct);
 
   return (
     <div
       onClick={onClick}
-      className="bg-white border-2 rounded-lg p-3 hover:shadow-lg transition-all cursor-pointer hover:border-[#9B2F6A] w-[200px] relative"
+      className="bg-white border-2 rounded-lg p-3 hover:shadow-lg transition-all cursor-pointer hover:border-brand w-[200px] relative"
       style={{ minWidth: '200px', maxWidth: '200px' }}
     >
       {/* Initiative Count Badge */}
-      <div className="absolute top-2 right-2 bg-[#9B2F6A] text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+      <div className="absolute top-2 right-2 bg-brand text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
         {initiativeCount}
       </div>
 
       {/* Header with Avatar and Name */}
       <div className="flex items-center gap-2 mb-3">
         <div
-          className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm bg-[#9B2F6A]"
+          className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm bg-brand"
         >
           {initials}
         </div>
@@ -102,7 +98,7 @@ export function TeamCapacityCard({
             e.stopPropagation();
             onLoadBalance(e);
           }}
-          className="mt-3 w-full text-xs py-1.5 px-2 bg-[#9B2F6A] text-white rounded hover:bg-[#8B2858] flex items-center justify-center gap-1 transition-colors font-semibold"
+          className="mt-3 w-full text-xs py-1.5 px-2 bg-brand text-white rounded hover:bg-[#8B2858] flex items-center justify-center gap-1 transition-colors font-semibold"
         >
           ⚖️ Load Balance
         </button>

@@ -68,7 +68,8 @@ export async function createInitiativeForAssignedRequest(
         team_member_id: assignedSciId,
         governance_request_id: govRequest.id,  // Link back to governance request
         request_id: govRequest.request_id,  // GOV-YYYY-XXX display ID for UI
-        clinical_sponsor_name: govRequest.system_clinical_leader,
+        clinical_sponsor_name: govRequest.sponsor_name,
+        clinical_sponsor_title: govRequest.sponsor_title,
         is_draft: false,
         is_active: true,
       })
@@ -450,7 +451,8 @@ export async function convertGovernanceRequestToInitiative(
         work_effort: params.workEffort,
         role: 'Owner',  // Assigned SCI is the owner
         team_member_id: params.assignedSciId,
-        clinical_sponsor_name: govRequest.system_clinical_leader,
+        clinical_sponsor_name: govRequest.sponsor_name,
+        clinical_sponsor_title: govRequest.sponsor_title,
         timeframe_display: `Governance prep for ${govRequest.target_timeline || 'upcoming governance review'}`,
         governance_request_id: govRequest.id,  // Link back to governance request
         is_draft: false,

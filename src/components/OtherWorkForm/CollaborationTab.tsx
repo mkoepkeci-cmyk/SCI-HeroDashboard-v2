@@ -13,13 +13,13 @@ interface CollaborationTabProps {
 export const CollaborationTab = ({ data, setData }: CollaborationTabProps) => {
   return (
     <div className="space-y-6">
-      {/* Clinical Sponsor Section */}
+      {/* Executive Sponsor Section */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">Clinical Sponsor</h3>
+        <h3 className="text-lg font-semibold mb-4">Executive Sponsor</h3>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Clinical Sponsor Name
+              Executive Sponsor Name
             </label>
             <input
               type="text"
@@ -32,7 +32,7 @@ export const CollaborationTab = ({ data, setData }: CollaborationTabProps) => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Clinical Sponsor Title
+              Executive Sponsor Title
             </label>
             <input
               type="text"

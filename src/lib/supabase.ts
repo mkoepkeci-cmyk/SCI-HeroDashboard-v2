@@ -109,9 +109,9 @@ export interface Initiative {
   problem_statement?: string;  // System-level problem from intake form
   desired_outcomes?: string;  // Expected outcomes from intake form
   governance_metadata?: Record<string, any>;  // Governance-specific data (JSONB)
-  proposed_solution?: string;  // Proposed solution for governance review (Tab 3)
+  proposed_solution?: string;  // Solution for governance review (Tab 3)
   voting_statement?: string;  // Voting statement for governance committee (Tab 3)
-  ehr_areas_impacted?: string[];  // EHR areas/modules impacted (Tab 3)
+  decision?: string;  // Governance decision: Approved, Denied, Sent Back, Dismissed (Tab 3)
   journal_log?: JournalEntry[];  // Timestamped journal entries (Tab 3)
   direct_hours_per_week?: number; // For Governance work type: actual hours per week (bypasses formula)
 
@@ -317,10 +317,6 @@ export interface InitiativeWithDetails extends Initiative {
 // Constants for Admin Management
 // ============================================================================
 
-// Role options for team members
-// Note: All current team members are System CIs
-export const TEAM_MEMBER_ROLES = ['System CI'] as const;
-
 // Specialty options (service lines) - alphabetically ordered
 export const SPECIALTIES = [
   'Acute Institute & Cardiology',
@@ -436,7 +432,8 @@ export interface GovernanceRequest {
   desired_outcomes: string;
 
   // Leadership & Assignment
-  system_clinical_leader?: string;
+  sponsor_name?: string;  // Executive sponsor full name
+  sponsor_title?: string;  // Executive sponsor title/role
   assigned_sci_id?: string;
   assigned_sci_name?: string;
   assigned_role?: string;
@@ -559,6 +556,18 @@ export interface GovernanceRequestWithDetails extends GovernanceRequest {
   links: GovernanceLink[];
   comments: GovernanceComment[];
   linked_initiative?: Initiative;
+}
+
+export interface FieldLabel {
+  id: string;
+  field_key: string;
+  label_text: string;
+  description?: string;
+  field_category: 'sponsor' | 'impact_category' | 'groups_impacted' | 'general';
+  display_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 // Database schema type for TypeScript support

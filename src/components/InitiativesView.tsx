@@ -155,7 +155,7 @@ export const InitiativesView = ({ onCreateNew, onEdit }: InitiativesViewProps) =
     return (
       <div className="flex items-center justify-center py-12">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 animate-spin text-[#9B2F6A]" />
+          <Loader2 className="w-8 h-8 animate-spin text-brand" />
           <p className="text-[#565658] font-medium">Loading initiatives...</p>
         </div>
       </div>
@@ -196,14 +196,14 @@ export const InitiativesView = ({ onCreateNew, onEdit }: InitiativesViewProps) =
             onClick={() => setActiveTab('active')}
             className={`flex-1 px-6 py-3 text-sm font-semibold transition-all ${
               activeTab === 'active'
-                ? 'text-[#9B2F6A] border-b-2 border-[#9B2F6A] bg-[#9B2F6A]/5'
+                ? 'text-brand border-b-2 border-brand bg-brand/5'
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
             }`}
           >
             Active
             <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
               activeTab === 'active'
-                ? 'bg-[#9B2F6A] text-white'
+                ? 'bg-brand text-white'
                 : 'bg-gray-200 text-gray-700'
             }`}>
               {stats.active}
@@ -213,14 +213,14 @@ export const InitiativesView = ({ onCreateNew, onEdit }: InitiativesViewProps) =
             onClick={() => setActiveTab('completed')}
             className={`flex-1 px-6 py-3 text-sm font-semibold transition-all ${
               activeTab === 'completed'
-                ? 'text-[#9B2F6A] border-b-2 border-[#9B2F6A] bg-[#9B2F6A]/5'
+                ? 'text-brand border-b-2 border-brand bg-brand/5'
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
             }`}
           >
             Completed
             <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
               activeTab === 'completed'
-                ? 'bg-[#9B2F6A] text-white'
+                ? 'bg-brand text-white'
                 : 'bg-gray-200 text-gray-700'
             }`}>
               {stats.completed}
@@ -230,14 +230,14 @@ export const InitiativesView = ({ onCreateNew, onEdit }: InitiativesViewProps) =
             onClick={() => setActiveTab('all')}
             className={`flex-1 px-6 py-3 text-sm font-semibold transition-all ${
               activeTab === 'all'
-                ? 'text-[#9B2F6A] border-b-2 border-[#9B2F6A] bg-[#9B2F6A]/5'
+                ? 'text-brand border-b-2 border-brand bg-brand/5'
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
             }`}
           >
             All
             <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
               activeTab === 'all'
-                ? 'bg-[#9B2F6A] text-white'
+                ? 'bg-brand text-white'
                 : 'bg-gray-200 text-gray-700'
             }`}>
               {stats.total}
@@ -253,7 +253,7 @@ export const InitiativesView = ({ onCreateNew, onEdit }: InitiativesViewProps) =
             <input
               type="text"
               placeholder="Search initiatives by name, owner, or type..."
-              className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#9B2F6A] focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -262,14 +262,14 @@ export const InitiativesView = ({ onCreateNew, onEdit }: InitiativesViewProps) =
             onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
               showFilters || hasActiveFilters
-                ? 'bg-[#9B2F6A] text-white'
+                ? 'bg-brand text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
             <Filter className="w-4 h-4" />
             Filters
             {hasActiveFilters && !showFilters && (
-              <span className="bg-white text-[#9B2F6A] rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+              <span className="bg-white text-brand rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
                 {[filterOwner, filterStatus, filterType, filterCompletion, searchQuery].filter(Boolean).length}
               </span>
             )}
@@ -343,7 +343,7 @@ export const InitiativesView = ({ onCreateNew, onEdit }: InitiativesViewProps) =
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm text-[#9B2F6A] hover:bg-[#9B2F6A]/5 rounded transition-all"
+                className="flex items-center gap-2 px-3 py-1.5 text-sm text-brand hover:bg-brand/5 rounded transition-all"
               >
                 <X className="w-4 h-4" />
                 Clear all filters
@@ -359,7 +359,7 @@ export const InitiativesView = ({ onCreateNew, onEdit }: InitiativesViewProps) =
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
-              className="text-sm text-[#9B2F6A] hover:underline"
+              className="text-sm text-brand hover:underline"
             >
               Clear filters to see all initiatives
             </button>
