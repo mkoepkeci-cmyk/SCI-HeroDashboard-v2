@@ -1002,9 +1002,9 @@ export const UnifiedWorkItemForm = ({
         </div>
       </div>
 
-      {/* System-Level Need */}
+      {/* enterprise-level Need */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">System-Level Need</h3>
+        <h3 className="text-lg font-semibold mb-4">enterprise-level Need</h3>
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1015,7 +1015,7 @@ export const UnifiedWorkItemForm = ({
               onChange={(e) => setTab1Data({ ...tab1Data, problem_statement: e.target.value })}
               rows={6}
               className="w-full border border-gray-300 rounded-lg p-2"
-              placeholder="Describe the system-level problem or opportunity"
+              placeholder="Describe the enterprise-level problem or opportunity"
             />
           </div>
 

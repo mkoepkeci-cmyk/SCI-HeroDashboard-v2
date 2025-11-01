@@ -106,7 +106,7 @@ export interface Initiative {
   team_member_id?: string;
   governance_request_id?: string;  // Link back to governance request (if created from portal)
   request_id?: string;  // Governance request ID (GOV-YYYY-XXX) for display
-  problem_statement?: string;  // System-level problem from intake form
+  problem_statement?: string;  // enterprise-level problem from intake form
   desired_outcomes?: string;  // Expected outcomes from intake form
   governance_metadata?: Record<string, any>;  // Governance-specific data (JSONB)
   proposed_solution?: string;  // Solution for governance review (Tab 3)

@@ -159,10 +159,10 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest, onEditRequest
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-purple-900 mb-2">
-              System Intake Request Portal
+              Enterprise Request Intake Portal
             </h1>
             <p className="text-purple-700">
-              Submit requests for system initiatives, affecting multiple markets or the entire organization.
+              Submit requests for enterprise initiatives, affecting multiple markets or the entire organization.
             </p>
             <a
               href="#"
@@ -172,7 +172,7 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest, onEditRequest
                 setShowSystemLevelModal(true);
               }}
             >
-              Not sure if your request is system-level? Click here
+              Not sure if your request is enterprise-level? Click here
             </a>
           </div>
           <button
@@ -591,13 +591,13 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest, onEditRequest
         </div>
       )}
 
-      {/* System-Level Information Modal */}
+      {/* enterprise-level Information Modal */}
       {showSystemLevelModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6">
             <div className="flex items-start justify-between mb-4">
               <h2 className="text-2xl font-bold text-gray-900">
-                System-Level Governance Request
+                Enterprise-Level Governance Request
               </h2>
               <button
                 onClick={() => setShowSystemLevelModal(false)}
@@ -609,7 +609,7 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest, onEditRequest
 
             <div className="mb-6">
               <p className="text-gray-700 mb-4">
-                This portal is exclusively for <strong>system-level requests</strong> that:
+                This portal is exclusively for <strong>enterprise-level requests</strong> that:
               </p>
               <ul className="space-y-2 text-gray-700">
                 <li className="flex items-start gap-2">
@@ -618,11 +618,11 @@ export const GovernancePortalView = ({ onCreateNew, onViewRequest, onEditRequest
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span>Require system-level governance approval and CI number assignment</span>
+                  <span>Require enterprise-level governance approval and staff assignment</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span>Utilize enterprise resources (system clinical informatics team, IT infrastructure)</span>
+                  <span>Utilize enterprise resources (enterprise team, IT infrastructure)</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />

@@ -435,7 +435,7 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
     }
   };
 
-  // System-level confirmation modal
+  // enterprise-level confirmation modal
   if (showSystemLevelModal && !isEditing) {
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
