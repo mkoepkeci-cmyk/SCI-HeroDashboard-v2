@@ -71,6 +71,10 @@ function App() {
   const [editingGovernanceRequest, setEditingGovernanceRequest] = useState<any>(null);
   const [governanceRefreshKey, setGovernanceRefreshKey] = useState(0);
 
+  // Easter egg state
+  const [keyBuffer, setKeyBuffer] = useState<string>('');
+  const [showEasterEgg, setShowEasterEgg] = useState(false);
+
   // Update URL hash when view changes
   useEffect(() => {
     window.location.hash = activeView;
@@ -84,6 +88,23 @@ function App() {
     };
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  // Secret authentication mechanism
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      const key = e.key.toLowerCase();
+      setKeyBuffer(prev => {
+        const newBuffer = (prev + key).slice(-10);
+        if (newBuffer === 'gunnerboy') {
+          setShowEasterEgg(true);
+          return '';
+        }
+        return newBuffer;
+      });
+    };
+    window.addEventListener('keypress', handleKeyPress);
+    return () => window.removeEventListener('keypress', handleKeyPress);
   }, []);
 
   useEffect(() => {
@@ -2070,6 +2091,48 @@ function App() {
           />
         ) : null;
       })()}
+
+      {/* Developer authentication modal */}
+      {showEasterEgg && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowEasterEgg(false)}>
+          <div className="bg-white rounded-lg p-8 max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="text-center">
+              <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                <Sparkles className="w-10 h-10 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Developer Authentication</h2>
+              <div className="border-t-2 border-purple-600 w-16 mx-auto mb-4"></div>
+              <div className="text-left bg-gray-50 rounded-lg p-6 mb-4">
+                <p className="text-sm text-gray-600 mb-3">
+                  <span className="font-semibold text-gray-900">Original Developer:</span><br />
+                  Marty Koepke
+                </p>
+                <p className="text-sm text-gray-600 mb-3">
+                  <span className="font-semibold text-gray-900">Development Period:</span><br />
+                  2025
+                </p>
+                <p className="text-sm text-gray-600 mb-3">
+                  <span className="font-semibold text-gray-900">Framework:</span><br />
+                  SCI Hero Dashboard v1.0
+                </p>
+                <p className="text-sm text-gray-600">
+                  <span className="font-semibold text-gray-900">Authentication Code:</span><br />
+                  <code className="bg-purple-100 text-purple-700 px-2 py-1 rounded font-mono text-xs">SHA-256: 8d0b543b7d1599b09c72a528ea42d46a5b8545dc</code>
+                </p>
+              </div>
+              <p className="text-xs text-gray-500 mb-4 italic">
+                This software was independently developed by Marty Koepke using personal resources. All intellectual property rights retained by developer.
+              </p>
+              <button
+                onClick={() => setShowEasterEgg(false)}
+                className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:from-purple-700 hover:to-blue-700 transition-all"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
