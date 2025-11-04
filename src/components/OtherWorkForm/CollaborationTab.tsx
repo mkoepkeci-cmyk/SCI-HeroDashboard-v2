@@ -77,7 +77,7 @@ export const CollaborationTab = ({ data, setData }: CollaborationTabProps) => {
             onChange={(e) => setData({ ...data, keyCollaborators: e.target.value })}
             className="w-full border border-gray-300 rounded-lg p-2"
             rows={4}
-            placeholder="Enter key collaborators (comma-separated)&#10;e.g., IT Application Team, Nursing Leadership, Pharmacy Operations, Revenue Cycle Analysts"
+            placeholder="Enter key collaborators (comma-separated)&#10;e.g., IT Application Team, Nursing Leadership, Pharmacy Operations"
           />
           <p className="text-xs text-gray-500 mt-1">
             List departments, teams, or individuals providing significant support

@@ -173,7 +173,7 @@ export default function PersonalWorkloadDashboard({
     <div className="space-y-6">
       {/* Header */}
       <div className="bg-[#9B2F6A] text-white rounded-lg p-6">
-        <h2 className="text-2xl font-bold mb-2">SCI Effort Tracking</h2>
+        <h2 className="text-2xl font-bold mb-2">SCI Time and Effort Tracking</h2>
         <p className="text-white/80">Log your time, manage capacity, and stay balanced</p>
       </div>
 

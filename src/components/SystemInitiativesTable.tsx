@@ -7,6 +7,7 @@ import ReassignModal from './ReassignModal';
 interface InitiativeEffortEntry {
   initiative: InitiativeWithDetails;
   hours: number;
+  additionalHours: number;
   effortSize: EffortSize;
   note: string;
   skipped: boolean;
@@ -57,9 +58,9 @@ export const SystemInitiativesTable = ({
               <col className="w-12" />
               <col className="w-[280px]" />
               <col className="w-32" />
-              <col className="w-36" />
+              <col className="w-44" />
+              <col className="w-20" />
               <col className="w-24" />
-              <col className="w-56" />
               <col />
               <col className="w-12" />
               <col className="w-12" />
@@ -69,9 +70,9 @@ export const SystemInitiativesTable = ({
                 <th className="px-2 py-3 text-center text-xs font-medium text-gray-600 uppercase">Skip</th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase">Initiative</th>
                 <th className="px-2 py-3 text-left text-xs font-medium text-gray-600 uppercase">Owner</th>
-                <th className="px-2 py-3 text-left text-xs font-medium text-gray-600 uppercase">Type</th>
-                <th className="px-2 py-3 text-center text-xs font-medium text-gray-600 uppercase">Actual Hours</th>
-                <th className="px-2 py-3 text-left text-xs font-medium text-gray-600 uppercase">Actual Size</th>
+                <th className="px-2 py-3 text-left text-xs font-medium text-gray-600 uppercase">Est. Size</th>
+                <th className="px-2 py-3 text-center text-xs font-medium text-gray-600 uppercase">Est. Hrs</th>
+                <th className="px-2 py-3 text-center text-xs font-medium text-gray-600 uppercase">Add'l Hrs</th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase">Note</th>
                 <th className="px-2 py-3 text-center text-xs font-medium text-gray-600 uppercase">Edit</th>
                 <th className="px-2 py-3 text-center text-xs font-medium text-gray-600 uppercase"></th>
@@ -80,7 +81,7 @@ export const SystemInitiativesTable = ({
             <tbody className="divide-y divide-gray-200">
               {/* Section Header */}
               <tr className="bg-gray-50">
-                <td colSpan={9} className="px-4 py-2">
+                <td colSpan={8} className="px-4 py-2">
                   <button
                     onClick={() => setIsCollapsed(!isCollapsed)}
                     className="w-full flex items-center gap-3 text-left hover:bg-gray-100 transition-colors rounded px-2 py-1"
@@ -149,28 +150,7 @@ export const SystemInitiativesTable = ({
                       </div>
                     </td>
 
-                    {/* Type */}
-                    <td className="px-2 py-3">
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-medium whitespace-nowrap">
-                        {entry.initiative.type}
-                      </span>
-                    </td>
-
-                    {/* Actual Hours Input */}
-                    <td className="px-2 py-3">
-                      <input
-                        type="number"
-                        step="0.5"
-                        min="0"
-                        value={entry.hours || ''}
-                        onChange={(e) => onHoursChange(globalIndex, e.target.value)}
-                        disabled={entry.skipped}
-                        className="w-20 px-2 py-1 text-center border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-500"
-                        placeholder="0"
-                      />
-                    </td>
-
-                    {/* Effort Size Buttons */}
+                    {/* Estimated Size - XS-XL Buttons */}
                     <td className="px-2 py-3">
                       <div className="space-y-1">
                         {entry.initiative.work_effort && (
@@ -196,6 +176,27 @@ export const SystemInitiativesTable = ({
                           ))}
                         </div>
                       </div>
+                    </td>
+
+                    {/* Estimated Hours - Read-only calculated display */}
+                    <td className="px-2 py-3 text-center">
+                      <div className="text-sm font-medium text-gray-700">
+                        {entry.effortSize ? EFFORT_SIZES.find(s => s.size === entry.effortSize)?.hours || 0 : 0}
+                      </div>
+                    </td>
+
+                    {/* Additional Hours - Editable input */}
+                    <td className="px-2 py-3">
+                      <input
+                        type="number"
+                        step="0.5"
+                        min="0"
+                        value={entry.additionalHours || ''}
+                        onChange={(e) => onHoursChange(globalIndex, e.target.value)}
+                        disabled={entry.skipped}
+                        className="w-20 px-2 py-1 text-center border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-500"
+                        placeholder="0"
+                      />
                     </td>
 
                     {/* Note */}

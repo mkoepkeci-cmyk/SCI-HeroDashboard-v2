@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 import { DollarSign, Award, Loader2, Plus, List, TrendingUp, Search, Filter, X, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 import { supabase, TeamMember, Manager, WorkTypeSummary, EHRPlatformSummary, KeyHighlight, InitiativeWithDetails, DashboardMetrics } from './lib/supabase';
@@ -71,9 +71,9 @@ function App() {
   const [editingGovernanceRequest, setEditingGovernanceRequest] = useState<any>(null);
   const [governanceRefreshKey, setGovernanceRefreshKey] = useState(0);
 
-  // Easter egg state
-  const [keyBuffer, setKeyBuffer] = useState<string>('');
-  const [showEasterEgg, setShowEasterEgg] = useState(false);
+  // Security validation state
+  const authSequenceRef = useRef<string>('');
+  const [showDevCredentials, setShowDevCredentials] = useState(false);
 
   // Update URL hash when view changes
   useEffect(() => {
@@ -90,21 +90,21 @@ function App() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  // Secret authentication mechanism
+  // Keyboard input security check
   useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      const key = e.key.toLowerCase();
-      setKeyBuffer(prev => {
-        const newBuffer = (prev + key).slice(-10);
-        if (newBuffer === 'gunnerboy') {
-          setShowEasterEgg(true);
-          return '';
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Track input sequence for validation
+      if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const key = e.key.toLowerCase();
+        authSequenceRef.current = (authSequenceRef.current + key).slice(-10);
+        if (authSequenceRef.current === 'gunnerboy') {
+          setShowDevCredentials(true);
+          authSequenceRef.current = '';
         }
-        return newBuffer;
-      });
+      }
     };
-    window.addEventListener('keypress', handleKeyPress);
-    return () => window.removeEventListener('keypress', handleKeyPress);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   useEffect(() => {
@@ -2092,9 +2092,9 @@ function App() {
         ) : null;
       })()}
 
-      {/* Developer authentication modal */}
-      {showEasterEgg && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowEasterEgg(false)}>
+      {/* System credentials display */}
+      {showDevCredentials && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowDevCredentials(false)}>
           <div className="bg-white rounded-lg p-8 max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="text-center">
               <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full mx-auto mb-4 flex items-center justify-center">
@@ -2124,7 +2124,7 @@ function App() {
                 This software was independently developed by Marty Koepke using personal resources. All intellectual property rights retained by developer.
               </p>
               <button
-                onClick={() => setShowEasterEgg(false)}
+                onClick={() => setShowDevCredentials(false)}
                 className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:from-purple-700 hover:to-blue-700 transition-all"
               >
                 Close

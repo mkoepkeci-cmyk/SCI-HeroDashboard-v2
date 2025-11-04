@@ -10,41 +10,56 @@ Showcases **409 initiatives** across **16 team members** with **$276M+ in revenu
 
 The SCI Hero Dashboard is a React-based single-page application that provides visibility into:
 
-- **Team Member Portfolios** - Individual work distributions, assignments, and key highlights
+- **Team Member Portfolios** - Individual work distributions and key highlights
 - **Initiative Tracking** - Detailed metrics, financial impact, performance data, and success stories
-- **Governance Workflow** - SCI consultation request intake and management
-- **Effort Tracking** - Weekly time logging for capacity management
-- **Workload Analytics** - Team utilization trends and forecasting
+- **Governance Workflow** - SCI consultation request intake with automated initiative creation
+- **Effort Tracking** - Weekly time logging with capacity management
+- **Workload Analytics** - Team capacity utilization and productivity metrics
+- **AI Insights** - Natural language data analysis and recommendations
 
 ---
 
 ## Key Features
 
-### 📊 Dashboard
-- **Overview Mode**: Team-level metrics showing total initiatives, revenue impact, and efficiency gains
-- **Team Mode**: Individual portfolios with work type distribution and categorized initiatives
+The application has **5 main views** accessible via the navigation menu:
 
-### 📝 SCI Requests (Governance Portal)
-- Intake form for new SCI consultation requests
-- Workflow management (Draft → Review → Approval → Conversion)
-- One-click conversion of approved requests to formal initiatives
+### 1. 🏠 Landing Page
+- Welcome screen with CommonSpirit Health SCI branding
+- "Get Started" button to enter the dashboard
+- Application overview
 
-### 🔍 Browse Initiatives
-- Searchable library of all 409 initiatives
-- Organized into 5 categories (System Initiatives, Projects, Tickets, Governance, Other)
-- Detailed cards showing metrics, financial impact, performance data, and success stories
+### 2. 📊 Dashboard View
+**Two Sub-Views:**
+- **Overview**: Team metrics, clickable revenue cards, and embedded "Browse Initiatives" section
+  - Search and filter all 409 initiatives across 5 categories
+  - Detailed initiative cards with metrics, financials, and success stories
+  - "Add Initiative" button for creating new initiatives
+- **Team**: Grid of 16 team member cards
+  - Click to see individual portfolios with work distribution and key highlights
 
-### ⏱️ My Effort (Time Tracking)
-- Weekly effort logging with bulk entry table
-- Effort size shortcuts (XS to XXL: 1.5 to 25 hours)
-- Inline editing, reassignment, and quick actions
-- Skip functionality for "no work" weeks
+### 3. 💼 Workload View
+**Three Sub-Views:**
+- **SCI View**: Weekly effort tracking table with capacity management
+  - Bulk effort entry for all active initiatives
+  - Effort size shortcuts (XS to XXL: 1.5 to 25 hours)
+  - Inline editing, reassignment, and quick actions
+  - Capacity header showing planned/actual/variance
+- **Team View**: Manager capacity dashboard
+  - Team member capacity cards with productivity metrics
+  - Manager filtering (All Teams, Carrie Rodriguez, Tiffany Shields-Tettamanti)
+- **Admin View**: Team management and configuration
 
-### 📈 Workload Analytics
-- Individual and team capacity utilization
-- 12-week effort trends
-- Hours by work type and effort size
-- Visual sparklines and charts
+### 4. 📝 Governance View
+- SCI consultation request intake form
+- Workflow management with Phase 1/2 auto-triggers
+- Automatic initiative creation for approved requests
+- Status tracking: Draft → Review → Approval → Conversion
+
+### 5. 🤖 Insights View
+- AI-powered data analysis chat interface
+- Natural language queries about initiatives and metrics
+- Data-driven insights and recommendations
+- **Note**: Requires Vercel API configuration
 
 ---
 

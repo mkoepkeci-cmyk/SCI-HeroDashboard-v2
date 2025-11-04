@@ -10,6 +10,7 @@ import { OtherWorkForm } from './OtherWorkForm';
 interface InitiativeEffortEntry {
   initiative: InitiativeWithDetails;
   hours: number;
+  additionalHours: number;
   effortSize: EffortSize;
   note: string;
   skipped: boolean;
@@ -278,6 +279,7 @@ export const EffortTrackingView = ({
           return {
             initiative,
             hours,
+            additionalHours: 0, // Initialize as 0 for existing logs
             effortSize: existingLog.effort_size,
             note: existingLog.note || '',
             skipped: isSkipped || false,
@@ -295,6 +297,7 @@ export const EffortTrackingView = ({
         return {
           initiative,
           hours: prePopulatedHours,
+          additionalHours: 0, // Initialize as 0 for new entries
           effortSize: prePopulatedSize,
           note: '',
           skipped: false,
@@ -352,18 +355,24 @@ export const EffortTrackingView = ({
 
   // Event handlers
   const handleHoursChange = (index: number, value: string) => {
-    const hours = parseFloat(value) || 0;
+    const additionalHours = parseFloat(value) || 0;
     setEntries(prev =>
-      prev.map((entry, i) =>
-        i === index
-          ? {
-              ...entry,
-              hours,
-              effortSize: getEffortSizeFromHours(hours),
-              hasChanges: true,
-            }
-          : entry
-      )
+      prev.map((entry, i) => {
+        if (i === index) {
+          // Calculate formula hours from effort size
+          const formulaHours = entry.effortSize ? EFFORT_SIZES.find(s => s.size === entry.effortSize)?.hours || 0 : 0;
+          // Total hours = formula + additional
+          const totalHours = formulaHours + additionalHours;
+
+          return {
+            ...entry,
+            additionalHours,
+            hours: totalHours,
+            hasChanges: true,
+          };
+        }
+        return entry;
+      })
     );
   };
 
@@ -372,16 +381,20 @@ export const EffortTrackingView = ({
     if (!sizeDetails) return;
 
     setEntries(prev =>
-      prev.map((entry, i) =>
-        i === index
-          ? {
-              ...entry,
-              hours: sizeDetails.hours,
-              effortSize: size,
-              hasChanges: true,
-            }
-          : entry
-      )
+      prev.map((entry, i) => {
+        if (i === index) {
+          // Keep existing additionalHours, update formula hours based on size
+          const totalHours = sizeDetails.hours + (entry.additionalHours || 0);
+
+          return {
+            ...entry,
+            hours: totalHours,
+            effortSize: size,
+            hasChanges: true,
+          };
+        }
+        return entry;
+      })
     );
   };
 

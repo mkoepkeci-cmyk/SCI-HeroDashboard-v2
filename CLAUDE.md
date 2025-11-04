@@ -9,15 +9,21 @@ A React-based dashboard application for tracking and visualizing the impact of C
 **Production Ready - 411+ Active Initiatives Across 16 Team Members**
 
 ### Completed Features
-- ✅ Dashboard with Overview and Team portfolio views
-- ✅ SCI Requests (Governance Portal) - Intake and workflow management with Phase 1/2 auto-triggers
-- ✅ Browse Initiatives - Categorized, searchable initiative library
-- ✅ My Effort - Weekly time tracking with bulk entry
-- ✅ Workload Analytics - Capacity management and trends
+- ✅ **5 Main Views**: Landing, Dashboard, Workload, Governance, Insights
+- ✅ **Landing Page** - Welcome screen with Get Started button
+- ✅ **Dashboard View** - Two sub-views:
+  - Overview: Team metrics, revenue cards, embedded initiative browsing
+  - Team: 16 team member portfolio cards with detail modals
+- ✅ **Workload View** - Three sub-views:
+  - SCI: Weekly effort tracking with bulk entry table and capacity header
+  - Team: Manager capacity dashboard with productivity metrics
+  - Admin: Team management and calculator configuration
+- ✅ **Governance View** - SCI consultation request intake with Phase 1/2 auto-triggers
+- ✅ **Insights View** - AI chat interface for data analysis (requires Vercel API)
 - ✅ Complete metrics tracking with validated data
 - ✅ Initiative management with full CRUD operations
 - ✅ Status standardization across all views
-- ✅ Real-time data refresh across all views (Dashboard, Workload, Governance)
+- ✅ Real-time data refresh across all views
 - ✅ Clickable revenue cards with initiative drilldown
 - ✅ Dynamic Key Highlights with live calculated metrics
 - ✅ Unified form for creating/editing all initiative types
@@ -211,33 +217,99 @@ Shows 6 productivity metrics in 2x3 grid:
 
 ## Application Features
 
-### 1. Dashboard
+The dashboard has **5 main views** accessible via the navigation menu:
 
-**Two Views:**
+### 1. Landing Page
 
-#### Overview Mode
-- Team-level metrics: 409 initiatives, $276M+ revenue impact
-- Active assignments breakdown
-- Revenue and efficiency gains
-- Top performing initiatives
+**Purpose**: Welcome screen and entry point
 
-#### Team Mode
-- Individual team member portfolios
-- Work type distribution (pie chart)
-- EHR platform assignments
-- Key highlights per team member
-- Categorized initiative lists by work type
+**Features:**
+- CommonSpirit Health SCI team branding
+- "Get Started" button to enter the dashboard
+- Overview of application capabilities
 
-**Categories:**
-- System Initiatives (blue)
-- System Projects (purple)
-- SCI Supported Tickets and Projects (orange)
-- Governance (purple)
-- Other (gray)
+---
 
-### 2. SCI Requests (Governance Portal)
+### 2. Dashboard View (activeView='dashboard')
 
-**Purpose**: Intake and workflow management for new SCI consultation requests with automatic initiative creation
+**Two Sub-Views:**
+
+#### Overview Sub-View
+- **Team Metrics**: Total initiatives (409), revenue impact ($276M+), active assignments
+- **Revenue Cards**: Clickable cards showing:
+  - Total Revenue Impact
+  - Expected Revenue (Next Year)
+  - Efficiency Gains
+- **Browse Initiatives Section** (embedded): Searchable, categorized initiative library
+  - 5 categories: System Initiatives, System Projects, SCI Supported Tickets/Projects, Governance, Other
+  - Search by name, owner, sponsor
+  - Filter tabs: All, Active, Completed
+  - Collapsible categories with count badges
+  - Initiative cards with metrics, financial impact, success stories
+  - "Add Initiative" button to create new initiatives
+
+#### Team Sub-View
+- **Grid of 16 team member cards** (simplified view)
+- Click card to open **StaffDetailModal** with:
+  - Work type distribution (pie chart)
+  - EHR platform assignments
+  - Key highlights
+  - Categorized initiative lists by work type
+
+**Note**: Team View in Dashboard is for portfolio overview only. For capacity management, use Workload → Team View.
+
+---
+
+### 3. Workload View (activeView='workload')
+
+**Three Sub-Views:**
+
+#### SCI Sub-View (Weekly Effort Tracking)
+**Purpose**: Individual effort logging and capacity management
+
+**Features:**
+- **Capacity Header**: Planned hrs/wk (%), Actual hrs (%), Variance
+- **Bulk Effort Entry Table**: All active/planning initiatives grouped by work type
+  - Inline editing: hours, effort size (XS-XXL), notes
+  - Skip checkbox: Mark "no work this week"
+  - "Add Initiative" button: Opens InitiativeSubmissionForm
+  - Add Misc. Assignment: Create ad-hoc General Support tasks
+  - Copy Last Week: Auto-fill effort from previous week
+  - Reassign button: Transfer ownership to another SCI
+  - Delete button: Remove initiative (soft delete)
+  - Batch save: Save all modified entries at once
+- **Work Type Display Order**: Governance, Policy/Guidelines, System Project, Market Project, System Initiative, Ticket, General Support, Epic Gold, Epic Upgrades, Uncategorized
+- **Effort Sizes**: XS=1.5h, S=4h, M=8h, L=13h, XL=18h, XXL=25h
+- **SCI Requests Card**: Shows assigned governance requests
+
+#### Team Sub-View (Manager Capacity Dashboard)
+**Purpose**: Manager oversight of team capacity and workload
+
+**Features:**
+- **Manager Filter Buttons**: All Teams, Carrie Rodriguez, Tiffany Shields-Tettamanti
+- **TeamCapacityCard** (200px): Avatar, initiative count, planned/actual/variance
+- **TeamCapacityModal** (opens on card click): 6 productivity metrics in 2x3 grid:
+  - Work Type Distribution (Pie)
+  - Work Effort Distribution (Bar)
+  - Phase Distribution (Bar)
+  - Role Breakdown (Donut)
+  - Status Health (Stat cards)
+  - Service Line Coverage (Bar)
+- **Team Metrics**: Total initiatives, revenue impact, average capacity
+
+#### Admin Sub-View
+**Purpose**: Configuration and team management (admin access only)
+
+**Features:**
+- Team Management: Add/edit team member profiles
+- Managers Panel: Configure reporting relationships
+- Calculator Settings: Adjust capacity calculation weights
+
+---
+
+### 4. Governance View (activeView='governance')
+
+**Purpose**: SCI consultation request intake and workflow management with automatic initiative creation
 
 **Status**: ✅ PRODUCTION - Phase 1/Phase 2 Workflow Active
 
@@ -301,87 +373,29 @@ Shows 6 productivity metrics in 2x3 grid:
 - **Initiative stories** - Problem/outcomes transferred successfully
 - **Bidirectional linking** - governance_requests ↔ initiatives verified intact
 - **Capacity calculations** - Updating correctly with new governance initiatives
-- **All dashboard views** - Synchronized (Browse, Dashboard, Team View, SCI View)
+- **All views synchronized** - Browse Initiatives section, Dashboard Overview/Team, Workload SCI/Team views
 
 **Components:**
 - `GovernancePortalView.tsx` - Main portal interface
 - `GovernanceRequestForm.tsx` - Comprehensive intake form (51KB)
 - `GovernanceRequestDetail.tsx` - Detail modal with Phase 1/2 triggers (39KB)
-- `SCIRequestsCard.tsx` - Shows assigned requests in SCI View
+- `SCIRequestsCard.tsx` - Shows assigned requests in Workload → SCI View
 - `governanceConversion.ts` - Phase 1/2 workflow logic (748 lines)
 
-### 3. Browse Initiatives
+---
 
-**Purpose**: Searchable, filterable library of all initiatives
+### 5. Insights View (activeView='insights')
 
-**Features:**
-- **5 categories**: System Initiatives, System Projects, SCI Supported Tickets/Projects, Governance, Other
-- **Search** by initiative name, owner, sponsor
-- **Filter tabs**: All, Active, Completed
-- **Collapsible categories** with count badges
-- **Initiative cards** with full details (metrics, financial impact, success stories)
-
-**Initiative Card Sections:**
-- Basic info (owner, status, type, dates)
-- Metrics (baseline → current → target with improvement %)
-- Financial impact (actual revenue, projections, methodology)
-- Performance data (users deployed, adoption rate, outcomes)
-- Scaling projections (scenarios, ROI calculations)
-- Success stories (challenge, approach, outcome)
-
-### 4. My Effort (Time Tracking)
-
-**Purpose**: Weekly effort logging for capacity management
+**Purpose**: AI-powered data analysis and natural language queries
 
 **Features:**
+- Chat interface for asking questions about initiatives, workload, and metrics
+- Natural language query processing
+- Data-driven insights and recommendations
+- **Note**: Requires Vercel API configuration for AI functionality
 
-#### Bulk Effort Entry Table
-- Table view showing all active/planning initiatives grouped by work type
-- Inline editing: hours, effort size (XS-XXL), notes
-- **Skip checkbox**: Mark "no work this week" (saves 0 hours with note)
-- **"+ Add Initiative" button**: Opens InitiativeSubmissionForm to add new initiative
-- **Add Misc. Assignment**: Create ad-hoc General Support tasks on-the-fly
-- **Copy Last Week**: Auto-fill effort from previous week
-- **Reassign button**: Transfer initiative ownership to another SCI
-- **Delete button**: Remove initiative (soft delete, status → "Deleted")
-- **Batch save**: Save all modified entries at once
-
-**Work Type Display Order** (BulkEffortEntry.tsx line 446):
-1. Governance
-2. Policy/Guidelines
-3. System Project
-4. Market Project
-5. System Initiative
-6. Ticket
-7. General Support
-8. Epic Gold
-9. Epic Upgrades
-10. Uncategorized
-
-#### Effort Sizes
-- XS = 1.5 hours
-- S = 4 hours
-- M = 8 hours (default)
-- L = 13 hours
-- XL = 18 hours
-- XXL = 25 hours
-
-#### Weekly Summary
-- Total hours logged
-- Hours by effort size
-- Hours by work type
-- Effort sparklines (trending)
-
-### 5. Workload Analytics
-
-**Purpose**: Capacity utilization and workload trends
-
-**Features:**
-- Individual workload trends (past 12 weeks)
-- Capacity utilization percentage
-- Effort distribution by size
-- Hours by work type
-- Team member selector for filtering
+**Components:**
+- `InsightsChat.tsx` - Main chat interface
 
 ---
 
@@ -653,8 +667,8 @@ See `/docs/database/SCHEMA_OVERVIEW.md` for complete schema documentation.
 
 ### Creating a New Initiative
 
-**Via Form:**
-1. Dashboard → Browse Initiatives → "Add Initiative" button
+**Via Dashboard:**
+1. Dashboard → Overview → Browse Initiatives section → "Add Initiative" button
 2. Fill out multi-step form:
    - Basic Information (owner, name, type, status, role, EHRs, service line)
    - Governance & Collaboration
@@ -664,29 +678,34 @@ See `/docs/database/SCHEMA_OVERVIEW.md` for complete schema documentation.
    - Future Projections
    - Success Stories
 3. Save as draft OR publish
-4. Initiative appears in Browse Initiatives and Team views
+4. Initiative appears in Browse Initiatives section and team member portfolios
+
+**Via Workload View:**
+1. Workload → SCI View → "+ Add Initiative" button in effort tracking table
+2. Same multi-step form as above
 
 **Via Governance Request Conversion:**
-1. SCI Requests → Select approved request
+1. Governance → Select approved request
 2. Click "Convert to Initiative"
 3. App creates initiative with request data pre-filled
 4. Request marked as "Converted" with link to new initiative
 
 ### Logging Weekly Effort
 
-1. My Effort → Select week
-2. Table shows all active/planning initiatives
-3. For each initiative:
+1. Workload → SCI View
+2. Select week from date picker
+3. Table shows all active/planning initiatives
+4. For each initiative:
    - Enter hours OR select effort size
    - Add notes if needed
    - OR check "Skip" for no work
-4. Click "Save Changes" (batch save)
-5. Data flows to effort_logs table
-6. Workload analytics updated automatically
+5. Click "Save Changes" (batch save)
+6. Data flows to effort_logs table
+7. Capacity calculations updated automatically
 
 ### Reassigning an Initiative
 
-1. My Effort → Find initiative in table
+1. Workload → SCI View → Find initiative in table
 2. Click purple reassign icon (👥) next to owner name
 3. Modal opens:
    - Select new owner from dropdown
@@ -697,7 +716,7 @@ See `/docs/database/SCHEMA_OVERVIEW.md` for complete schema documentation.
 
 ### Deleting an Initiative
 
-1. My Effort → Find initiative in table
+1. Workload → SCI View → Find initiative in table
 2. Click X button
 3. Confirm deletion dialog
 4. Initiative status changed to "Deleted" (soft delete)
