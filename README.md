@@ -21,41 +21,44 @@ The SCI Hero Dashboard is a React-based single-page application that provides vi
 
 ## Key Features
 
-The application has **5 main views** accessible via the navigation menu:
+The application has **4 main views** accessible via the navigation menu (plus landing page):
 
 ### 1. 🏠 Landing Page
 - Welcome screen with CommonSpirit Health SCI branding
 - "Get Started" button to enter the dashboard
 - Application overview
 
-### 2. 📊 Dashboard View
-**Two Sub-Views:**
-- **Overview**: Team metrics, clickable revenue cards, and embedded "Browse Initiatives" section
+### 2. 📊 Dashboard
+**Two Tabs:**
+- **Overview**: Team-level metrics, revenue impact cards, and initiative browsing
   - Search and filter all 409 initiatives across 5 categories
   - Detailed initiative cards with metrics, financials, and success stories
   - "Add Initiative" button for creating new initiatives
 - **Team**: Grid of 16 team member cards
   - Click to see individual portfolios with work distribution and key highlights
 
-### 3. 💼 Workload View
-**Three Sub-Views:**
-- **SCI View**: Weekly effort tracking table with capacity management
-  - Bulk effort entry for all active initiatives
-  - Effort size shortcuts (XS to XXL: 1.5 to 25 hours)
-  - Inline editing, reassignment, and quick actions
-  - Capacity header showing planned/actual/variance
-- **Team View**: Manager capacity dashboard
-  - Team member capacity cards with productivity metrics
-  - Manager filtering (All Teams, Carrie Rodriguez, Tiffany Shields-Tettamanti)
-- **Admin View**: Team management and configuration
-
-### 4. 📝 Governance View
+### 3. 📝 System Intake
 - SCI consultation request intake form
 - Workflow management with Phase 1/2 auto-triggers
 - Automatic initiative creation for approved requests
 - Status tracking: Draft → Review → Approval → Conversion
 
-### 5. 🤖 Insights View
+### 4. 💼 Workload
+**Three Tabs:**
+- **SCI**: Weekly effort tracking table with capacity management
+  - Bulk effort entry for all active initiatives
+  - Effort size shortcuts (XS to XXL: 1.5 to 25 hours)
+  - Inline editing, reassignment, and quick actions
+  - Capacity header showing planned/actual/variance
+- **Team**: Manager capacity dashboard
+  - Team member capacity cards with productivity metrics
+  - Manager filtering (All Teams, Carrie Rodriguez, Tiffany Shields-Tettamanti)
+- **Admin**: Team management and configuration
+  - Team member CRUD operations
+  - Manager assignments
+  - Calculator settings for capacity weights
+
+### 5. 🤖 AI Insights
 - AI-powered data analysis chat interface
 - Natural language queries about initiatives and metrics
 - Data-driven insights and recommendations
@@ -74,13 +77,10 @@ The application has **5 main views** accessible via the navigation menu:
 ### Backend
 - **Supabase** (PostgreSQL) for database and API
 - **Row Level Security (RLS)** for access control
-- Google Sheets sync for primary data source
 
 ### Data Flow
 \`\`\`
-Google Sheets (Source of Truth)
-    ↓ (Auto-sync)
-Supabase Database
+Supabase Database (Single Source of Truth)
     ↓ (Supabase Client)
 React Dashboard
 \`\`\`
@@ -156,7 +156,7 @@ npm run typecheck  # Run TypeScript type checking
 
 The application uses Supabase (PostgreSQL) with 20+ tables organized into categories:
 
-### Core Data (Synced from Google Sheets)
+### Core Data
 - Team members, assignments, work type summaries
 - Initiatives with metrics, financial impact, performance data
 - Dashboard metrics and highlights
