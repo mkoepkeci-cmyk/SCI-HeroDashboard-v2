@@ -273,14 +273,23 @@ export const EffortTrackingView = ({
         const existingLog = (currentLogs || []).find(log => log.initiative_id === initiative.id);
 
         if (existingLog) {
-          const hours = existingLog.hours_spent || 0;
-          const isSkipped = hours === 0 && existingLog.note?.toLowerCase().includes('no work');
+          const savedHours = existingLog.hours_spent || 0;
+          const isSkipped = savedHours === 0 && existingLog.note?.toLowerCase().includes('no work');
+
+          // Calculate estimated hours from effort size
+          const effortSize = existingLog.effort_size;
+          const estimatedHours = effortSize
+            ? (EFFORT_SIZES.find(s => s.size === effortSize)?.hours || 0)
+            : 0;
+
+          // Any difference between saved and estimated goes into additionalHours
+          const additionalHours = Math.max(0, savedHours - estimatedHours);
 
           return {
             initiative,
-            hours,
-            additionalHours: 0, // Initialize as 0 for existing logs
-            effortSize: existingLog.effort_size,
+            hours: 0, // No longer used, kept for compatibility
+            additionalHours,
+            effortSize,
             note: existingLog.note || '',
             skipped: isSkipped || false,
             existingLog,
@@ -288,15 +297,13 @@ export const EffortTrackingView = ({
           };
         }
 
-        // Pre-populate from initiative's work_effort
+        // Pre-populate from initiative's work_effort for new entries
         const workEffort = initiative.work_effort as EffortSize | null;
-        const effortSizeDetails = workEffort ? EFFORT_SIZES.find(e => e.size === workEffort) : null;
-        const prePopulatedHours = effortSizeDetails?.hours || 0;
-        const prePopulatedSize = workEffort || 'M';
+        const prePopulatedSize = workEffort || ''; // Empty if no work_effort
 
         return {
           initiative,
-          hours: prePopulatedHours,
+          hours: 0, // No longer used, kept for compatibility
           additionalHours: 0, // Initialize as 0 for new entries
           effortSize: prePopulatedSize,
           note: '',
@@ -319,31 +326,38 @@ export const EffortTrackingView = ({
     if (!teamMemberId) return;
 
     let planned = 0;
+    let actual = 0;
+
     entries.forEach(entry => {
       if (entry.isMiscAssignment) return;
 
       const init = entry.initiative;
+
+      // Check if initiative has complete capacity data
       const hasRole = init.role && init.role !== 'Unknown';
       const hasEffort = init.work_effort && init.work_effort !== 'Unknown';
       const hasType = init.type && init.type !== 'Unknown';
       const hasPhase = init.phase && init.phase !== 'Unknown';
       const isGovernance = init.type === 'Governance';
 
+      // Skip initiatives with incomplete data (those with ! icon)
       if (!hasRole || !hasEffort || !hasType || (!hasPhase && !isGovernance)) {
         return;
       }
 
-      const baseHours = init.work_effort ? (configWeights.effortSizes[init.work_effort] || 0) : 0;
-      const roleWeight = init.role ? (configWeights.roleWeights[init.role] || 1) : 1;
-      const typeWeight = init.type ? (configWeights.typeWeights[init.type] || 1) : 1;
-      const phaseWeight = configWeights.phaseWeights[init.phase || 'N/A'] || 1;
+      // Get estimated hours from effort size button selection
+      const estimatedHours = entry.effortSize
+        ? (EFFORT_SIZES.find(s => s.size === entry.effortSize)?.hours || 0)
+        : 0;
 
-      planned += baseHours * roleWeight * typeWeight * phaseWeight;
+      // Planned = just the estimated hours
+      planned += estimatedHours;
+
+      // Actual = estimated hours + any additional hours entered
+      actual += estimatedHours + (entry.additionalHours || 0);
     });
 
     setPlannedHours(planned);
-
-    const actual = entries.reduce((sum, entry) => sum + entry.hours, 0);
     setActualHours(actual);
   };
 
@@ -377,19 +391,12 @@ export const EffortTrackingView = ({
   };
 
   const handleSizeClick = (index: number, size: EffortSize) => {
-    const sizeDetails = EFFORT_SIZES.find(e => e.size === size);
-    if (!sizeDetails) return;
-
     setEntries(prev =>
       prev.map((entry, i) => {
         if (i === index) {
-          // Keep existing additionalHours, update formula hours based on size
-          const totalHours = sizeDetails.hours + (entry.additionalHours || 0);
-
           return {
             ...entry,
-            hours: totalHours,
-            effortSize: size,
+            effortSize: size, // Just update the effort size selection
             hasChanges: true,
           };
         }
@@ -419,7 +426,8 @@ export const EffortTrackingView = ({
           ? {
               ...entry,
               skipped: !entry.skipped,
-              hours: !entry.skipped ? 0 : entry.hours,
+              effortSize: !entry.skipped ? '' : entry.effortSize, // Clear effort size when skipping
+              additionalHours: !entry.skipped ? 0 : entry.additionalHours, // Clear additional hours when skipping
               note: !entry.skipped ? 'No work this week' : '',
               hasChanges: true,
             }
@@ -449,10 +457,21 @@ export const EffortTrackingView = ({
       prev.map(entry => {
         const lastWeekLog = lastWeekData.find(log => log.initiative_id === entry.initiative.id);
         if (lastWeekLog) {
+          const effortSize = lastWeekLog.effort_size;
+          const savedHours = lastWeekLog.hours_spent || 0;
+
+          // Calculate estimated hours from effort size
+          const estimatedHours = effortSize
+            ? (EFFORT_SIZES.find(s => s.size === effortSize)?.hours || 0)
+            : 0;
+
+          // Any difference goes into additional hours
+          const additionalHours = Math.max(0, savedHours - estimatedHours);
+
           return {
             ...entry,
-            hours: lastWeekLog.hours_spent,
-            effortSize: lastWeekLog.effort_size,
+            effortSize,
+            additionalHours,
             note: lastWeekLog.note || '',
             hasChanges: true,
           };
@@ -566,14 +585,19 @@ export const EffortTrackingView = ({
           }
         }
 
-        // Upsert effort log
+        // Calculate total hours: estimated (from effort size) + additional
+        const estimatedHours = entry.effortSize
+          ? (EFFORT_SIZES.find(s => s.size === entry.effortSize)?.hours || 0)
+          : 0;
+        const totalHoursToSave = estimatedHours + (entry.additionalHours || 0);
+
         const { error: logError } = await supabase
           .from('effort_logs')
           .upsert({
             team_member_id: teamMemberId,
             initiative_id: initiativeId,
             week_start_date: selectedWeek,
-            hours_spent: entry.hours,
+            hours_spent: totalHoursToSave,
             effort_size: entry.effortSize,
             note: entry.note || null,
             updated_at: new Date().toISOString(),
@@ -584,8 +608,12 @@ export const EffortTrackingView = ({
         if (logError) throw logError;
       }
 
-      // Mark all entries as saved
-      setEntries(prev => prev.map(e => ({ ...e, hasChanges: false })));
+      // Mark all entries as saved and reset additional hours
+      setEntries(prev => prev.map(e => ({
+        ...e,
+        additionalHours: 0, // Reset additional hours to 0 after saving
+        hasChanges: false
+      })));
       setLastSavedAt(new Date().toISOString());
 
       if (onSave) {
@@ -641,10 +669,38 @@ export const EffortTrackingView = ({
     );
   }
 
-  const totalHours = entries.reduce((sum, entry) => sum + entry.hours, 0);
+  // Total hours = estimated hours from effort size + additional hours (only for initiatives with complete data)
+  const totalHours = entries.reduce((sum, entry) => {
+    if (entry.isMiscAssignment) {
+      const estimatedHours = entry.effortSize
+        ? (EFFORT_SIZES.find(s => s.size === entry.effortSize)?.hours || 0)
+        : 0;
+      return sum + estimatedHours + (entry.additionalHours || 0);
+    }
+
+    const init = entry.initiative;
+
+    // Check if initiative has complete capacity data
+    const hasRole = init.role && init.role !== 'Unknown';
+    const hasEffort = init.work_effort && init.work_effort !== 'Unknown';
+    const hasType = init.type && init.type !== 'Unknown';
+    const hasPhase = init.phase && init.phase !== 'Unknown';
+    const isGovernance = init.type === 'Governance';
+
+    // Skip initiatives with incomplete data (those with ! icon)
+    if (!hasRole || !hasEffort || !hasType || (!hasPhase && !isGovernance)) {
+      return sum;
+    }
+
+    const estimatedHours = entry.effortSize
+      ? (EFFORT_SIZES.find(s => s.size === entry.effortSize)?.hours || 0)
+      : 0;
+    return sum + estimatedHours + (entry.additionalHours || 0);
+  }, 0);
   const changedCount = entries.filter(e =>
     e.hasChanges && (
-      e.hours > 0 ||
+      e.effortSize || // Has effort size selected
+      e.additionalHours > 0 || // Has additional hours
       e.skipped ||
       (e.isMiscAssignment && e.miscAssignmentName?.trim())
     )
