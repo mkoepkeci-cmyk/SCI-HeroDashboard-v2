@@ -436,7 +436,8 @@ export interface GovernanceRequest {
   desired_outcomes: string;
 
   // Leadership & Assignment
-  system_clinical_leader?: string;
+  sponsor_name?: string;
+  sponsor_title?: string;
   assigned_sci_id?: string;
   assigned_sci_name?: string;
   assigned_role?: string;

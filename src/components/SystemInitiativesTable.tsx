@@ -1,8 +1,20 @@
 import { useState } from 'react';
-import { Edit, X, User as UserIcon, ChevronDown, ChevronUp } from 'lucide-react';
+import { Edit, X, User as UserIcon, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
 import { InitiativeWithDetails, EffortSize, EFFORT_SIZES, TeamMember } from '../lib/supabase';
 import { getEffortSizeFromHours } from '../lib/effortUtils';
 import ReassignModal from './ReassignModal';
+
+// Helper: Check if initiative has incomplete capacity data
+const hasIncompleteData = (initiative: InitiativeWithDetails): boolean => {
+  // Required fields: role, work_effort, type
+  // phase is required UNLESS type is 'Governance'
+  const missingRole = !initiative.role;
+  const missingWorkEffort = !initiative.work_effort;
+  const missingType = !initiative.type;
+  const missingPhase = initiative.type !== 'Governance' && !initiative.phase;
+
+  return missingRole || missingWorkEffort || missingType || missingPhase;
+};
 
 interface InitiativeEffortEntry {
   initiative: InitiativeWithDetails;
@@ -128,11 +140,19 @@ export const SystemInitiativesTable = ({
 
                     {/* Initiative Name */}
                     <td className="px-3 py-3">
-                      <div>
-                        <div className="font-medium text-sm">{entry.initiative.initiative_name}</div>
-                        {entry.initiative.request_id && (
-                          <div className="text-xs text-gray-500">{entry.initiative.request_id}</div>
+                      <div className="flex items-start gap-2">
+                        {hasIncompleteData(entry.initiative) && (
+                          <AlertCircle
+                            className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5"
+                            title="Missing required fields: role, work effort, type, or phase"
+                          />
                         )}
+                        <div>
+                          <div className="font-medium text-sm">{entry.initiative.initiative_name}</div>
+                          {entry.initiative.request_id && (
+                            <div className="text-xs text-gray-500">{entry.initiative.request_id}</div>
+                          )}
+                        </div>
                       </div>
                     </td>
 
@@ -189,7 +209,6 @@ export const SystemInitiativesTable = ({
                     <td className="px-2 py-3">
                       <input
                         type="number"
-                        step="0.5"
                         min="0"
                         value={entry.additionalHours || ''}
                         onChange={(e) => onHoursChange(globalIndex, e.target.value)}

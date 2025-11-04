@@ -233,23 +233,6 @@ export const Tab2Content = ({
               </select>
             </div>
 
-            {/* Work Effort */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Work Effort (Estimated Weekly Hours)</label>
-              <select
-                value={data.workEffort}
-                onChange={(e) => setData({ ...data, workEffort: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg p-2"
-              >
-                <option value="">Select effort</option>
-                <option value="XS">XS - Less than 1 hr/wk</option>
-                <option value="S">S - 1-2 hrs/wk</option>
-                <option value="M">M - 2-5 hrs/wk</option>
-                <option value="L">L - 5-10 hrs/wk</option>
-                <option value="XL">XL - More than 10 hrs/wk</option>
-              </select>
-            </div>
-
             {/* EHRs Impacted */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">EHRs Impacted</label>

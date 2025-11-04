@@ -440,62 +440,6 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
                 )}
               </div>
 
-              {/* Estimated Work Effort */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Estimated Work Effort
-                </label>
-                <select
-                  value={workEffort}
-                  onChange={(e) => setWorkEffort(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg p-2"
-                  disabled={saving}
-                >
-                  <option value="">Select effort size...</option>
-                  <option value="XS">XS - Less than 1 hr/wk</option>
-                  <option value="S">S - 1-2 hrs/wk</option>
-                  <option value="M">M - 2-5 hrs/wk</option>
-                  <option value="L">L - 5-10 hrs/wk</option>
-                  <option value="XL">XL - More than 10 hrs/wk</option>
-                </select>
-                {formData.work_effort && (
-                  <p className="text-sm text-gray-600 mt-1">
-                    Currently: <strong>{formData.work_effort}</strong>
-                  </p>
-                )}
-              </div>
-
-              {/* Work Phase */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Work Phase
-                </label>
-                <select
-                  value={workPhase}
-                  onChange={(e) => setWorkPhase(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg p-2"
-                  disabled={saving}
-                >
-                  <option value="">Select phase...</option>
-                  <option value="Discovery/Define">Discovery/Define</option>
-                  <option value="Design">Design</option>
-                  <option value="Build">Build</option>
-                  <option value="Validate/Test">Validate/Test</option>
-                  <option value="Deploy">Deploy</option>
-                  <option value="Did we Deliver">Did we Deliver</option>
-                  <option value="Post Go Live Support">Post Go Live Support</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Maintenance">Maintenance</option>
-                  <option value="Steady State">Steady State</option>
-                  <option value="N/A">N/A</option>
-                </select>
-                {formData.work_phase && (
-                  <p className="text-sm text-gray-600 mt-1">
-                    Currently: <strong>{formData.work_phase}</strong>
-                  </p>
-                )}
-              </div>
-
               {/* Single Save Button */}
               <button
                 onClick={async () => {

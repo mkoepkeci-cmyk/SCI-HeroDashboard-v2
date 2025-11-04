@@ -38,7 +38,7 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
     submitter_email: string;
     problem_statement: string;
     desired_outcomes: string;
-    system_clinical_leader: string;
+    sponsor_name: string;
     patient_care_value: string;
     compliance_regulatory_value: string;
     financial_impact: string;
@@ -76,7 +76,7 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
     submitter_email: editingRequest?.submitter_email || '',
     problem_statement: editingRequest?.problem_statement || '',
     desired_outcomes: editingRequest?.desired_outcomes || '',
-    system_clinical_leader: editingRequest?.system_clinical_leader || '',
+    sponsor_name: editingRequest?.sponsor_name || '',
     patient_care_value: editingRequest?.patient_care_value || '',
     compliance_regulatory_value: editingRequest?.compliance_regulatory_value || '',
     financial_impact: editingRequest?.financial_impact?.toString() || '', // Legacy field
@@ -225,7 +225,7 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
         submitter_email: formData.submitter_email,
         problem_statement: formData.problem_statement,
         desired_outcomes: formData.desired_outcomes,
-        system_clinical_leader: formData.system_clinical_leader || null,
+        sponsor_name: formData.sponsor_name || null,
         patient_care_value: formData.patient_care_value || null,
         compliance_regulatory_value: formData.compliance_regulatory_value || null,
         financial_impact: formData.financial_impact ? parseFloat(formData.financial_impact) : null,
@@ -346,7 +346,7 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
         submitter_email: formData.submitter_email,
         problem_statement: formData.problem_statement,
         desired_outcomes: formData.desired_outcomes,
-        system_clinical_leader: formData.system_clinical_leader || null,
+        sponsor_name: formData.sponsor_name || null,
         patient_care_value: formData.patient_care_value || null,
         compliance_regulatory_value: formData.compliance_regulatory_value || null,
         financial_impact: formData.financial_impact ? parseFloat(formData.financial_impact) : null,
@@ -633,8 +633,8 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
               </label>
               <input
                 type="text"
-                value={formData.system_clinical_leader}
-                onChange={(e) => handleChange('system_clinical_leader', e.target.value)}
+                value={formData.sponsor_name}
+                onChange={(e) => handleChange('sponsor_name', e.target.value)}
                 placeholder="e.g., Dr. Sarah Johnson, SVP Clinical Excellence"
                 className="w-full border border-gray-300 rounded-lg p-2"
               />
