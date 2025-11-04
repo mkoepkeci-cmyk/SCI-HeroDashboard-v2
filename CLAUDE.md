@@ -6,7 +6,7 @@ A React-based dashboard application for tracking and visualizing the impact of C
 
 ## Current Status (October 30, 2025)
 
-**Production Ready - 411+ Active Initiatives Across 16 Team Members**
+**Production Ready - 80 Demo Initiatives Across 16 Team Members**
 
 ### Completed Features
 - ✅ **5 Main Views**: Landing, Dashboard, Workload, Governance, Insights
@@ -18,7 +18,7 @@ A React-based dashboard application for tracking and visualizing the impact of C
   - SCI: Weekly effort tracking with bulk entry table and capacity header
   - Team: Manager capacity dashboard with productivity metrics
   - Admin: Team management and calculator configuration
-- ✅ **Governance View** - SCI consultation request intake with Phase 1/2 auto-triggers
+- ✅ **System Intake (Request Intake)** - SCI consultation request intake with Phase 1/2 auto-triggers
 - ✅ **Insights View** - AI chat interface for data analysis (requires Vercel API)
 - ✅ Complete metrics tracking with validated data
 - ✅ Initiative management with full CRUD operations
@@ -31,7 +31,7 @@ A React-based dashboard application for tracking and visualizing the impact of C
 - ✅ **Legacy Assignments Table Removed** (October 30, 2025) - Single source of truth established
 
 ### Data Status
-- **411+ initiatives** populated and active (includes 2 new governance requests: GOV-2025-004, GOV-2025-005)
+- **80 demo initiatives** populated for testing and demonstration
 - **16 team members** with complete portfolios
 - **Validated metrics** from PDF documentation
 - **Active effort tracking** for capacity management
@@ -279,7 +279,7 @@ The dashboard has **5 main views** accessible via the navigation menu:
 
 ---
 
-### 4. Governance View (activeView='governance')
+### 4. System Intake / Request Intake (activeView='governance')
 
 **Purpose**: SCI consultation request intake and workflow management with automatic initiative creation
 
@@ -590,7 +590,7 @@ The dashboard has **5 main views** accessible via the navigation menu:
 - `dashboard_metrics` - Pre-calculated team metrics
 - **DEPRECATED**: `assignments` table removed October 30, 2025 (replaced by `initiatives`)
 
-#### Initiatives (411+ active rows as of October 30, 2025)
+#### Initiatives (80+ demo rows for testing)
 - `initiatives` - Core initiative tracking (single source of truth after assignment migration)
   - **Basic**: owner_name, initiative_name, type, status, team_member_id
   - **Classification**: role, ehrs_impacted, service_line

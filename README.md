@@ -2,7 +2,7 @@
 
 > **A comprehensive dashboard for tracking and visualizing the impact of CommonSpirit Health's System Clinical Informatics team**
 
-Showcases **409 initiatives** across **16 team members** with **$276M+ in revenue impact** and validated performance metrics.
+Showcases **80+ demo initiatives** across **16 team members** with validated performance metrics.
 
 ---
 
@@ -31,7 +31,7 @@ The application has **4 main views** accessible via the navigation menu (plus la
 ### 2. 📊 Dashboard
 **Two Tabs:**
 - **Overview**: Team-level metrics, revenue impact cards, and initiative browsing
-  - Search and filter all 409 initiatives across 5 categories
+  - Search and filter all 80+ demo initiatives across 5 categories
   - Detailed initiative cards with metrics, financials, and success stories
   - "Add Initiative" button for creating new initiatives
 - **Team**: Grid of 16 team member cards
@@ -174,7 +174,7 @@ See \`/docs/database/SCHEMA_OVERVIEW.md\` for complete schema documentation.
 ## Key Metrics
 
 ### Current Data (October 2025)
-- **409 initiatives** tracked and active
+- **80+ demo initiatives** for testing
 - **16 team members** with complete portfolios
 - **$276M+ revenue impact** documented
 - **Multiple workstreams**: Epic Gold, System Initiatives, Governance, Projects, Support
@@ -285,4 +285,4 @@ For questions or support regarding this dashboard:
 
 **Last Updated**: October 2025  
 **Version**: Production Ready  
-**Status**: Active - 409 Initiatives Tracked
+**Status**: Active - 80+ Demo Initiatives
