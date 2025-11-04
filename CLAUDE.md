@@ -239,20 +239,26 @@ The dashboard has **5 main views** accessible via the navigation menu:
 #### SCI Sub-View (Weekly Effort Tracking)
 **Purpose**: Individual effort logging and capacity management
 
-**Features:**
-- **Capacity Header**: Planned hrs/wk (%), Actual hrs (%), Variance
-- **Bulk Effort Entry Table**: All active/planning initiatives grouped by work type
-  - Inline editing: hours, effort size (XS-XL), notes
-  - Skip checkbox: Mark "no work this week"
-  - "Add Initiative" button: Opens InitiativeSubmissionForm
-  - Add Misc. Assignment: Create ad-hoc General Support tasks
-  - Copy Last Week: Auto-fill effort from previous week
-  - Reassign button: Transfer ownership to another SCI
-  - Delete button: Remove initiative (soft delete)
-  - Batch save: Save all modified entries at once
-- **Work Type Display Order**: Governance, Policy/Guidelines, System Project, Market Project, System Initiative, Ticket, General Support, Epic Gold, Epic Upgrades, Uncategorized
-- **Effort Sizes**: XS=1.5h, S=4h, M=8h, L=13h, XL=18h
-- **SCI Requests Card**: Shows assigned governance requests
+**Two Tabs:**
+
+1. **Summary Tab**:
+   - Capacity overview with status indicators
+   - Active assignments count
+   - Weekly effort breakdown by work type
+   - 8-week effort trend chart
+   - Assigned governance requests card
+
+2. **Entry Tab**:
+   - **Capacity Header**: Planned hrs/wk (%), Actual hrs (%), Variance
+   - **System Initiatives Table**: Tracks System Initiatives and Projects
+     - Per-initiative effort entry with hours and effort size (XS-XL)
+     - Individual save/update buttons per row
+     - Edit, reassign, and delete actions
+   - **Other Work Table**: Tracks all other work types (Governance, Tickets, Support, etc.)
+     - Separate table with same entry functionality
+     - Add new work items button
+   - **Copy Last Week**: Auto-fill effort from previous week
+   - **Effort Sizes**: XS=1.5h, S=4h, M=8h, L=13h, XL=18h
 
 #### Team Sub-View (Manager Capacity Dashboard)
 **Purpose**: Manager oversight of team capacity and workload
