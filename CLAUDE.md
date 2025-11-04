@@ -158,7 +158,7 @@ Shows 6 productivity metrics in 2x3 grid:
 
 **Row 1**:
 1. **Work Type Distribution** (Pie) - System Initiative, Project, Governance, etc.
-2. **Work Effort Distribution** (Bar) - XS, S, M, L, XL, XXL counts
+2. **Work Effort Distribution** (Bar) - XS, S, M, L, XL counts
 3. **Phase Distribution** (Bar) - Discovery, Design, Build, Test, Deliver, Steady State
 
 **Row 2**:
@@ -242,7 +242,7 @@ The dashboard has **5 main views** accessible via the navigation menu:
 **Features:**
 - **Capacity Header**: Planned hrs/wk (%), Actual hrs (%), Variance
 - **Bulk Effort Entry Table**: All active/planning initiatives grouped by work type
-  - Inline editing: hours, effort size (XS-XXL), notes
+  - Inline editing: hours, effort size (XS-XL), notes
   - Skip checkbox: Mark "no work this week"
   - "Add Initiative" button: Opens InitiativeSubmissionForm
   - Add Misc. Assignment: Create ad-hoc General Support tasks
@@ -251,7 +251,7 @@ The dashboard has **5 main views** accessible via the navigation menu:
   - Delete button: Remove initiative (soft delete)
   - Batch save: Save all modified entries at once
 - **Work Type Display Order**: Governance, Policy/Guidelines, System Project, Market Project, System Initiative, Ticket, General Support, Epic Gold, Epic Upgrades, Uncategorized
-- **Effort Sizes**: XS=1.5h, S=4h, M=8h, L=13h, XL=18h, XXL=25h
+- **Effort Sizes**: XS=1.5h, S=4h, M=8h, L=13h, XL=18h
 - **SCI Requests Card**: Shows assigned governance requests
 
 #### Team Sub-View (Manager Capacity Dashboard)

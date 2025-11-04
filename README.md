@@ -47,7 +47,7 @@ The application has **4 main views** accessible via the navigation menu (plus la
 **Three Tabs:**
 - **SCI**: Weekly effort tracking table with capacity management
   - Bulk effort entry for all active initiatives
-  - Effort size shortcuts (XS to XXL: 1.5 to 25 hours)
+  - Effort size shortcuts (XS to XL: 1.5 to 18 hours)
   - Inline editing, reassignment, and quick actions
   - Capacity header showing planned/actual/variance
 - **Team**: Manager capacity dashboard
