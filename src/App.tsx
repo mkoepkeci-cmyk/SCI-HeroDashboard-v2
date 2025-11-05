@@ -1747,6 +1747,9 @@ function App() {
             initiatives={teamMembers.flatMap(m => m.initiatives || [])}
             onTeamMemberChange={setCurrentUser}
             onInitiativesRefresh={fetchTeamData}
+            onViewInitiative={(initiativeId) => {
+              setSelectedInitiativeId(initiativeId);
+            }}
           />
         ) : workloadSubView === 'team' ? (
           <TeamCapacityView

@@ -25,6 +25,7 @@ interface PersonalWorkloadDashboardProps {
   initiatives: InitiativeWithDetails[];
   onTeamMemberChange: (member: TeamMember) => void;
   onInitiativesRefresh?: () => void; // Callback to refresh initiatives after editing
+  onViewInitiative?: (initiativeId: string) => void; // Navigate to initiative view
 }
 
 interface WorkTypeEffort {
@@ -50,6 +51,7 @@ export default function PersonalWorkloadDashboard({
   initiatives,
   onTeamMemberChange,
   onInitiativesRefresh,
+  onViewInitiative,
 }: PersonalWorkloadDashboardProps) {
   const [effortLogs, setEffortLogs] = useState<EffortLog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -479,6 +481,12 @@ export default function PersonalWorkloadDashboard({
           onEdit={(request) => {
             setEditingGovernanceRequest(request);
             setSelectedGovernanceRequest(null); // Close detail modal
+          }}
+          onViewInitiative={(initiativeId) => {
+            if (onViewInitiative) {
+              onViewInitiative(initiativeId);
+              setSelectedGovernanceRequest(null); // Close detail modal
+            }
           }}
         />
       )}
