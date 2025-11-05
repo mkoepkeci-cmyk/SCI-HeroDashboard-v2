@@ -14,7 +14,7 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
             System Clinical Informatics Dashboard
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Managing 411+ active initiatives across 16 team members with real-time capacity tracking,
+            Managing System Initiatives across 16 team members with real-time capacity tracking,
             automated governance workflows, and comprehensive impact measurement.
           </p>
           <button
