@@ -115,7 +115,7 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
             <div className="space-y-2">
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-gray-700">411+ initiatives with full visibility</span>
+                <span className="text-sm text-gray-700">See initiatives with full visibility</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
@@ -377,7 +377,7 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
             Ready to Get Started?
           </h2>
           <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-            Join 16 team members managing 411+ initiatives with automated governance workflows,
+            Join SCI team, managing system initiatives with automated governance workflows,
             real-time capacity tracking, and comprehensive impact measurement.
           </p>
           <button
