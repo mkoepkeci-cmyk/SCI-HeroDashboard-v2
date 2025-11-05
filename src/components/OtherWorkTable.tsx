@@ -354,7 +354,8 @@ export const OtherWorkTable = ({
       {reassigningInitiative && (
         <ReassignModal
           initiative={reassigningInitiative}
-          teamMembers={allTeamMembers}
+          allTeamMembers={allTeamMembers}
+          currentOwnerName={reassigningInitiative.owner_name || 'Unassigned'}
           onClose={() => setReassigningInitiative(null)}
           onSuccess={() => {
             setReassigningInitiative(null);
