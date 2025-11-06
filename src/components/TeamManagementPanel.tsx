@@ -173,9 +173,36 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
   };
 
   const handleDelete = async (member: TeamMember) => {
-    if (!confirm(`Are you sure you want to delete ${getTeamMemberDisplayName(member)}? This will also delete all their assignments and initiatives.`)) {
+    console.log('🗑️ Attempting to delete:', member.name, member.id);
+
+    // Count initiatives assigned to this member
+    const { count, error: countError } = await supabase
+      .from('initiatives')
+      .select('*', { count: 'exact', head: true })
+      .eq('team_member_id', member.id)
+      .neq('status', 'Deleted');
+
+    if (countError) {
+      console.error('Error counting initiatives:', countError);
+    }
+
+    const initiativeCount = count || 0;
+    console.log('📊 Initiative count:', initiativeCount);
+
+    const message = `Are you sure you want to delete ${getTeamMemberDisplayName(member)}?\n\n` +
+      (initiativeCount > 0
+        ? `${initiativeCount} initiative(s) will be UNASSIGNED (not deleted) and can be reassigned from Workload → Team → Unassigned tab.\n\n`
+        : '') +
+      `Effort logs and summaries will be permanently deleted.\n\n` +
+      `This action cannot be undone.`;
+
+    console.log('⚠️ Showing confirmation dialog');
+    if (!confirm(message)) {
+      console.log('❌ User cancelled deletion');
       return;
     }
+
+    console.log('✅ User confirmed deletion, proceeding...');
 
     try {
       const { error: deleteError } = await supabase
@@ -183,11 +210,15 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
         .delete()
         .eq('id', member.id);
 
-      if (deleteError) throw deleteError;
+      if (deleteError) {
+        console.error('❌ Delete error:', deleteError);
+        throw deleteError;
+      }
 
+      console.log('✅ Delete successful, refreshing data...');
       onTeamMemberUpdate();
     } catch (err) {
-      console.error('Error deleting team member:', err);
+      console.error('❌ Error deleting team member:', err);
       alert('Failed to delete team member: ' + (err instanceof Error ? err.message : 'Unknown error'));
     }
   };
@@ -504,7 +535,10 @@ export function TeamManagementPanel({ teamMembers, managers, onTeamMemberUpdate 
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => handleDelete(member)}
+                        onClick={() => {
+                          console.log('🖱️ DELETE BUTTON CLICKED for:', member.name);
+                          handleDelete(member);
+                        }}
                         className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
                         title="Delete team member"
                       >

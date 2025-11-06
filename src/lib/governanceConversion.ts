@@ -188,6 +188,12 @@ export async function populateInitiativeDetails(
         // Ensure display ID is set (defense-in-depth)
         request_id: govRequest.request_id,  // GOV-YYYY-XXX display ID for UI
 
+        // Ensure initiative name matches request title (defense-in-depth)
+        initiative_name: govRequest.title,
+
+        // Clinical sponsor (from governance request)
+        clinical_sponsor_name: govRequest.system_clinical_leader,
+
         // Core governance data
         problem_statement: govRequest.problem_statement,
         desired_outcomes: govRequest.desired_outcomes,

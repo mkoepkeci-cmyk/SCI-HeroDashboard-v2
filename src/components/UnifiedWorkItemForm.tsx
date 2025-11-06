@@ -457,11 +457,12 @@ export const UnifiedWorkItemForm = ({
       })));
     }
 
-    // Tab 2: Pre-fill initiative name and type
+    // Tab 2: Pre-fill initiative name, type, and clinical sponsor
     setTab2Data(prev => ({
       ...prev,
       initiativeName: request.title || '',
-      type: 'Governance'
+      type: 'Governance',
+      clinicalSponsorName: request.system_clinical_leader || ''
     }));
   };
 

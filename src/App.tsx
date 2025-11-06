@@ -22,6 +22,7 @@ import { LoadBalanceModal } from './components/LoadBalanceModal';
 import { TeamCapacityCard } from './components/TeamCapacityCard';
 import { TeamCapacityModal } from './components/TeamCapacityModal';
 import TeamCapacityView from './components/TeamCapacityView';
+import { UnassignedWorkView } from './components/UnassignedWorkView';
 
 interface TeamMemberWithDetails extends TeamMember {
   workTypes: { [key: string]: number };
@@ -1660,18 +1661,18 @@ function App() {
 
   const WorkloadView = () => {
     // Get initial sub-view from URL hash (e.g., #workload/admin)
-    const getInitialSubView = (): 'sci' | 'team' | 'admin' => {
+    const getInitialSubView = (): 'sci' | 'team' | 'unassigned' | 'admin' => {
       const hash = window.location.hash.slice(1); // Remove the '#'
       if (hash.startsWith('workload/')) {
         const subView = hash.split('/')[1];
-        if (['sci', 'team', 'admin'].includes(subView)) {
-          return subView as 'sci' | 'team' | 'admin';
+        if (['sci', 'team', 'unassigned', 'admin'].includes(subView)) {
+          return subView as 'sci' | 'team' | 'unassigned' | 'admin';
         }
       }
       return 'sci';
     };
 
-    const [workloadSubView, setWorkloadSubView] = useState<'sci' | 'team' | 'admin'>(getInitialSubView());
+    const [workloadSubView, setWorkloadSubView] = useState<'sci' | 'team' | 'unassigned' | 'admin'>(getInitialSubView());
 
     // Update URL hash when sub-view changes
     useEffect(() => {
@@ -1721,6 +1722,16 @@ function App() {
             Team View
           </button>
           <button
+            onClick={() => setWorkloadSubView('unassigned')}
+            className={`flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+              workloadSubView === 'unassigned'
+                ? 'bg-[#9B2F6A] text-white shadow-md'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            📋 Unassigned
+          </button>
+          <button
             onClick={() => setWorkloadSubView('admin')}
             className={`flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
               workloadSubView === 'admin'
@@ -1755,6 +1766,11 @@ function App() {
           <TeamCapacityView
             teamMembers={teamMembers}
             managers={managers}
+          />
+        ) : workloadSubView === 'unassigned' ? (
+          <UnassignedWorkView
+            allTeamMembers={teamMembers}
+            onReassignComplete={fetchTeamData}
           />
         ) : null}
       </div>
