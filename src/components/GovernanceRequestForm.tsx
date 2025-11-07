@@ -567,20 +567,20 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
         </div>
 
         {/* Form */}
-        <div className="p-6 space-y-6 max-h-[calc(100vh-16rem)] overflow-y-auto">
+        <div className="p-3 space-y-2 max-h-[calc(100vh-16rem)] overflow-y-auto">
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+            <div className="bg-red-50 border border-red-200 rounded-lg px-2 py-1 flex items-start gap-2">
               <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-red-900 whitespace-pre-wrap">{error}</div>
+              <div className="text-xs text-red-900 whitespace-pre-wrap">{error}</div>
             </div>
           )}
 
           {/* Basic Information */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg text-gray-900">Basic Information</h3>
+          <div className="space-y-2">
+            <h3 className="font-semibold text-sm text-gray-900">Basic Information</h3>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">
                 Initiative Title <span className="text-red-500">*</span>
               </label>
               <input
@@ -588,22 +588,22 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
                 value={formData.title}
                 onChange={(e) => handleChange('title', e.target.value)}
                 placeholder="e.g., SDOH Screening Expansion to Emergency Departments"
-                className="w-full border border-gray-300 rounded-lg p-2"
+                className="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs"
                 required
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 mt-0.5">
                 Clear, descriptive title for your system-level initiative
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">
                 Division/Region <span className="text-red-500">*</span>
               </label>
               <select
                 value={formData.division_region}
                 onChange={(e) => handleChange('division_region', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg p-2"
+                className="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs"
                 required
               >
                 <option value="">Select division/region...</option>
@@ -613,9 +613,9 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
               </select>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-gray-700 mb-0.5">
                   Submitter Name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -623,13 +623,13 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
                   value={formData.submitter_name}
                   onChange={(e) => handleChange('submitter_name', e.target.value)}
                   placeholder="Your full name"
-                  className="w-full border border-gray-300 rounded-lg p-2"
+                  className="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-gray-700 mb-0.5">
                   Submitter Email <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -637,14 +637,14 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
                   value={formData.submitter_email}
                   onChange={(e) => handleChange('submitter_email', e.target.value)}
                   placeholder="your.email@commonspirit.org"
-                  className="w-full border border-gray-300 rounded-lg p-2"
+                  className="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs"
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">
                 System Clinical Leader/Sponsor
               </label>
               <input
@@ -652,82 +652,82 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
                 value={formData.system_clinical_leader}
                 onChange={(e) => handleChange('system_clinical_leader', e.target.value)}
                 placeholder="e.g., Dr. Sarah Johnson, SVP Clinical Excellence"
-                className="w-full border border-gray-300 rounded-lg p-2"
+                className="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 mt-0.5">
                 Clinical leader sponsoring this initiative
               </p>
             </div>
           </div>
 
           {/* Problem Statement & Outcomes */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg text-gray-900">System-Level Need</h3>
+          <div className="space-y-2">
+            <h3 className="font-semibold text-sm text-gray-900">System-Level Need</h3>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">
                 Problem Statement <span className="text-red-500">*</span>
               </label>
               <textarea
-                rows={6}
+                rows={2}
                 value={formData.problem_statement}
                 onChange={(e) => handleChange('problem_statement', e.target.value)}
                 placeholder="What system-level problem or opportunity is being addressed? Clearly articulate why this requires system-level governance and affects multiple markets or the entire organization..."
-                className="w-full border border-gray-300 rounded-lg p-2"
+                className="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs"
                 required
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 mt-0.5">
                 <strong>Important:</strong> Clearly indicate this is system-level (affects multiple markets, requires enterprise resources, organization-wide impact)
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">
                 Desired Outcomes <span className="text-red-500">*</span>
               </label>
               <textarea
-                rows={5}
+                rows={2}
                 value={formData.desired_outcomes}
                 onChange={(e) => handleChange('desired_outcomes', e.target.value)}
                 placeholder="What specific system-wide outcomes are you trying to achieve? Be as specific as possible..."
-                className="w-full border border-gray-300 rounded-lg p-2"
+                className="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs"
                 required
               />
             </div>
           </div>
 
           {/* Value Proposition */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg text-gray-900">Value Proposition</h3>
+          <div className="space-y-2">
+            <h3 className="font-semibold text-sm text-gray-900">Value Proposition</h3>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">
                 Patient Care Value
               </label>
               <textarea
-                rows={3}
+                rows={2}
                 value={formData.patient_care_value}
                 onChange={(e) => handleChange('patient_care_value', e.target.value)}
                 placeholder="How does this improve patient care across the system or multiple markets?"
-                className="w-full border border-gray-300 rounded-lg p-2"
+                className="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">
                 Compliance/Regulatory Value
               </label>
               <textarea
-                rows={3}
+                rows={2}
                 value={formData.compliance_regulatory_value}
                 onChange={(e) => handleChange('compliance_regulatory_value', e.target.value)}
                 placeholder="System-wide regulatory requirements, compliance benefits (e.g., CMS mandates affecting all facilities)"
-                className="w-full border border-gray-300 rounded-lg p-2"
+                className="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">
                 Target Timeline
               </label>
               <input
@@ -735,27 +735,27 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
                 value={formData.target_timeline}
                 onChange={(e) => handleChange('target_timeline', e.target.value)}
                 placeholder="Q1 2026"
-                className="w-full border border-gray-300 rounded-lg p-2"
+                className="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">
                 Estimated Scope/Effort
               </label>
               <textarea
-                rows={3}
+                rows={2}
                 value={formData.estimated_scope}
                 onChange={(e) => handleChange('estimated_scope', e.target.value)}
                 placeholder="Brief description of resources, timeline, complexity at system scale..."
-                className="w-full border border-gray-300 rounded-lg p-2"
+                className="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs"
               />
             </div>
           </div>
 
           {/* Impact Metrics */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg text-[#00A1E0]">Impact Metrics</h3>
+          <div className="space-y-2">
+            <h3 className="font-semibold text-sm text-[#00A1E0]">Impact Metrics</h3>
             {metrics.map((metric, index) => (
               <div key={index} className="bg-[#00A1E0]/10 border border-[#00A1E0]/30 rounded p-3 mb-3">
                 <div className="flex items-center justify-between mb-2">
@@ -776,18 +776,18 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   <div>
-                    <label className="block text-xs font-semibold mb-1">Metric Name</label>
+                    <label className="block text-xs font-semibold mb-0.5">Metric Name</label>
                     <input
-                      className="w-full border rounded px-2 py-1 text-sm"
+                      className="w-full border rounded px-2 py-1 text-xs"
                       placeholder="e.g., Time Reduction"
                       value={metric.metricName}
                       onChange={e => updateMetric(index, 'metricName', e.target.value)}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold mb-1">Metric Type</label>
+                    <label className="block text-xs font-semibold mb-0.5">Metric Type</label>
                     <select
-                      className="w-full border rounded px-2 py-1 text-sm"
+                      className="w-full border rounded px-2 py-1 text-xs"
                       value={metric.metricType}
                       onChange={e => updateMetric(index, 'metricType', e.target.value)}
                     >
@@ -801,9 +801,9 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold mb-1">Unit</label>
+                    <label className="block text-xs font-semibold mb-0.5">Unit</label>
                     <select
-                      className="w-full border rounded px-2 py-1 text-sm"
+                      className="w-full border rounded px-2 py-1 text-xs"
                       value={metric.unit}
                       onChange={e => updateMetric(index, 'unit', e.target.value)}
                     >
@@ -817,69 +817,69 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold mb-1">Baseline Value</label>
+                    <label className="block text-xs font-semibold mb-0.5">Baseline Value</label>
                     <input
                       type="number"
                       step="any"
-                      className="w-full border rounded px-2 py-1 text-sm"
+                      className="w-full border rounded px-2 py-1 text-xs"
                       placeholder="Starting value"
                       value={metric.baselineValue}
                       onChange={e => updateMetric(index, 'baselineValue', e.target.value)}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold mb-1">Baseline Date</label>
+                    <label className="block text-xs font-semibold mb-0.5">Baseline Date</label>
                     <input
                       type="date"
-                      className="w-full border rounded px-2 py-1 text-sm"
+                      className="w-full border rounded px-2 py-1 text-xs"
                       value={metric.baselineDate}
                       onChange={e => updateMetric(index, 'baselineDate', e.target.value)}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold mb-1">Current Value</label>
+                    <label className="block text-xs font-semibold mb-0.5">Current Value</label>
                     <input
                       type="number"
                       step="any"
-                      className="w-full border rounded px-2 py-1 text-sm"
+                      className="w-full border rounded px-2 py-1 text-xs"
                       placeholder="Current value"
                       value={metric.currentValue}
                       onChange={e => updateMetric(index, 'currentValue', e.target.value)}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold mb-1">Current Date</label>
+                    <label className="block text-xs font-semibold mb-0.5">Current Date</label>
                     <input
                       type="date"
-                      className="w-full border rounded px-2 py-1 text-sm"
+                      className="w-full border rounded px-2 py-1 text-xs"
                       value={metric.measurementDate}
                       onChange={e => updateMetric(index, 'measurementDate', e.target.value)}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold mb-1">Target Value</label>
+                    <label className="block text-xs font-semibold mb-0.5">Target Value</label>
                     <input
                       type="number"
                       step="any"
-                      className="w-full border rounded px-2 py-1 text-sm"
+                      className="w-full border rounded px-2 py-1 text-xs"
                       placeholder="Goal (optional)"
                       value={metric.targetValue}
                       onChange={e => updateMetric(index, 'targetValue', e.target.value)}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold mb-1">Improvement</label>
+                    <label className="block text-xs font-semibold mb-0.5">Improvement</label>
                     <input
-                      className="w-full border rounded px-2 py-1 text-sm"
+                      className="w-full border rounded px-2 py-1 text-xs"
                       placeholder="Auto-calc or manual"
                       value={metric.improvement}
                       onChange={e => updateMetric(index, 'improvement', e.target.value)}
                     />
                   </div>
                   <div className="col-span-3">
-                    <label className="block text-xs font-semibold mb-1">Measurement Method</label>
+                    <label className="block text-xs font-semibold mb-0.5">Measurement Method</label>
                     <input
-                      className="w-full border rounded px-2 py-1 text-sm"
+                      className="w-full border rounded px-2 py-1 text-xs"
                       placeholder="How was this measured?"
                       value={metric.measurementMethod}
                       onChange={e => updateMetric(index, 'measurementMethod', e.target.value)}
@@ -891,8 +891,8 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
           </div>
 
           {/* Revenue & Financial Impact */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg text-[#00A1E0]">Revenue & Financial Impact</h3>
+          <div className="space-y-2">
+            <h3 className="font-semibold text-sm text-[#00A1E0]">Revenue & Financial Impact</h3>
 
             <div className="bg-blue-50 border border-blue-200 rounded p-3">
               <h4 className="font-semibold text-sm mb-2 text-blue-900">Projected Financial Impact (Estimates/Pilot)</h4>
@@ -902,7 +902,7 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
                   <input
                     type="number"
                     step="any"
-                    className="w-full border rounded px-3 py-2 text-sm"
+                    className="w-full border rounded px-2 py-1 text-xs"
                     placeholder="Estimated full 12-month impact"
                     value={formData.projected_annual_revenue}
                     onChange={e => handleChange('projected_annual_revenue', e.target.value)}
@@ -911,7 +911,7 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
                 <div>
                   <label className="block text-sm font-semibold mb-1">Projection Basis</label>
                   <input
-                    className="w-full border rounded px-3 py-2 text-sm"
+                    className="w-full border rounded px-2 py-1 text-xs"
                     placeholder='e.g., "Pilot data × 12 months"'
                     value={formData.projection_basis}
                     onChange={e => handleChange('projection_basis', e.target.value)}
@@ -923,8 +923,8 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
             <div>
               <label className="block text-sm font-semibold mb-1">Calculation Methodology</label>
               <textarea
-                className="w-full border rounded px-3 py-2 text-sm"
-                rows={3}
+                className="w-full border rounded px-2 py-1 text-xs"
+                rows={2}
                 placeholder="Show your work - be specific"
                 value={formData.calculation_methodology}
                 onChange={e => handleChange('calculation_methodology', e.target.value)}
@@ -934,8 +934,8 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
             <div>
               <label className="block text-sm font-semibold mb-1">Key Assumptions (one per line)</label>
               <textarea
-                className="w-full border rounded px-3 py-2 text-sm"
-                rows={3}
+                className="w-full border rounded px-2 py-1 text-xs"
+                rows={2}
                 placeholder="List ALL assumptions"
                 value={formData.key_assumptions}
                 onChange={e => handleChange('key_assumptions', e.target.value)}
@@ -944,9 +944,9 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
           </div>
 
           {/* Category of Impact */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg text-gray-900">Category of Impact</h3>
-            <p className="text-sm text-gray-600">Check all that apply. These should be demonstrable if checked.</p>
+          <div className="space-y-2">
+            <h3 className="font-semibold text-sm text-gray-900">Category of Impact</h3>
+            <p className="text-xs text-gray-600">Check all that apply. These should be demonstrable if checked.</p>
 
             <div className="space-y-2">
               <label className="flex items-center gap-2">
@@ -1010,34 +1010,34 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
               </label>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Other:</label>
+                <label className="block text-xs font-medium text-gray-700 mb-0.5">Other:</label>
                 <input
                   type="text"
                   value={formData.impact_other}
                   onChange={(e) => handleChange('impact_other', e.target.value)}
                   placeholder="Specify other impact category"
-                  className="w-full border border-gray-300 rounded-lg p-2"
+                  className="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">
                 Supporting Information
               </label>
               <textarea
-                rows={4}
+                rows={2}
                 value={formData.supporting_information}
                 onChange={(e) => handleChange('supporting_information', e.target.value)}
                 placeholder="Any regulatory, policy, practice guidelines, etc. that support the request and selected categories..."
-                className="w-full border border-gray-300 rounded-lg p-2"
+                className="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs"
               />
             </div>
           </div>
 
           {/* Groups Impacted */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg text-gray-900">Groups Impacted by Problem</h3>
+          <div className="space-y-2">
+            <h3 className="font-semibold text-sm text-gray-900">Groups Impacted by Problem</h3>
             <p className="text-sm text-gray-600">Check all that apply. Please ensure that each group is aware and supports the request.</p>
 
             <div className="space-y-2">
@@ -1112,24 +1112,24 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
             </label>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Other:</label>
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">Other:</label>
               <input
                 type="text"
                 value={formData.groups_other}
                 onChange={(e) => handleChange('groups_other', e.target.value)}
                 placeholder="Specify other groups"
-                className="w-full border border-gray-300 rounded-lg p-2"
+                className="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs"
               />
               </div>
             </div>
           </div>
 
           {/* Regional Impact & Timeline */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg text-gray-900">Regional Impact & Timeline</h3>
+          <div className="space-y-2">
+            <h3 className="font-semibold text-sm text-gray-900">Regional Impact & Timeline</h3>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">
                 What regions are impacted by this change?
               </label>
               <input
@@ -1137,27 +1137,27 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
                 value={formData.regions_impacted}
                 onChange={(e) => handleChange('regions_impacted', e.target.value)}
                 placeholder="e.g., All regions (South, Mountain, Northwest, California, Central) or specific regions"
-                className="w-full border border-gray-300 rounded-lg p-2"
+                className="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">
                 Is there a required date for problem resolution?
               </label>
               <input
                 type="date"
                 value={formData.required_date}
                 onChange={(e) => handleChange('required_date', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg p-2"
+                className="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 mt-0.5">
                 Regulation effective date, policy effective date, survey action plan, etc.
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">
                 Reason for Required Date
               </label>
               <input
@@ -1165,22 +1165,22 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
                 value={formData.required_date_reason}
                 onChange={(e) => handleChange('required_date_reason', e.target.value)}
                 placeholder="e.g., CMS regulation effective date, Joint Commission requirement"
-                className="w-full border border-gray-300 rounded-lg p-2"
+                className="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs"
               />
             </div>
           </div>
 
           {/* Additional Comments */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg text-gray-900">Additional Comments</h3>
+          <div className="space-y-2">
+            <h3 className="font-semibold text-sm text-gray-900">Additional Comments</h3>
 
             <div>
               <textarea
-                rows={5}
+                rows={2}
                 value={formData.additional_comments}
                 onChange={(e) => handleChange('additional_comments', e.target.value)}
                 placeholder="Any additional information that would be helpful in evaluating this request..."
-                className="w-full border border-gray-300 rounded-lg p-2"
+                className="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs"
               />
             </div>
           </div>

@@ -52,42 +52,42 @@ export const Tab3Content = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2">
       {/* Proposed Solution */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">Proposed Solution</h3>
+        <h3 className="text-sm font-semibold mb-2">Proposed Solution</h3>
         <textarea
           value={data.proposedSolution}
           onChange={(e) => setData({ ...data, proposedSolution: e.target.value })}
-          rows={6}
-          className="w-full border border-gray-300 rounded-lg p-2"
+          rows={3}
+          className="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs"
           placeholder="Describe the proposed solution for governance review"
         />
       </div>
 
       {/* Voting Statement */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">Voting Statement for Governance Committee</h3>
+        <h3 className="text-sm font-semibold mb-2">Voting Statement for Governance Committee</h3>
         <textarea
           value={data.votingStatement}
           onChange={(e) => setData({ ...data, votingStatement: e.target.value })}
-          rows={4}
-          className="w-full border border-gray-300 rounded-lg p-2"
+          rows={2}
+          className="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs"
           placeholder="Statement for governance committee voting"
         />
       </div>
 
       {/* EHR Areas Impacted */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">EHR Areas/Modules Impacted</h3>
+        <h3 className="text-sm font-semibold mb-2">EHR Areas/Modules Impacted</h3>
         <textarea
           value={data.ehrAreasImpacted.join('\n')}
           onChange={(e) => setData({
             ...data,
             ehrAreasImpacted: e.target.value.split('\n').filter(a => a.trim())
           })}
-          rows={4}
-          className="w-full border border-gray-300 rounded-lg p-2"
+          rows={2}
+          className="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs"
           placeholder="List EHR areas or modules (one per line)&#10;e.g.,&#10;Orders&#10;Medication Administration&#10;Clinical Documentation"
         />
         <p className="text-xs text-gray-500 mt-1">Enter one EHR area per line</p>
@@ -95,17 +95,17 @@ export const Tab3Content = ({
 
       {/* Journal Log */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">Journal Log</h3>
-        <p className="text-sm text-gray-600 mb-4">
+        <h3 className="text-sm font-semibold mb-2">Journal Log</h3>
+        <p className="text-xs text-gray-600 mb-2">
           Track decisions, meetings, updates, and milestones for this initiative.
         </p>
 
         {/* Existing Entries */}
         {journalEntries.length > 0 && (
-          <div className="space-y-3 max-h-96 overflow-y-auto mb-4">
+          <div className="space-y-2 max-h-96 overflow-y-auto mb-2">
             {journalEntries.map((entry, index) => (
-              <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <div className="text-xs text-gray-500 mb-1">
+              <div key={index} className="p-2 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="text-xs text-gray-500 mb-0.5">
                   {formatDateTime(entry.timestamp)} - {entry.author}
                 </div>
                 <div className="text-sm text-gray-900 whitespace-pre-wrap">
@@ -117,7 +117,7 @@ export const Tab3Content = ({
         )}
 
         {journalEntries.length === 0 && (
-          <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 text-center text-sm text-gray-500 mb-4">
+          <div className="px-2 py-1 bg-gray-50 rounded-lg border border-gray-200 text-center text-xs text-gray-500 mb-2">
             No journal entries yet. Add your first entry below.
           </div>
         )}
@@ -128,8 +128,8 @@ export const Tab3Content = ({
             value={newJournalEntry}
             onChange={(e) => setNewJournalEntry(e.target.value)}
             placeholder="Add a journal entry (meetings, decisions, updates, milestones)..."
-            className="w-full border border-gray-300 rounded-lg p-3"
-            rows={3}
+            className="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs"
+            rows={2}
           />
           <button
             onClick={addJournalEntry}

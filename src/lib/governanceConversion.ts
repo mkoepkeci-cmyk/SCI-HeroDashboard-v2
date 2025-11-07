@@ -55,22 +55,72 @@ export async function createInitiativeForAssignedRequest(
       };
     }
 
-    // Create a MINIMAL initiative for effort tracking
+    // Create initiative with ALL governance request data (not minimal)
+    // This ensures data is available immediately when SCI views the initiative
     const { data: initiative, error: initiativeError } = await supabase
       .from('initiatives')
       .insert({
+        // Basic fields
         owner_name: assignedSciName,
         initiative_name: govRequest.title,
         type: 'System Initiative',  // System Initiative work type
         status: 'Not Started',  // Will become In Progress in Phase 2
         role: 'Owner',
-        work_effort: govRequest.work_effort,  // Transfer work effort estimate from governance request
+        work_effort: govRequest.work_effort,
         team_member_id: assignedSciId,
-        governance_request_id: govRequest.id,  // Link back to governance request
-        request_id: govRequest.request_id,  // GOV-YYYY-XXX display ID for UI
-        clinical_sponsor_name: govRequest.system_clinical_leader,
+        governance_request_id: govRequest.id,
+        request_id: govRequest.request_id,  // GOV-YYYY-XXX display ID
         is_draft: false,
         is_active: true,
+
+        // Governance request data (populate immediately, not in Phase 2)
+        clinical_sponsor_name: govRequest.system_clinical_leader,
+        problem_statement: govRequest.problem_statement,
+        desired_outcomes: govRequest.desired_outcomes,
+        division_region: govRequest.division_region,
+        submitter_name: govRequest.submitter_name,
+        submitter_email: govRequest.submitter_email,
+        patient_care_value: govRequest.patient_care_value,
+        compliance_regulatory_value: govRequest.compliance_regulatory_value,
+        estimated_scope: govRequest.estimated_scope,
+
+        // Impact categories
+        impact_commonspirit_board_goal: govRequest.impact_commonspirit_board_goal || false,
+        impact_commonspirit_2026_5for25: govRequest.impact_commonspirit_2026_5for25 || false,
+        impact_system_policy: govRequest.impact_system_policy || false,
+        impact_patient_safety: govRequest.impact_patient_safety || false,
+        impact_regulatory_compliance: govRequest.impact_regulatory_compliance || false,
+        impact_financial: govRequest.impact_financial || false,
+        impact_other: govRequest.impact_other,
+
+        // Supporting information
+        supporting_information: govRequest.supporting_information,
+
+        // Groups impacted
+        groups_nurses: govRequest.groups_nurses || false,
+        groups_physicians_apps: govRequest.groups_physicians_apps || false,
+        groups_therapies: govRequest.groups_therapies || false,
+        groups_lab: govRequest.groups_lab || false,
+        groups_pharmacy: govRequest.groups_pharmacy || false,
+        groups_radiology: govRequest.groups_radiology || false,
+        groups_administration: govRequest.groups_administration || false,
+        groups_other: govRequest.groups_other,
+
+        // Regional impact
+        regions_impacted: govRequest.regions_impacted,
+        required_date: govRequest.required_date,
+        required_date_reason: govRequest.required_date_reason,
+        additional_comments: govRequest.additional_comments,
+
+        // Financial fields (from governance request)
+        projected_annual_revenue: govRequest.projected_annual_revenue,
+        projection_basis: govRequest.projection_basis,
+        calculation_methodology: govRequest.calculation_methodology,
+        key_assumptions: govRequest.key_assumptions,
+
+        // Timeline
+        start_date: govRequest.submitted_date || new Date().toISOString(),
+        timeframe_display: `Target: ${govRequest.target_timeline || 'TBD'}`,
       })
       .select()
       .single();
@@ -82,7 +132,35 @@ export async function createInitiativeForAssignedRequest(
       };
     }
 
-    console.log('Phase 1 complete: Minimal initiative created:', initiative.id);
+    console.log('Phase 1 complete: Initiative created with all governance data:', initiative.id);
+
+    // Create initiative_metrics records if governance request has impact_metrics
+    if (govRequest.impact_metrics && Array.isArray(govRequest.impact_metrics) && govRequest.impact_metrics.length > 0) {
+      const metricsToInsert = govRequest.impact_metrics.map((m: any, index: number) => ({
+        initiative_id: initiative.id,
+        metric_name: m.metric_name,
+        metric_type: m.metric_type || 'quantitative',
+        unit: m.unit,
+        baseline_value: m.baseline_value,
+        baseline_date: m.baseline_date,
+        current_value: m.current_value,
+        measurement_date: m.measurement_date,
+        target_value: m.target_value,
+        improvement: m.improvement,
+        measurement_method: m.measurement_method,
+        display_order: index + 1
+      }));
+
+      const { error: metricsError } = await supabase
+        .from('initiative_metrics')
+        .insert(metricsToInsert);
+
+      if (metricsError) {
+        console.warn('Failed to create initiative metrics:', metricsError);
+      } else {
+        console.log(`Phase 1: Created ${metricsToInsert.length} metric record(s)`);
+      }
+    }
 
     // Update governance request with link to initiative
     const { error: updateError } = await supabase

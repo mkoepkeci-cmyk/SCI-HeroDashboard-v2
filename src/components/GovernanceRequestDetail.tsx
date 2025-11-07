@@ -151,8 +151,28 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
             return; // Don't proceed to Phase 2 if Phase 1 failed
           } else {
             console.log('Phase 1 (defensive) complete, now proceeding to Phase 2');
+            console.log('Phase 1 result:', phase1Result);
             // Update local state so Phase 2 can proceed
-            request.linked_initiative_id = phase1Result.initiativeId;
+            if (phase1Result.initiativeId) {
+              request.linked_initiative_id = phase1Result.initiativeId;
+            } else {
+              // If initiativeId is missing, fetch it from database
+              console.log('Initiative ID missing from Phase 1 result, fetching from database...');
+              const { data: initiative } = await supabase
+                .from('initiatives')
+                .select('id')
+                .eq('governance_request_id', request.id)
+                .single();
+
+              if (initiative) {
+                request.linked_initiative_id = initiative.id;
+                console.log('Found initiative ID:', initiative.id);
+              } else {
+                console.error('Could not find initiative in database');
+                alert('Error: Initiative was created but could not be found. Please refresh and try again.');
+                return;
+              }
+            }
           }
         }
 
@@ -461,10 +481,10 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
                       }
                     }
 
-                    // Update SCI assignment if changed
-                    if (assignedSciId && assignedSciId !== request.assigned_sci_id) {
-                      updateData.assigned_sci_id = assignedSciId;
-                      updateData.assigned_sci_name = selectedSci?.name || '';
+                    // Update SCI assignment if changed (allow empty to support unassignment)
+                    if (assignedSciId !== request.assigned_sci_id) {
+                      updateData.assigned_sci_id = assignedSciId || null;
+                      updateData.assigned_sci_name = selectedSci?.name || null;
                     }
 
                     // Update work effort if changed
@@ -486,6 +506,7 @@ export const GovernanceRequestDetail = ({ request, onClose, onUpdate, onEdit, on
                     if (error) throw error;
 
                     // Phase 1: Create initiative when SCI is assigned (at any status: Draft, Ready for Review, Needs Refinement)
+                    // Only trigger if assignedSciId has a value (not when unassigning)
                     const sciWasAssigned = assignedSciId && assignedSciId !== request.assigned_sci_id;
                     const noInitiativeYet = !request.linked_initiative_id;
 

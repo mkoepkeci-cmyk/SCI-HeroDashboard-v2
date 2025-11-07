@@ -5,6 +5,7 @@ import { supabase, TeamMember, Manager, WorkTypeSummary, EHRPlatformSummary, Key
 import { InitiativeSubmissionForm } from './components/InitiativeSubmissionForm.OLD';
 import { UnifiedWorkItemForm } from './components/UnifiedWorkItemForm';
 import { InitiativeCard } from './components/InitiativeCard';
+import { InitiativeModal } from './components/InitiativeModal';
 import { InitiativesView } from './components/InitiativesView';
 import { InitiativesTableView } from './components/InitiativesTableView';
 import { InsightsChat } from './components/InsightsChat';
@@ -1623,6 +1624,14 @@ function App() {
           </div>
         </div>
       </div>
+
+      {/* Initiative Detail Modal */}
+      {selectedInitiative && (
+        <InitiativeModal
+          initiative={selectedInitiative}
+          onClose={() => setSelectedInitiative(null)}
+        />
+      )}
     </div>
     );
   };

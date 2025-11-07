@@ -160,22 +160,22 @@ export function TeamCapacityModal({
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-start justify-between">
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-gray-900 mb-3">{displayName}</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-3">{displayName}</h2>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <div className="text-gray-600 mb-1">Planned Capacity:</div>
+                <div className="text-xs text-gray-600 mb-1">Planned Capacity:</div>
                 <div className="flex items-baseline gap-2">
                   <span className="font-bold text-2xl text-gray-900">{plannedHours.toFixed(1)}h</span>
-                  <span className="font-bold text-lg" style={{ color: getCapacityColor(Math.round((plannedHours / 40) * 100)) }}>
+                  <span className="font-bold text-sm" style={{ color: getCapacityColor(Math.round((plannedHours / 40) * 100)) }}>
                     ({Math.round((plannedHours / 40) * 100)}%)
                   </span>
                 </div>
               </div>
               <div>
-                <div className="text-gray-600 mb-1">Actual Capacity:</div>
+                <div className="text-xs text-gray-600 mb-1">Actual Capacity:</div>
                 <div className="flex items-baseline gap-2">
                   <span className="font-bold text-2xl text-gray-900">{actualHours.toFixed(1)}h</span>
-                  <span className="font-bold text-lg" style={{ color: getCapacityColor(Math.round((actualHours / 40) * 100)) }}>
+                  <span className="font-bold text-sm" style={{ color: getCapacityColor(Math.round((actualHours / 40) * 100)) }}>
                     ({Math.round((actualHours / 40) * 100)}%)
                   </span>
                 </div>

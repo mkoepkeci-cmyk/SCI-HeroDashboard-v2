@@ -8,16 +8,19 @@ import { Tab4Content } from './UnifiedWorkItemForm/Tab4Content';
 import { recalculateDashboardMetrics } from '../lib/workloadCalculator';
 
 interface Metric {
+  // Proposed Goals (from governance request)
   metricName: string;
   metricType: string;
   unit: string;
   baselineValue: string;
   baselineDate: string;
-  currentValue: string;
-  measurementDate: string;
   targetValue: string;
-  improvement: string;
   measurementMethod: string;
+  // Actual Outcomes (user-entered measured results)
+  actualValue: string;
+  actualDate: string;
+  actualImprovement: string;      // Auto-calculated: (actual - baseline) / baseline * 100
+  varianceFromTarget: string;     // Auto-calculated: actual - target
 }
 
 interface TeamMemberAssignment {
@@ -57,6 +60,7 @@ export const UnifiedWorkItemForm = ({
   };
 
   // Tab 1: Request Details (Governance fields - ALL OPTIONAL)
+  // Financial fields removed - moved to Tab 4
   const [tab1Data, setTab1Data] = useState({
     title: '',
     division_region: '',
@@ -69,10 +73,6 @@ export const UnifiedWorkItemForm = ({
     compliance_regulatory_value: '',
     target_timeline: '',
     estimated_scope: '',
-    projected_annual_revenue: '',
-    projection_basis: '',
-    calculation_methodology: '',
-    key_assumptions: '',
     impact_commonspirit_board_goal: false,
     impact_commonspirit_2026_5for25: false,
     impact_system_policy: false,
@@ -133,29 +133,35 @@ export const UnifiedWorkItemForm = ({
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [newJournalEntry, setNewJournalEntry] = useState('');
 
-  // Tab 4: Outcomes & Results
+  // Tab 4: Outcomes & Results - Updated for Pre/Post interface
   const [tab4Metrics, setTab4Metrics] = useState<Metric[]>([{
+    // Proposed Goals
     metricName: '',
     metricType: '',
     unit: '',
     baselineValue: '',
     baselineDate: '',
-    currentValue: '',
-    measurementDate: '',
     targetValue: '',
-    improvement: '',
-    measurementMethod: ''
+    measurementMethod: '',
+    // Actual Outcomes
+    actualValue: '',
+    actualDate: '',
+    actualImprovement: '',
+    varianceFromTarget: ''
   }]);
 
   const [tab4Financial, setTab4Financial] = useState({
+    // Projected (from governance request)
     projectedAnnual: '',
     projectionBasis: '',
     calculationMethodology: '',
     keyAssumptions: '',
+    // Realized (user-entered measured results)
     actualRevenue: '',
     actualTimeframe: '',
     measurementStartDate: '',
-    measurementEndDate: ''
+    measurementEndDate: '',
+    varianceFromProjected: ''  // Auto-calculated
   });
 
   const [tab4Performance, setTab4Performance] = useState({
@@ -221,59 +227,69 @@ export const UnifiedWorkItemForm = ({
 
   const loadFromInitiative = (initiative: InitiativeWithDetails) => {
     console.log('🔍 Loading from initiative:', initiative);
-
-    // Tab 1: Governance fields (might be empty for existing initiatives)
-    const govMeta = initiative.governance_metadata || {};
-    setTab1Data({
-      title: initiative.initiative_name || '',
-      division_region: govMeta.division_region || '',
-      submitter_name: govMeta.submitter?.name || '',
-      submitter_email: govMeta.submitter?.email || '',
-      problem_statement: initiative.problem_statement || '',
-      desired_outcomes: initiative.desired_outcomes || '',
-      system_clinical_leader: govMeta.system_clinical_leader || '',
-      patient_care_value: govMeta.patient_care_value || '',
-      compliance_regulatory_value: govMeta.compliance_regulatory_value || '',
-      target_timeline: govMeta.target_timeline || '',
-      estimated_scope: govMeta.estimated_scope || '',
-      projected_annual_revenue: govMeta.projected_annual_revenue?.toString() || '',
-      projection_basis: govMeta.projection_basis || '',
-      calculation_methodology: govMeta.calculation_methodology || '',
-      key_assumptions: govMeta.key_assumptions?.join('\n') || '',
-      impact_commonspirit_board_goal: govMeta.impact_categories?.board_goal || false,
-      impact_commonspirit_2026_5for25: govMeta.impact_categories?.five_for_25 || false,
-      impact_system_policy: govMeta.impact_categories?.system_policy || false,
-      impact_patient_safety: govMeta.impact_categories?.patient_safety || false,
-      impact_regulatory_compliance: govMeta.impact_categories?.regulatory_compliance || false,
-      impact_financial: govMeta.impact_categories?.financial || false,
-      impact_other: govMeta.impact_categories?.other || '',
-      supporting_information: govMeta.supporting_information || '',
-      groups_nurses: govMeta.groups_impacted?.nurses || false,
-      groups_physicians_apps: govMeta.groups_impacted?.physicians_apps || false,
-      groups_therapies: govMeta.groups_impacted?.therapies || false,
-      groups_lab: govMeta.groups_impacted?.lab || false,
-      groups_pharmacy: govMeta.groups_impacted?.pharmacy || false,
-      groups_radiology: govMeta.groups_impacted?.radiology || false,
-      groups_administration: govMeta.groups_impacted?.administration || false,
-      groups_other: govMeta.groups_impacted?.other || '',
-      regions_impacted: govMeta.regions_impacted || '',
-      required_date: govMeta.required_date || '',
-      required_date_reason: govMeta.required_date_reason || '',
-      additional_comments: govMeta.additional_comments || ''
+    console.log('🔍 Initiative governance fields:', {
+      submitter_name: initiative.submitter_name,
+      submitter_email: initiative.submitter_email,
+      problem_statement: initiative.problem_statement,
+      desired_outcomes: initiative.desired_outcomes,
+      clinical_sponsor_name: initiative.clinical_sponsor_name,
+      division_region: initiative.division_region
     });
 
-    if (govMeta.impact_metrics && govMeta.impact_metrics.length > 0) {
-      setTab1Metrics(govMeta.impact_metrics.map((m: any) => ({
+    // Tab 1: Governance fields loaded directly from initiative columns
+    // Phase 2 saves governance request data directly to initiative columns (not governance_metadata)
+    // Financial fields removed - moved to Tab 4
+    setTab1Data({
+      title: initiative.initiative_name || '',
+      division_region: initiative.division_region || '',
+      submitter_name: initiative.submitter_name || '',
+      submitter_email: initiative.submitter_email || '',
+      problem_statement: initiative.problem_statement || '',
+      desired_outcomes: initiative.desired_outcomes || '',
+      system_clinical_leader: initiative.clinical_sponsor_name || '', // Phase 2 maps to clinical_sponsor_name
+      patient_care_value: initiative.patient_care_value || '',
+      compliance_regulatory_value: initiative.compliance_regulatory_value || '',
+      target_timeline: initiative.timeframe_display || '', // Phase 2 formats target_timeline into timeframe_display
+      estimated_scope: initiative.estimated_scope || '',
+      impact_commonspirit_board_goal: initiative.impact_commonspirit_board_goal || false,
+      impact_commonspirit_2026_5for25: initiative.impact_commonspirit_2026_5for25 || false,
+      impact_system_policy: initiative.impact_system_policy || false,
+      impact_patient_safety: initiative.impact_patient_safety || false,
+      impact_regulatory_compliance: initiative.impact_regulatory_compliance || false,
+      impact_financial: initiative.impact_financial || false,
+      impact_other: initiative.impact_other || '',
+      supporting_information: initiative.supporting_information || '',
+      groups_nurses: initiative.groups_nurses || false,
+      groups_physicians_apps: initiative.groups_physicians_apps || false,
+      groups_therapies: initiative.groups_therapies || false,
+      groups_lab: initiative.groups_lab || false,
+      groups_pharmacy: initiative.groups_pharmacy || false,
+      groups_radiology: initiative.groups_radiology || false,
+      groups_administration: initiative.groups_administration || false,
+      groups_other: initiative.groups_other || '',
+      regions_impacted: initiative.regions_impacted || '',
+      required_date: initiative.required_date || '',
+      required_date_reason: initiative.required_date_reason || '',
+      additional_comments: initiative.additional_comments || ''
+    });
+
+    // Load metrics from initiative_metrics related table into Tab 4
+    // Updated for Pre/Post interface with actualValue, actualImprovement, varianceFromTarget
+    if (initiative.metrics && initiative.metrics.length > 0) {
+      setTab4Metrics(initiative.metrics.map((m: any) => ({
+        // Proposed Goals
         metricName: m.metric_name || '',
         metricType: m.metric_type || '',
         unit: m.unit || '',
         baselineValue: m.baseline_value?.toString() || '',
         baselineDate: m.baseline_date || '',
-        currentValue: m.current_value?.toString() || '',
-        measurementDate: m.measurement_date || '',
         targetValue: m.target_value?.toString() || '',
-        improvement: m.improvement || '',
-        measurementMethod: m.measurement_method || ''
+        measurementMethod: m.measurement_method || '',
+        // Actual Outcomes (current_value maps to actualValue, measurement_date maps to actualDate)
+        actualValue: m.current_value?.toString() || '',
+        actualDate: m.measurement_date || '',
+        actualImprovement: m.improvement || '',
+        varianceFromTarget: m.variance_from_target || ''
       })));
     }
 
@@ -330,34 +346,57 @@ export const UnifiedWorkItemForm = ({
     });
     setJournalEntries(initiative.journal_log || []);
 
-    // Tab 4: Metrics, Financial, Performance, Projections, Story
-    if (initiative.metrics && initiative.metrics.length > 0) {
-      setTab4Metrics(initiative.metrics.map(m => ({
-        metricName: m.metric_name,
-        metricType: m.metric_type,
-        unit: m.unit,
-        baselineValue: m.baseline_value?.toString() || '',
-        baselineDate: m.baseline_date || '',
-        currentValue: m.current_value?.toString() || '',
-        measurementDate: m.measurement_date || '',
-        targetValue: m.target_value?.toString() || '',
-        improvement: m.improvement || '',
-        measurementMethod: m.measurement_method || ''
-      })));
+    // Tab 4: Financial, Performance, Projections, Story
+    // (Metrics already loaded above)
+
+    // Load financial data from initiative columns (Phase 1 saves here) OR from financial_impact table
+    console.log('💰 Loading financial data from initiative:', {
+      projected_annual_revenue: initiative.projected_annual_revenue,
+      projection_basis: initiative.projection_basis,
+      calculation_methodology: initiative.calculation_methodology,
+      key_assumptions: initiative.key_assumptions,
+      financial_impact: initiative.financial_impact
+    });
+
+    // Calculate variance from projected if we have both values
+    const projectedValue = initiative.projected_annual_revenue
+      || initiative.financial_impact?.projected_annual
+      || null;
+    const actualValue = initiative.financial_impact?.actual_revenue || null;
+    let varianceFromProjected = '';
+    if (projectedValue !== null && actualValue !== null) {
+      const variance = actualValue - projectedValue;
+      varianceFromProjected = variance >= 0
+        ? `+${variance.toLocaleString()}`
+        : `-${Math.abs(variance).toLocaleString()}`;
     }
 
-    if (initiative.financial_impact) {
-      setTab4Financial({
-        actualRevenue: initiative.financial_impact.actual_revenue?.toString() || '',
-        actualTimeframe: initiative.financial_impact.actual_timeframe || '',
-        measurementStartDate: initiative.financial_impact.measurement_start_date || '',
-        measurementEndDate: initiative.financial_impact.measurement_end_date || '',
-        projectedAnnual: initiative.financial_impact.projected_annual?.toString() || '',
-        projectionBasis: initiative.financial_impact.projection_basis || '',
-        calculationMethodology: initiative.financial_impact.calculation_methodology || '',
-        keyAssumptions: initiative.financial_impact.key_assumptions?.join('\n') || ''
-      });
-    }
+    setTab4Financial({
+      // Projected data - try initiative columns first, then financial_impact table
+      projectedAnnual: initiative.projected_annual_revenue?.toString()
+        || initiative.financial_impact?.projected_annual?.toString()
+        || '',
+      projectionBasis: initiative.projection_basis
+        || initiative.financial_impact?.projection_basis
+        || '',
+      calculationMethodology: initiative.calculation_methodology
+        || initiative.financial_impact?.calculation_methodology
+        || '',
+      keyAssumptions: initiative.key_assumptions
+        ? (Array.isArray(initiative.key_assumptions) ? initiative.key_assumptions.join('\n') : initiative.key_assumptions)
+        : (initiative.financial_impact?.key_assumptions?.join('\n') || ''),
+      // Actual data - only in financial_impact table
+      actualRevenue: initiative.financial_impact?.actual_revenue?.toString() || '',
+      actualTimeframe: initiative.financial_impact?.actual_timeframe || '',
+      measurementStartDate: initiative.financial_impact?.measurement_start_date || '',
+      measurementEndDate: initiative.financial_impact?.measurement_end_date || '',
+      varianceFromProjected: varianceFromProjected
+    });
+
+    console.log('💰 Tab4 financial state set to:', {
+      projectedAnnual: initiative.projected_annual_revenue?.toString() || initiative.financial_impact?.projected_annual?.toString() || '',
+      projectionBasis: initiative.projection_basis || initiative.financial_impact?.projection_basis || ''
+    });
 
     if (initiative.performance_data) {
       setTab4Performance({
@@ -402,7 +441,7 @@ export const UnifiedWorkItemForm = ({
   const loadFromGovernanceRequest = (request: GovernanceRequest) => {
     console.log('🔍 Loading from governance request:', request);
 
-    // Tab 1: Pre-fill from governance request
+    // Tab 1: Pre-fill from governance request (financial fields removed - moved to Tab 4)
     setTab1Data({
       title: request.title || '',
       division_region: request.division_region || '',
@@ -415,10 +454,6 @@ export const UnifiedWorkItemForm = ({
       compliance_regulatory_value: request.compliance_regulatory_value || '',
       target_timeline: request.target_timeline || '',
       estimated_scope: request.estimated_scope || '',
-      projected_annual_revenue: request.projected_annual_revenue?.toString() || '',
-      projection_basis: request.projection_basis || '',
-      calculation_methodology: request.calculation_methodology || '',
-      key_assumptions: request.key_assumptions?.join('\n') || '',
       impact_commonspirit_board_goal: request.impact_commonspirit_board_goal || false,
       impact_commonspirit_2026_5for25: request.impact_commonspirit_2026_5for25 || false,
       impact_system_policy: request.impact_system_policy || false,
@@ -441,21 +476,39 @@ export const UnifiedWorkItemForm = ({
       additional_comments: request.additional_comments || ''
     });
 
-    // Load metrics into Tab 4 (Outcomes & Results), not Tab 1
+    // Load metrics into Tab 4 (Outcomes & Results) - Updated for Pre/Post interface
     if (request.impact_metrics && request.impact_metrics.length > 0) {
       setTab4Metrics(request.impact_metrics.map((m: any) => ({
+        // Proposed Goals (from governance request)
         metricName: m.metric_name || '',
         metricType: m.metric_type || '',
         unit: m.unit || '',
         baselineValue: m.baseline_value?.toString() || '',
         baselineDate: m.baseline_date || '',
-        currentValue: m.current_value?.toString() || '',
-        measurementDate: m.measurement_date || '',
         targetValue: m.target_value?.toString() || '',
-        improvement: m.improvement || '',
-        measurementMethod: m.measurement_method || ''
+        measurementMethod: m.measurement_method || '',
+        // Actual Outcomes (empty - user will fill these out)
+        actualValue: '',
+        actualDate: '',
+        actualImprovement: '',
+        varianceFromTarget: ''
       })));
     }
+
+    // Load financial data into Tab 4 (Projected side of Pre/Post interface)
+    setTab4Financial({
+      // Projected (from governance request)
+      projectedAnnual: request.projected_annual_revenue?.toString() || '',
+      projectionBasis: request.projection_basis || '',
+      calculationMethodology: request.calculation_methodology || '',
+      keyAssumptions: request.key_assumptions?.join('\n') || '',
+      // Realized (empty - user will fill these out)
+      actualRevenue: '',
+      actualTimeframe: '',
+      measurementStartDate: '',
+      measurementEndDate: '',
+      varianceFromProjected: ''
+    });
 
     // Tab 2: Pre-fill initiative name, type, and clinical sponsor
     setTab2Data(prev => ({
@@ -491,7 +544,7 @@ export const UnifiedWorkItemForm = ({
       setSaving(true);
       setError(null);
 
-      // Prepare governance metadata (Tab 1)
+      // Prepare governance metadata (Tab 1) - Financial fields removed (now in Tab 4)
       const governanceMetadata = {
         division_region: tab1Data.division_region,
         submitter: {
@@ -503,10 +556,6 @@ export const UnifiedWorkItemForm = ({
         compliance_regulatory_value: tab1Data.compliance_regulatory_value,
         target_timeline: tab1Data.target_timeline,
         estimated_scope: tab1Data.estimated_scope,
-        projected_annual_revenue: tab1Data.projected_annual_revenue ? parseFloat(tab1Data.projected_annual_revenue) : null,
-        projection_basis: tab1Data.projection_basis,
-        calculation_methodology: tab1Data.calculation_methodology,
-        key_assumptions: tab1Data.key_assumptions ? tab1Data.key_assumptions.split('\n').filter(a => a.trim()) : [],
         impact_categories: {
           board_goal: tab1Data.impact_commonspirit_board_goal,
           five_for_25: tab1Data.impact_commonspirit_2026_5for25,
@@ -581,6 +630,12 @@ export const UnifiedWorkItemForm = ({
         voting_statement: tab3Data.votingStatement || null,
         ehr_areas_impacted: tab3Data.ehrAreasImpacted.length > 0 ? tab3Data.ehrAreasImpacted : null,
         journal_log: journalEntries,
+
+        // Tab 4 - Financial data saved to initiative columns
+        projected_annual_revenue: tab4Financial.projectedAnnual ? parseFloat(tab4Financial.projectedAnnual) : null,
+        projection_basis: tab4Financial.projectionBasis || null,
+        calculation_methodology: tab4Financial.calculationMethodology || null,
+        key_assumptions: tab4Financial.keyAssumptions ? tab4Financial.keyAssumptions.split('\n').filter(a => a.trim()) : null,
 
         // Metadata
         is_draft: isDraft,
@@ -675,7 +730,66 @@ export const UnifiedWorkItemForm = ({
       // Tab 4: Save related tables
       console.log('💾 Saving Tab 4 related data...');
 
-      // 1. Save Financial Impact
+      // 1. Save Metrics (initiative_metrics table)
+      // UPDATE existing metrics or INSERT new ones (don't delete and re-create)
+      if (tab4Metrics.length > 0 && tab4Metrics.some(m => m.metricName.trim())) {
+        const metricsToSave = tab4Metrics
+          .filter(m => m.metricName.trim())
+          .map(m => ({
+            initiative_id: initiativeId,
+            metric_name: m.metricName,
+            metric_type: m.metricType || null,
+            unit: m.unit || null,
+            baseline_value: m.baselineValue ? parseFloat(m.baselineValue) : null,
+            baseline_date: m.baselineDate || null,
+            target_value: m.targetValue ? parseFloat(m.targetValue) : null,
+            measurement_method: m.measurementMethod || null,
+            // Actual outcome fields
+            current_value: m.actualValue ? parseFloat(m.actualValue) : null,
+            measurement_date: m.actualDate || null,
+            improvement: m.actualImprovement || null,
+            variance_from_target: m.varianceFromTarget || null
+          }));
+
+        // Get existing metrics for this initiative
+        const { data: existingMetrics } = await supabase
+          .from('initiative_metrics')
+          .select('id, metric_name')
+          .eq('initiative_id', initiativeId);
+
+        const existingMetricNames = new Set(existingMetrics?.map(m => m.metric_name) || []);
+
+        // Update existing metrics and insert new ones
+        for (const metric of metricsToSave) {
+          if (existingMetricNames.has(metric.metric_name)) {
+            // Update existing metric
+            const { error: updateError } = await supabase
+              .from('initiative_metrics')
+              .update(metric)
+              .eq('initiative_id', initiativeId)
+              .eq('metric_name', metric.metric_name);
+
+            if (updateError) {
+              console.error('❌ Error updating metric:', metric.metric_name, updateError);
+              throw updateError;
+            }
+          } else {
+            // Insert new metric
+            const { error: insertError } = await supabase
+              .from('initiative_metrics')
+              .insert(metric);
+
+            if (insertError) {
+              console.error('❌ Error inserting metric:', metric.metric_name, insertError);
+              throw insertError;
+            }
+          }
+        }
+
+        console.log('✅ Metrics saved/updated:', metricsToSave.length);
+      }
+
+      // 2. Save Financial Impact (initiative_financial_impact table - for actual/realized data)
       if (tab4Financial.projectedAnnual || tab4Financial.actualRevenue) {
         const financialData = {
           initiative_id: initiativeId,
@@ -714,6 +828,27 @@ export const UnifiedWorkItemForm = ({
 
       // Dashboard metrics will update automatically via real-time queries in parent component
       // No need to manually recalculate - parent's onSuccess() calls loadData() which refreshes everything
+
+      // If this initiative is linked to a governance request, sync the phase back to governance_requests.work_phase
+      const governanceRequestId = initiativeData.governance_request_id || editingInitiative?.governance_request_id;
+      if (governanceRequestId && tab2Data.phase) {
+        console.log('🔄 Syncing phase to governance_requests.work_phase:', {
+          governanceRequestId,
+          phase: tab2Data.phase
+        });
+
+        const { error: syncError } = await supabase
+          .from('governance_requests')
+          .update({ work_phase: tab2Data.phase })
+          .eq('id', governanceRequestId);
+
+        if (syncError) {
+          console.error('❌ Error syncing work_phase to governance_requests:', syncError);
+          // Don't throw - this is non-critical
+        } else {
+          console.log('✅ work_phase synced to governance_requests');
+        }
+      }
 
       onSuccess();
       onClose();

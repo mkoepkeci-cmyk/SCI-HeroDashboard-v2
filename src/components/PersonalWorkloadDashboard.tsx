@@ -175,8 +175,8 @@ export default function PersonalWorkloadDashboard({
     <div className="space-y-6">
       {/* Header */}
       <div className="bg-[#9B2F6A] text-white rounded-lg p-6">
-        <h2 className="text-2xl font-bold mb-2">SCI Time and Effort Tracking</h2>
-        <p className="text-white/80">Log your time, manage capacity, and stay balanced</p>
+        <h2 className="text-lg font-semibold mb-2">SCI Time and Effort Tracking</h2>
+        <p className="text-sm text-white/80">Log your time, manage capacity, and stay balanced</p>
       </div>
 
       {/* Staff Selector + Week Selector + View Toggle */}
@@ -264,8 +264,8 @@ export default function PersonalWorkloadDashboard({
       {!teamMember ? (
         <div className="bg-white rounded-lg border p-8 text-center">
           <User className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">No Team Member Selected</h3>
-          <p className="text-gray-500">Please select a team member from the dropdown above to view their workload.</p>
+          <h3 className="text-sm font-semibold text-gray-700 mb-2">No Team Member Selected</h3>
+          <p className="text-sm text-gray-500">Please select a team member from the dropdown above to view their workload.</p>
         </div>
       ) : view === 'entry' ? (
         <>
@@ -347,7 +347,7 @@ export default function PersonalWorkloadDashboard({
       {/* Effort Breakdown by Work Type */}
       {currentWeekSummary.workTypeEfforts.length > 0 && (
         <div className="bg-white rounded-lg border p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Effort Breakdown</h3>
+          <h3 className="text-sm font-semibold text-gray-900 mb-4">Effort Breakdown</h3>
           <div className="space-y-3">
             {currentWeekSummary.workTypeEfforts.map((effort) => (
               <div key={effort.workType}>
@@ -374,7 +374,7 @@ export default function PersonalWorkloadDashboard({
 
       {/* Weekly Trend Chart */}
       <div className="bg-white rounded-lg border p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">8-Week Effort Trend</h3>
+        <h3 className="text-sm font-semibold text-gray-900 mb-4">8-Week Effort Trend</h3>
         <ResponsiveContainer width="100%" height={250}>
           <BarChart data={weeklyTrendData}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -409,7 +409,7 @@ export default function PersonalWorkloadDashboard({
       {/* Top Initiatives This Week */}
       {topInitiatives.length > 0 && (
         <div className="bg-white rounded-lg border p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Effort Initiatives This Week</h3>
+          <h3 className="text-sm font-semibold text-gray-900 mb-4">Top Effort Initiatives This Week</h3>
           <div className="space-y-2">
             {topInitiatives.map(({ initiative, hours, trend }) => (
               <div
@@ -440,8 +440,8 @@ export default function PersonalWorkloadDashboard({
       {currentWeekSummary.totalHours === 0 && (
         <div className="bg-white rounded-lg border p-12 text-center">
           <Clock className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">No Effort Logged</h3>
-          <p className="text-gray-600 max-w-md mx-auto">
+          <h3 className="text-sm font-semibold text-gray-900 mb-2">No Effort Logged</h3>
+          <p className="text-sm text-gray-600 max-w-md mx-auto">
             You haven't logged any effort for {formatWeekRange(selectedWeek)} yet.
             Switch to "Log Effort" view to start tracking your time.
           </p>
