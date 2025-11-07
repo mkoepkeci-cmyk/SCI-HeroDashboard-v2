@@ -187,16 +187,21 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
   };
 
   const handleSaveDraft = async () => {
+    console.log('💾 SAVE AS DRAFT function called');
     try {
       setSaving(true);
       setError(null);
+      console.log('💾 Form data:', { title: formData.title, submitter: formData.submitter_name, email: formData.submitter_email });
 
       // Validate basic required fields
       if (!formData.title || !formData.submitter_name || !formData.submitter_email) {
+        console.log('❌ Validation failed - missing required fields');
         setError('Please fill in at least Title, Submitter Name, and Email to save a draft');
         setSaving(false);
         return;
       }
+
+      console.log('✅ Validation passed, preparing to save...');
 
       // Prepare metrics data (only include metrics with a name)
       const validMetrics = metrics.filter(m => m.metricName && m.metricName.trim());
@@ -264,6 +269,11 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
         required_date_reason: formData.required_date_reason || null,
         // Additional comments
         additional_comments: formData.additional_comments || null,
+        // Work assignment fields (optional, set by SCI lead during assignment)
+        work_effort: null,
+        work_phase: null,
+        work_type: null,
+        assigned_role: null,
         updated_at: new Date().toISOString(),
       };
 
@@ -307,17 +317,23 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
   };
 
   const handleSubmitForReview = async () => {
+    console.log('🚀 SUBMIT FOR REVIEW function called');
     try {
       setSaving(true);
       setError(null);
+      console.log('🚀 Form data:', { title: formData.title, submitter: formData.submitter_name, email: formData.submitter_email });
 
       // Validate all required fields for submission
       const errors = validateGovernanceRequest(formData, true);
+      console.log('🚀 Validation errors:', errors);
       if (Object.keys(errors).length > 0) {
+        console.log('❌ Validation failed:', Object.values(errors));
         setError(`Please fix the following errors:\n${Object.values(errors).join('\n')}`);
         setSaving(false);
         return;
       }
+
+      console.log('✅ Validation passed, preparing to submit...');
 
       // Prepare metrics data (only include metrics with a name)
       const validMetrics = metrics.filter(m => m.metricName && m.metricName.trim());
@@ -1173,7 +1189,10 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
         {/* Footer Actions */}
         <div className="border-t border-gray-200 p-4 bg-gray-50 flex gap-3">
           <button
-            onClick={handleSaveDraft}
+            onClick={() => {
+              console.log('🖱️ SAVE AS DRAFT BUTTON CLICKED');
+              handleSaveDraft();
+            }}
             disabled={saving}
             className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 flex items-center gap-2"
           >
@@ -1186,7 +1205,10 @@ export const GovernanceRequestForm = ({ onClose, onSuccess, editingRequest }: Go
           </button>
 
           <button
-            onClick={handleSubmitForReview}
+            onClick={() => {
+              console.log('🖱️ SUBMIT FOR REVIEW BUTTON CLICKED');
+              handleSubmitForReview();
+            }}
             disabled={saving}
             className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2"
           >
