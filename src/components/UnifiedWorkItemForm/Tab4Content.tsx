@@ -128,7 +128,7 @@ export const Tab4Content = ({
 
       if (!isNaN(target) && !isNaN(actual)) {
         const variance = actual - target;
-        updated[index].varianceFromTarget = variance >= 0 ? `+${variance}` : `${variance}`;
+        updated[index].varianceFromTarget = String(variance >= 0 ? `+${variance}` : `${variance}`);
       }
     }
 
@@ -145,7 +145,7 @@ export const Tab4Content = ({
 
       if (!isNaN(projected) && !isNaN(actual)) {
         const variance = actual - projected;
-        updated.varianceFromProjected = variance >= 0 ? `+$${variance.toLocaleString()}` : `-$${Math.abs(variance).toLocaleString()}`;
+        updated.varianceFromProjected = String(variance >= 0 ? `+$${variance.toLocaleString()}` : `-$${Math.abs(variance).toLocaleString()}`);
       }
     }
 
@@ -344,8 +344,8 @@ export const Tab4Content = ({
                         <div className="flex justify-between">
                           <span className="text-gray-600">Variance from Target:</span>
                           <span className={`font-semibold ${
-                            metric.varianceFromTarget?.startsWith('+') ? 'text-green-700' :
-                            metric.varianceFromTarget?.startsWith('-') ? 'text-red-700' :
+                            String(metric.varianceFromTarget || '').startsWith('+') ? 'text-green-700' :
+                            String(metric.varianceFromTarget || '').startsWith('-') ? 'text-red-700' :
                             'text-gray-500'
                           }`}>
                             {metric.varianceFromTarget || 'N/A'}
@@ -494,8 +494,8 @@ export const Tab4Content = ({
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-gray-600">Variance from Projected:</span>
                     <span className={`text-sm font-bold ${
-                      financial.varianceFromProjected?.startsWith('+') ? 'text-green-700' :
-                      financial.varianceFromProjected?.startsWith('-') ? 'text-red-700' :
+                      String(financial.varianceFromProjected || '').startsWith('+') ? 'text-green-700' :
+                      String(financial.varianceFromProjected || '').startsWith('-') ? 'text-red-700' :
                       'text-gray-500'
                     }`}>
                       {financial.varianceFromProjected || 'N/A'}
