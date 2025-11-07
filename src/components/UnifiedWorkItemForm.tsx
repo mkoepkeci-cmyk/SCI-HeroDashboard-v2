@@ -952,7 +952,7 @@ export const UnifiedWorkItemForm = ({
               currentUser={currentUser}
             />
           )}
-          {activeTab === 'tab4' && (
+          {activeTab === 'tab4' && tab4Metrics && tab4Financial && tab4Performance && tab4Projections && tab4Story && (
             <Tab4Content
               metrics={tab4Metrics}
               setMetrics={setTab4Metrics}
